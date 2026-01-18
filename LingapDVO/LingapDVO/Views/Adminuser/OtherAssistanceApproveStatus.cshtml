@@ -1,14 +1,25 @@
 @model OtherAssistanceDto
 @{
-    Layout = "_ViewFormsLayout";
-    ViewData["Title"] = "Other Assistance View";
+    Layout = "_AdminProcessingLayout";
+    ViewData["Title"] = "Process Other Assistance";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <style>
-    /* Remove borders since layout already has them */
+    .decrypted-field .info-label {
+        color: #bdc3c7 !important;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ecf0f1 !important;
+        }
+
+    .align-first-checkbox {
+        margin-top: 0 !important;
+    }
+
     .receipt-container {
         border: none !important;
         box-shadow: none !important;
@@ -23,6 +34,283 @@
         padding: 1rem !important;
     }
 
+    /* Full-screen PDF Viewer Styles */
+    .pdf-viewer-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        overflow: hidden;
+    }
+
+    .pdf-viewer-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-toolbar {
+        background-color: #1a1a1a;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        flex-shrink: 0;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50%;
+    }
+
+    .pdf-viewer-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-viewer-btn {
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+        .pdf-viewer-btn:hover {
+            background-color: #444;
+            border-color: #666;
+        }
+
+        .pdf-viewer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .pdf-page-info {
+        color: #ccc;
+        font-size: 0.9rem;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .pdf-zoom-info {
+        color: #ccc;
+        font-size: 0.9rem;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+        .pdf-viewer-close:hover {
+            background-color: #333;
+        }
+
+    .pdf-viewer-content {
+        flex: 1;
+        overflow: auto;
+        background-color: #525659;
+        position: relative;
+    }
+
+    .pdf-viewer-inner {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100%;
+        padding: 20px;
+    }
+
+    .pdf-canvas-container {
+        position: relative;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        background-color: white;
+        margin: auto;
+    }
+
+    #pdfCanvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .pdf-loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+
+    .pdf-loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    .pdf-loading-text {
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .pdf-error-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        display: none;
+    }
+
+    .pdf-error-icon {
+        font-size: 4rem;
+        color: #e74c3c;
+        margin-bottom: 20px;
+    }
+
+    .pdf-error-text {
+        color: white;
+        font-size: 1.2rem;
+        text-align: center;
+        max-width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .pdf-retry-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s ease;
+    }
+
+        .pdf-retry-btn:hover {
+            background-color: #2980b9;
+        }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* PDF Preview Styles */
+    .pdf-preview-container {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin-bottom: 15px;
+    }
+
+        .pdf-preview-container:hover {
+            transform: translateY(-2px);
+        }
+
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+        .pdf-preview:hover {
+            border-color: #3498db;
+            background-color: #e8f4fd;
+        }
+
+    .pdf-preview-icon {
+        font-size: 3rem;
+        color: #e74c3c;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .pdf-preview-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pdf-preview-filename {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1rem;
+    }
+
+    .pdf-preview-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .pdf-preview-label i {
+            font-size: 0.9rem;
+        }
+
+    /* Image Zoom Modal */
     .zoom-modal {
         display: none;
         position: fixed;
@@ -40,6 +328,7 @@
         display: block;
         max-width: 90%;
         max-height: 90%;
+        object-fit: contain;
     }
 
     .close-zoom {
@@ -50,11 +339,18 @@
         font-size: 40px;
         font-weight: bold;
         cursor: pointer;
+        transition: color 0.2s ease;
     }
 
+        .close-zoom:hover {
+            color: #3498db;
+        }
+
+    /* ID Image Styles */
     .id-image-container {
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: transform 0.2s ease;
+        margin-bottom: 15px;
     }
 
         .id-image-container:hover {
@@ -66,238 +362,12 @@
         height: 200px;
         object-fit: contain;
         background-color: #f8f9fa;
-        border: 1px solid var(--border-color);
+        border: 1px solid #e0e0e0;
         border-radius: 5px;
+        padding: 10px;
     }
 
-    .pdf-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .pdf-preview {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
-        background-color: var(--light-gray);
-        transition: all 0.3s ease;
-    }
-
-        .pdf-preview:hover {
-            border-color: var(--primary-color);
-            background-color: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-    .pdf-icon {
-        font-size: 3rem;
-        color: #dc143c;
-        margin-right: 1rem;
-    }
-
-    .pdf-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-filename {
-        font-weight: 600;
-        color: var(--secondary-color);
-        margin-bottom: 0.25rem;
-    }
-
-    .pdf-label {
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
-    .pdf-viewer-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.95);
-    }
-
-    .pdf-viewer-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-viewer-header {
-        background-color: #333;
-        color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .pdf-viewer-title {
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-
-    .pdf-viewer-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 2rem;
-        cursor: pointer;
-        padding: 0 0.5rem;
-        line-height: 1;
-    }
-
-        .pdf-viewer-close:hover {
-            color: var(--primary-color);
-        }
-
-    .pdf-viewer-body {
-        flex: 1;
-        background-color: #525659;
-        position: relative;
-        overflow: auto;
-    }
-
-    .pdf-container {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        min-height: 100%;
-    }
-
-    #pdfCanvas {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        background-color: white;
-    }
-
-    .pdf-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: auto;
-        flex-wrap: wrap;
-    }
-
-    .page-info {
-        color: white;
-        font-size: 0.9rem;
-        margin: 0 10px;
-    }
-
-    .zoom-level {
-        color: white;
-        font-size: 0.9rem;
-        min-width: 40px;
-        text-align: center;
-    }
-
-    .pdf-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .pdf-error {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        display: none;
-    }
-
-        .pdf-error i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-    /* Status Buttons Styling */
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Claimed Button Styling - Same design as approve/disapprove */
-    .btn-claimed {
-        background-color: #17a2b8;
-        border-color: #17a2b8;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-claimed:hover {
-            background-color: #138496;
-            border-color: #117a8b;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Comments Modal Styling */
+    /* Modal Styles */
     .comments-modal {
         display: none;
         position: fixed;
@@ -346,12 +416,6 @@
             color: var(--primary-color);
         }
 
-    .comments-required {
-        border: 2px solid #dc3545 !important;
-        background-color: #fff5f5;
-    }
-
-    /* Form Validation */
     .invalid-feedback {
         display: none;
         width: 100%;
@@ -373,7 +437,154 @@
             display: block;
         }
 
-    /* Status Badges */
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+
+    /* CMO Details Styles */
+    .cmo-details {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .cmo-section-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .cmo-checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .cmo-checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+
+        .cmo-checkbox-item:hover {
+            border-color: #3498db;
+            background-color: #e8f4fd;
+        }
+
+        .cmo-checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .cmo-checkbox-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+    .cmo-processed-by {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+        text-align: center;
+        font-weight: 600;
+        color: #2c3e50;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* CMO Others Field Styling */
+    .cmo-others-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        align-items: flex-end;
+    }
+
+    .cmo-others-checkbox {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        height: fit-content;
+        min-height: 46px;
+    }
+
+    .cmo-others-input {
+        flex: 1;
+    }
+
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .section-header {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #3498db;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: #2c3e50;
+        min-width: 150px;
+    }
+
+    .info-value {
+        flex: 1;
+        color: #555;
+        min-width: 200px;
+    }
+
     .status-badge {
         display: inline-block;
         padding: 0.35rem 0.75rem;
@@ -407,82 +618,136 @@
         color: #0c5460;
     }
 
-    /* Receipt Sections */
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
+    .status-retake {
+        background-color: #fff3e0;
+        color: #ff6f00;
     }
 
-    .section-header {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--primary-light);
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-
-    .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: var(--secondary-color);
-    }
-
-    .info-value {
-        flex: 1;
-        color: #555;
-    }
-
-    /* Success Modal */
-    .success-modal {
-        display: none;
-        position: fixed;
-        z-index: 4000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
-    }
-
-    .success-modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 2rem;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-
-    .success-icon {
-        font-size: 3rem;
-        color: #28a745;
-        margin-bottom: 1rem;
-    }
-
-    /* Additional Information Container */
+    /* Black/Grey Additional Information Container (Matching Hospital Assistance) */
     .additional-info-container {
         display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     .additional-info-visible {
         display: block;
     }
 
-    /* Additional Information Loading Container */
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
+    /* Additional Information Loading Container - ADDED: For consistency with funeral info */
     .additional-loading-container {
+        display: none;
+        background-color: #2c3e50;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #34495e;
+        text-align: center;
+        color: white;
+    }
+
+        .additional-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .additional-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
         display: none;
         background-color: #f8f9fa;
         border-radius: 8px;
@@ -491,7 +756,249 @@
         border: 1px solid #dee2e6;
         text-align: center;
     }
+
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    /* Encrypted ID Section */
+    .encrypted-id-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .file-path {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        font-family: monospace;
+    }
+
+    /* Status Buttons Styling */
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-warning {
+        background-color: #ff9800;
+        border-color: #ff9800;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-warning:hover {
+            background-color: #e68900;
+            border-color: #d17d00;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .pdf-viewer-toolbar {
+            flex-wrap: wrap;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .pdf-viewer-title {
+            max-width: 100%;
+            order: 1;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .pdf-viewer-controls {
+            order: 2;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pdf-viewer-btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .pdf-viewer-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 35px;
+            height: 35px;
+            font-size: 1.5rem;
+        }
+
+        .pdf-viewer-content {
+            padding: 10px;
+        }
+
+        .pdf-preview {
+            padding: 12px;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .pdf-preview-icon {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+
+        .id-image {
+            height: 150px;
+        }
+
+        .cmo-checkbox-group {
+            grid-template-columns: 1fr;
+        }
+
+        .cmo-others-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cmo-others-checkbox {
+            min-height: 40px;
+        }
+
+        .info-row {
+            flex-direction: column;
+        }
+
+        .info-label {
+            margin-bottom: 0.3rem;
+        }
+
+        .status-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-approved,
+        .btn-disapproved,
+        .btn-warning {
+            width: 100%;
+            max-width: 300px;
+            margin: 5px 0;
+        }
+    }
 </style>
+
+<!-- Full-screen PDF Viewer -->
+<div id="pdfViewerOverlay" class="pdf-viewer-overlay">
+    <div class="pdf-viewer-container">
+        <div class="pdf-viewer-toolbar">
+            <h2 class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</h2>
+            <div class="pdf-viewer-controls">
+                <button class="pdf-viewer-btn" onclick="pdfPrevPage()" id="pdfPrevBtn" title="Previous Page">
+                    <i class="bi bi-chevron-left"></i> Prev
+                </button>
+                <span class="pdf-page-info" id="pdfPageInfo">Page: 1/1</span>
+                <button class="pdf-viewer-btn" onclick="pdfNextPage()" id="pdfNextBtn" title="Next Page">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfZoomOut()" title="Zoom Out">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="pdf-zoom-info" id="pdfZoomInfo">100%</span>
+                <button class="pdf-viewer-btn" onclick="pdfZoomIn()" title="Zoom In">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfFitWidth()" title="Fit to Width">
+                    <i class="bi bi-arrows-angle-expand"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfFitPage()" title="Fit to Page">
+                    <i class="bi bi-aspect-ratio"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()" title="Close PDF Viewer">
+                &times;
+            </button>
+        </div>
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-inner">
+                <div class="pdf-canvas-container" id="pdfCanvasContainer">
+                    <canvas id="pdfCanvas"></canvas>
+                    <div class="pdf-loading-overlay" id="pdfLoadingOverlay">
+                        <div class="pdf-loading-spinner"></div>
+                        <div class="pdf-loading-text">Loading PDF document...</div>
+                    </div>
+                    <div class="pdf-error-overlay" id="pdfErrorOverlay">
+                        <div class="pdf-error-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="pdf-error-text" id="pdfErrorText">Error loading PDF document</div>
+                        <button class="pdf-retry-btn" onclick="retryPDFLoad()">Retry</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Image Zoom Modal -->
 <div id="zoomModal" class="zoom-modal">
@@ -499,48 +1006,7 @@
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<!-- PDF Viewer Modal -->
-<div id="pdfViewerModal" class="pdf-viewer-modal">
-    <div class="pdf-viewer-content">
-        <div class="pdf-viewer-header">
-            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-            <div class="pdf-controls">
-                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                    <i class="bi bi-chevron-left"></i> Previous
-                </button>
-                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                    Next <i class="bi bi-chevron-right"></i>
-                </button>
-                <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                    <i class="bi bi-zoom-out"></i>
-                </button>
-                <span class="zoom-level" id="zoomLevel">100%</span>
-                <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                    <i class="bi bi-zoom-in"></i>
-                </button>
-            </div>
-            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
-        </div>
-        <div class="pdf-viewer-body">
-            <div id="pdfLoading" class="pdf-loading">
-                <div class="spinner-border text-light" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p>Loading PDF document...</p>
-            </div>
-            <div id="pdfError" class="pdf-error">
-                <i class="bi bi-exclamation-triangle"></i>
-                <p>Error loading PDF. Please try again.</p>
-            </div>
-            <div class="pdf-container">
-                <canvas id="pdfCanvas"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Comments Modal -->
+<!-- Comments Modal for Disapprove -->
 <div id="commentsModal" class="comments-modal">
     <div class="comments-modal-content">
         <div class="comments-modal-header">
@@ -554,7 +1020,42 @@
         </div>
         <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
+            <button type="button" class="btn btn-disapproved" onclick="submitDisapproveWithComments()">Submit Disapproval</button>
+        </div>
+    </div>
+</div>
+
+<!-- Retake Modal -->
+<div id="retakeModal" class="comments-modal">
+    <div class="comments-modal-content">
+        <div class="comments-modal-header" style="background: linear-gradient(135deg, #ff9800, #ff5722);">
+            <h5 class="comments-modal-title"><i class="bi bi-arrow-clockwise me-2"></i>Retake Application Request</h5>
+            <button class="comments-modal-close" onclick="closeRetakeModal()">&times;</button>
+        </div>
+        <div class="alert alert-warning mb-3" style="font-size: 0.9rem;">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Important:</strong> Requesting a retake will allow the applicant to re-upload their attachments. Please provide a clear reason explaining what needs to be corrected.
+        </div>
+        <div class="mb-3">
+            <label for="retakeReasonTextarea" class="form-label"><strong>Reason for Retake (Required):</strong></label>
+            <textarea class="form-control" id="retakeReasonTextarea" rows="4"
+                      placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
+                      required></textarea>
+            <div class="invalid-feedback" style="display: block; color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
+                <span id="retakeReasonError" style="display: none;"><i class="bi bi-exclamation-triangle me-1"></i>A detailed reason is required for retake requests.</span>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <i class="bi bi-lightbulb me-1"></i>
+                Tip: Be specific about which documents need to be updated and why.
+            </small>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-warning" onclick="confirmRetake()" style="background-color: #ff9800; border-color: #ff9800; color: white;">
+                <i class="bi bi-check-circle me-1"></i>Request Retake
+            </button>
         </div>
     </div>
 </div>
@@ -566,7 +1067,6 @@
             <i class="bi bi-check-circle-fill"></i>
         </div>
         <h4>Status Updated Successfully!</h4>
-        <p>Application marked as <strong>Claimed</strong></p>
         <p>Redirecting to Admin page...</p>
         <div class="mt-3">
             <div class="spinner-border text-primary" role="status">
@@ -577,17 +1077,26 @@
 </div>
 
 <div class="receipt-container">
-    <form asp-action="OtherAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+    <form asp-action="OtherAssistanceProcessingStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
         @Html.AntiForgeryToken()
 
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="id" value="@ViewData["Id"]" />
-        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+        <input type="hidden" id="statusInput" name="Status2" value="" />
         <input type="hidden" id="commentsInput" name="Comments" value="" />
         <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
         <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
+        <input type="hidden" id="grantedAmountField" name="GrantedAmount" value="" />
+        <input type="hidden" id="supportingDocsField" name="SupportingDocs" value="" />
+        <input type="hidden" id="cmoNotesField" name="CmoNotes" value="" />
 
         <div class="receipt-body">
+
+            <div class="info-row">
+                <div class="info-label">
+                    Application ID: <strong>@ViewData["Id"]</strong>
+                </div>
+            </div>
 
             <!-- Patient Information -->
             <div class="receipt-section">
@@ -663,11 +1172,22 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewAdditionalInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields())"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Additional Information
+                            onclick="toggleAdditionalInfo()"
+                            data-decrypted="false"
+                            title="Click to view encrypted additional information">
+                        <i class="bi bi-eye-fill me-2" id="additionalBtnIcon"></i><span id="additionalBtnText">View Additional Information</span>
                     </button>
                 </h5>
+
+                <!-- Alert shown when Additional Info is encrypted -->
+                <div class="alert alert-info d-flex align-items-center mb-3" id="additionalInfoAlert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                        <strong>Additional Information is Encrypted</strong><br>
+                        For security and privacy, additional information is encrypted. Click the "View Additional Information" button above and enter your password to view it.
+                    </div>
+                </div>
+
                 <!-- Encrypted Additional Information Display (shown by default) -->
                 <div class="encrypted-info-section" id="additionalInfoEncrypted">
                     @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
@@ -677,19 +1197,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -697,13 +1217,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Prescribing Doctor:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctorEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Doctor Contact Detail:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetailEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -716,19 +1236,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddressEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Test Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestName"]</span>
+                                        <span class="encrypted-text">@ViewData["TestNameEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -736,13 +1256,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Test Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
+                                        <span class="encrypted-text">@ViewData["TestCostEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Other Information:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
+                                        <span class="encrypted-text">@ViewData["TestOtherInfoEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -755,13 +1275,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddressEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -769,13 +1289,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Contact:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContactEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyTypeEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -788,19 +1308,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Brand:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentBrandEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Category:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCategoryEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -808,13 +1328,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -822,7 +1342,7 @@
                     }
                 </div>
 
-                <!-- Additional Information Loading Container (shown while decrypting) -->
+                <!-- Additional Information Loading Container (shown while decrypting) - ADDED for consistency -->
                 <div class="additional-loading-container" id="additionalLoadingContainer">
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
@@ -837,9 +1357,201 @@
                 </div>
 
                 <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
-                <div class="additional-info-container" id="additionalInfoContainer">
-                    <div class="row">
-                        <!-- Fields will be dynamically populated here based on assistance type -->
+                <div class="additional-info-container decrypted-display" id="additionalInfoContainer">
+                    <div class="decrypted-header mb-3">
+                        <i class="bi bi-unlock-fill me-2"></i>
+                        <strong>Decrypted Additional Information</strong>
+                    </div>
+                    <div class="row g-3" id="additionalInfoFields">
+                        @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-capsule me-1"></i>Medicine Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineName">
+                                        @ViewData["MedicineName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Medicine Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineQuantity">
+                                        @ViewData["MedicineQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineCost">
+                                        @ViewData["MedicineCost"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="prescribingDoctor">
+                                        @ViewData["PrescribingDoctor"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="doctorContact">
+                                        @ViewData["DoctorContactDetail"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Laboratory/X-ray/ECG/2D Echo Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-building me-1"></i>Laboratory Center Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterName">
+                                        @ViewData["LaboratoryCenterName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterAddress">
+                                        @ViewData["LaboratoryCenterAddress"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-clipboard-data me-1"></i>Test Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testName">
+                                        @ViewData["TestName"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Test Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testCost">
+                                        @ViewData["TestCost"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-info-circle me-1"></i>Test Other Info:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testOtherInfo">
+                                        @ViewData["TestOtherInfo"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Therapy/Rehabilitation Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityName">
+                                        @ViewData["TherapyFacilityName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityAddress">
+                                        @ViewData["TherapyFacilityAddress"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityContact">
+                                        @ViewData["TherapyFacilityContact"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyType">
+                                        @ViewData["TherapyType"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Medical Equipment/Apparatus Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tools me-1"></i>Equipment Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentName">
+                                        @ViewData["EquipmentName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tag me-1"></i>Equipment Brand:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentBrand">
+                                        @ViewData["EquipmentBrand"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCategory">
+                                        @ViewData["EquipmentCategory"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Equipment Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentQuantity">
+                                        @ViewData["EquipmentQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCost">
+                                        @ViewData["EquipmentCost"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No additional information available for this assistance type.
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -847,7 +1559,69 @@
             <!-- CMO Section -->
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
-                <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
+                <div class="cmo-details">
+                    <div class="mt-4">
+                        <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">Select only one supporting document</small>
+                        <div class="cmo-checkbox-group">
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="medicalCertificate" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="laboratoryRequest" value="Laboratory/X-ray Results" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                <label class="form-check-label" for="laboratoryRequest">Laboratory/X-ray Results</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
+                                <label class="form-check-label" for="othersCheckbox">Others</label>
+                            </div>
+                        </div>
+
+                        <!-- Single Document Error Message -->
+                        <div class="alert alert-warning mt-2" id="singleDocError" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Only one document can be selected at a time. Please choose only one supporting document.
+                        </div>
+
+                        <!-- Others Field -->
+                        <div class="cmo-others-row" id="cmoOthersRow" style="display: none;">
+                            <div class="cmo-others-input">
+                                <label class="form-label">Specify Other Documents: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter other supporting documents..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <div class="invalid-feedback" id="cmoNotesError">
+                                    Please specify the other documents.
+                                </div>
+                                <small class="text-muted">Enter the specific document(s) not listed above</small>
+                            </div>
+                        </div>
+
+                        <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
+                            Please select at least one supporting document.
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                            <div class="invalid-feedback" id="grantedAmountError">
+                                Please enter the amount granted.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="cmo-processed-by">
+                                <div>Processed by:</div>
+                                <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display: none">
+                        <label class="form-label">CMO Reflection info:</label>
+                        <input type="text" class="form-control" id="cmoReflectionField" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
+                    </div>
+                </div>
             </div>
 
             <!-- Valid ID and Submitted Documents Section -->
@@ -868,7 +1642,7 @@
                             </button>
                         }
                     </h5>
-                    
+
                     <!-- Encrypted ID Display (shown by default) -->
                     <div class="encrypted-id-section" id="validIDEncrypted">
                         <div class="row g-3">
@@ -923,12 +1697,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -949,12 +1727,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -975,12 +1757,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -1007,10 +1793,15 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="status-buttons">
-                    <button type="button" class="btn btn-claimed" onclick="markAsClaimed()">
-                        <i class="bi bi-check-circle"></i> Mark as Claimed
+                    <button type="button" class="btn btn-approved" onclick="submitApprove()">
+                        <i class="bi bi-check-circle"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="submitRetake()">
+                        <i class="bi bi-arrow-clockwise"></i> Retake Application
+                    </button>
+                    <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
+                        <i class="bi bi-x-circle"></i> Disapprove
                     </button>
                 </div>
             </div>
@@ -1021,28 +1812,19 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Configure PDF.js worker
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
+        // PDF.js configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // PDF Viewer Variables
-        let currentPDF = null;
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentScale = 1.2;
+        // PDF Viewer variables
+        let pdfDocument = null;
+        let currentPdfPage = 1;
+        let totalPdfPages = 1;
+        let pdfScale = 1.0;
+        let currentFileName = '';
+        let currentFileType = '';
+        let currentDisplayName = '';
 
-        // Requestor's Name Variables
-        const requestorFirstname = '@ViewData["RFirstname"]';
-        const requestorMiddlename = '@ViewData["RMiddlename"]';
-        const requestorLastname = '@ViewData["RLastname"]';
-        const requestorSuffix = '@ViewData["RSuffix"]';
-        const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
-
-        // Assistance Type
-        const assistanceType = '@ViewData["Typeassistance"]';
-
-        // Image Zoom Functionality
+        // Image zoom function
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
             const modalImg = document.getElementById("zoomedImage");
@@ -1052,7 +1834,7 @@
             }
         }
 
-        // Close zoom modal
+        // Close image zoom
         document.addEventListener('DOMContentLoaded', function() {
             const closeZoom = document.querySelector(".close-zoom");
             if (closeZoom) {
@@ -1061,188 +1843,251 @@
                     if (modal) modal.style.display = "none";
                 }
             }
+
+            // Close on outside click
+            window.onclick = function(event) {
+                const modal = document.getElementById("zoomModal");
+                if (event.target == modal && modal) {
+                    modal.style.display = "none";
+                }
+
+                const pdfViewer = document.getElementById("pdfViewerOverlay");
+                if (event.target == pdfViewer && pdfViewer) {
+                    closePDFViewer();
+                }
+            }
         });
 
-        // PDF Viewer Function
-        async function viewPDFInModal(fileName, fileType, displayName) {
-            const modal = document.getElementById('pdfViewerModal');
-            const title = document.getElementById('pdfViewerTitle');
-            const loading = document.getElementById('pdfLoading');
-            const errorDiv = document.getElementById('pdfError');
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas ? canvas.getContext('2d') : null;
-            const currentPageSpan = document.getElementById('currentPage');
-            const totalPagesSpan = document.getElementById('totalPages');
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
+        // PDF Viewer functions
+        async function viewPDF(fileName, fileType, displayName) {
+            currentFileName = fileName;
+            currentFileType = fileType;
+            currentDisplayName = displayName || fileName;
 
-            if (!modal || !title || !loading || !errorDiv || !canvas || !context) {
-                console.error('PDF viewer elements not found');
-                return;
-            }
+            // Show PDF viewer
+            const overlay = document.getElementById("pdfViewerOverlay");
+            const title = document.getElementById("pdfViewerTitle");
+            const loadingOverlay = document.getElementById("pdfLoadingOverlay");
+            const errorOverlay = document.getElementById("pdfErrorOverlay");
 
-            title.textContent = displayName || 'PDF Document';
-            modal.style.display = 'block';
-            loading.style.display = 'flex';
-            errorDiv.style.display = 'none';
-            canvas.style.display = 'none';
+            if (!overlay || !title || !loadingOverlay || !errorOverlay) return;
 
-            currentPDF = null;
-            currentPage = 1;
-            currentScale = 1.2;
+            // Reset state
+            pdfDocument = null;
+            currentPdfPage = 1;
+            totalPdfPages = 1;
+            pdfScale = 1.0;
+
+            // Update UI
+            overlay.style.display = "block";
+            document.body.style.overflow = "hidden"; // Prevent scrolling
+            title.textContent = currentDisplayName;
+            loadingOverlay.style.display = "flex";
+            errorOverlay.style.display = "none";
+
+            // Update controls
+            updatePDFControls();
 
             try {
+                // Build URL for PDF file
                 const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName +
+                           '&fileType=' + fileType + '&t=' + Date.now();
 
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // Load PDF document
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDocument = await loadingTask.promise;
+                totalPdfPages = pdfDocument.numPages;
 
-                const pdfData = await response.arrayBuffer();
-                if (!pdfData || pdfData.byteLength === 0) {
-                    throw new Error('PDF data is empty');
-                }
-
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                currentPDF = await loadingTask.promise;
-
-                totalPages = currentPDF.numPages;
-                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
-                if (currentPageSpan) currentPageSpan.textContent = currentPage;
-
-                updateNavigationButtons();
-                await renderPage(currentPage);
-
-                loading.style.display = 'none';
-                canvas.style.display = 'block';
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+                // Render first page
+                await renderPDFPage(currentPdfPage);
+                loadingOverlay.style.display = "none";
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
-                errorDiv.style.display = 'block';
-                if (errorDiv.querySelector('p')) {
-                    errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
-                }
+                console.error("Error loading PDF:", error);
+                loadingOverlay.style.display = "none";
+                errorOverlay.style.display = "flex";
+                document.getElementById("pdfErrorText").textContent =
+                    `Error loading PDF: ${error.message || "Unknown error"}`;
             }
         }
 
-        // Render specific page
-        async function renderPage(pageNum) {
-            if (!currentPDF) return;
+        async function renderPDFPage(pageNum) {
+            if (!pdfDocument || pageNum < 1 || pageNum > totalPdfPages) return;
 
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
-            const currentPageSpan = document.getElementById('currentPage');
+            const canvas = document.getElementById("pdfCanvas");
+            const ctx = canvas.getContext("2d");
+            const container = document.getElementById("pdfCanvasContainer");
 
-            if (!canvas || !context) return;
+            if (!canvas || !ctx || !container) return;
 
             try {
-                const page = await currentPDF.getPage(pageNum);
-                const viewport = page.getViewport({ scale: currentScale });
+                // Get page
+                const page = await pdfDocument.getPage(pageNum);
 
+                // Calculate viewport
+                const viewport = page.getViewport({ scale: pdfScale });
+
+                // Set canvas dimensions
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
+                // Update container size
+                container.style.width = viewport.width + "px";
+                container.style.height = viewport.height + "px";
+
+                // Render page
                 const renderContext = {
-                    canvasContext: context,
+                    canvasContext: ctx,
                     viewport: viewport
                 };
 
                 await page.render(renderContext).promise;
-                if (currentPageSpan) currentPageSpan.textContent = pageNum;
+
+                // Update UI
+                currentPdfPage = pageNum;
+                updatePDFControls();
 
             } catch (error) {
-                console.error('Error rendering page:', error);
+                console.error("Error rendering PDF page:", error);
+                showPDFError(`Error rendering page ${pageNum}: ${error.message}`);
             }
         }
 
-        // Navigation functions
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-                updateNavigationButtons();
+        function updatePDFControls() {
+            // Update page info
+            const pageInfo = document.getElementById("pdfPageInfo");
+            const zoomInfo = document.getElementById("pdfZoomInfo");
+            const prevBtn = document.getElementById("pdfPrevBtn");
+            const nextBtn = document.getElementById("pdfNextBtn");
+
+            if (pageInfo) {
+                pageInfo.textContent = `Page: ${currentPdfPage}/${totalPdfPages}`;
+            }
+
+            if (zoomInfo) {
+                zoomInfo.textContent = `${Math.round(pdfScale * 100)}%`;
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = currentPdfPage <= 1;
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = currentPdfPage >= totalPdfPages;
             }
         }
 
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-                updateNavigationButtons();
+        function pdfPrevPage() {
+            if (currentPdfPage > 1) {
+                currentPdfPage--;
+                renderPDFPage(currentPdfPage);
             }
         }
 
-        function zoomIn() {
-            currentScale += 0.2;
-            renderPage(currentPage);
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-        }
-
-        function zoomOut() {
-            if (currentScale > 0.5) {
-                currentScale -= 0.2;
-                renderPage(currentPage);
-                const zoomLevelSpan = document.getElementById('zoomLevel');
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+        function pdfNextPage() {
+            if (currentPdfPage < totalPdfPages) {
+                currentPdfPage++;
+                renderPDFPage(currentPdfPage);
             }
         }
 
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            if (prevBtn) prevBtn.disabled = currentPage <= 1;
-            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        function pdfZoomIn() {
+            pdfScale = Math.min(pdfScale + 0.1, 3.0); // Max zoom 300%
+            renderPDFPage(currentPdfPage);
         }
 
-        // Close PDF Viewer
+        function pdfZoomOut() {
+            pdfScale = Math.max(pdfScale - 0.1, 0.5); // Min zoom 50%
+            renderPDFPage(currentPdfPage);
+        }
+
+        async function pdfFitWidth() {
+            if (!pdfDocument) return;
+
+            const canvas = document.getElementById("pdfCanvas");
+            const container = document.getElementById("pdfCanvasContainer");
+            if (!canvas || !container) return;
+
+            try {
+                const page = await pdfDocument.getPage(currentPdfPage);
+                const viewport = page.getViewport({ scale: 1 });
+
+                // Calculate scale to fit container width
+                const containerWidth = container.parentElement.clientWidth - 40; // Account for padding
+                pdfScale = containerWidth / viewport.width;
+
+                // Clamp scale
+                pdfScale = Math.max(0.5, Math.min(pdfScale, 3.0));
+
+                renderPDFPage(currentPdfPage);
+
+            } catch (error) {
+                console.error("Error fitting to width:", error);
+            }
+        }
+
+        async function pdfFitPage() {
+            if (!pdfDocument) return;
+
+            const canvas = document.getElementById("pdfCanvas");
+            const container = document.getElementById("pdfCanvasContainer");
+            if (!canvas || !container) return;
+
+            try {
+                const page = await pdfDocument.getPage(currentPdfPage);
+                const viewport = page.getViewport({ scale: 1 });
+
+                // Calculate scale to fit container
+                const containerWidth = container.parentElement.clientWidth - 40;
+                const containerHeight = container.parentElement.clientHeight - 40;
+
+                const scaleX = containerWidth / viewport.width;
+                const scaleY = containerHeight / viewport.height;
+
+                pdfScale = Math.min(scaleX, scaleY);
+
+                // Clamp scale
+                pdfScale = Math.max(0.5, Math.min(pdfScale, 3.0));
+
+                renderPDFPage(currentPdfPage);
+
+            } catch (error) {
+                console.error("Error fitting to page:", error);
+            }
+        }
+
+        function showPDFError(message) {
+            const errorOverlay = document.getElementById("pdfErrorOverlay");
+            const errorText = document.getElementById("pdfErrorText");
+
+            if (errorOverlay && errorText) {
+                errorOverlay.style.display = "flex";
+                errorText.textContent = message || "Error loading PDF";
+            }
+        }
+
+        function retryPDFLoad() {
+            if (currentFileName && currentFileType) {
+                viewPDF(currentFileName, currentFileType, currentDisplayName);
+            }
+        }
+
         function closePDFViewer() {
-            const modal = document.getElementById('pdfViewerModal');
-            if (modal) {
-                modal.style.display = 'none';
+            const overlay = document.getElementById("pdfViewerOverlay");
+            if (overlay) {
+                overlay.style.display = "none";
+                document.body.style.overflow = ""; // Restore scrolling
             }
 
-            if (currentPDF) {
-                currentPDF.destroy();
-                currentPDF = null;
+            // Clean up PDF document
+            if (pdfDocument) {
+                pdfDocument.destroy();
+                pdfDocument = null;
             }
         }
 
-        // Status Submission Functions
-        function markAsClaimed() {
-            // Set the status to "Claimed"
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            const processByInput = document.getElementById('processByInput');
-
-            if (statusInput) statusInput.value = 'Claimed';
-            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
-
-            // Show success modal
-            showSuccessModal();
-
-            // Submit the form after a short delay to show the modal
-            setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 2000); // Show modal for 2 seconds before redirecting
-        }
-
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) modal.style.display = 'block';
-        }
-
-        // Additional Information Functions (from OtherAssistanceProcessingStatus pattern)
+        // Additional Information Functions (Updated to match funeral info pattern)
         function getOtherAssistanceFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
 
@@ -1253,7 +2098,7 @@
             // Conditional fields based on assistance type
             if (assistanceType === 'Medicine Assistance') {
                 fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
-                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldLabels = ['Medicine Name', 'Medicine Quantity', 'Medicine Cost', 'Prescribing Doctor', 'Doctor Contact Detail'];
                 fieldValues = [
                     '@ViewData["MedicineName"]',
                     '@ViewData["MedicineQuantity"]',
@@ -1261,9 +2106,9 @@
                     '@ViewData["PrescribingDoctor"]',
                     '@ViewData["DoctorContactDetail"]'
                 ];
-            } else if (assistanceType === 'Laboratory') {
+            } else if (assistanceType === 'Laboratory/X-ray/ECG/2D Echo Assistance') {
                 fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
-                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldLabels = ['Laboratory Center Name', 'Laboratory Center Address', 'Test Name', 'Test Cost', 'Test Other Info'];
                 fieldValues = [
                     '@ViewData["LaboratoryCenterName"]',
                     '@ViewData["LaboratoryCenterAddress"]',
@@ -1271,18 +2116,18 @@
                     '@ViewData["TestCost"]',
                     '@ViewData["TestOtherInfo"]'
                 ];
-            } else if (assistanceType === 'Therapy') {
+            } else if (assistanceType === 'Therapy/Rehabilitation Assistance') {
                 fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
-                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldLabels = ['Therapy Facility Name', 'Therapy Facility Address', 'Therapy Facility Contact', 'Therapy Type'];
                 fieldValues = [
                     '@ViewData["TherapyFacilityName"]',
                     '@ViewData["TherapyFacilityAddress"]',
                     '@ViewData["TherapyFacilityContact"]',
                     '@ViewData["TherapyType"]'
                 ];
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+            } else if (assistanceType === 'Medical Equipment/Apparatus Assistance') {
                 fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
-                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldLabels = ['Equipment Name', 'Equipment Brand', 'Equipment Category', 'Equipment Quantity', 'Equipment Cost'];
                 fieldValues = [
                     '@ViewData["EquipmentName"]',
                     '@ViewData["EquipmentBrand"]',
@@ -1299,23 +2144,64 @@
             };
         }
 
-        // Function to hide additional information
+        // Toggle function for Additional Information (View/Hide) - Updated to match funeral pattern
+        function toggleAdditionalInfo() {
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideAdditionalInfo();
+            } else {
+                // Currently hidden, show the decrypt modal
+                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
+            }
+        }
+
+        // Function to hide additional information - Updated to match funeral pattern
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
             const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
 
+            // Hide decrypted data container
             if (additionalInfoContainer) {
                 additionalInfoContainer.classList.remove('additional-info-visible');
                 additionalInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
-            if (viewButton) {
-                viewButton.style.display = 'inline-block';
+            // Show encrypted data display
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'block';
             }
+
+            // Show alert
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'flex';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Additional Information';
+            }
+
+            // Clear decrypted data
+            window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption
+        // Function to show additional information after successful decryption - UPDATED with 5-second loading
         function showAdditionalInfoAfterDecryption() {
             console.log('Showing additional information after decryption...');
 
@@ -1325,154 +2211,69 @@
                 loadingContainer.style.display = 'none';
             }
 
-            // Hide the "View Additional Information" button
-            const viewButton = document.getElementById('viewAdditionalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
+            // Hide the encrypted display section
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
             }
 
-            // Show the additional information container
+            // Hide the alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
+            }
+
+            // Show the additional information container (decrypted)
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
-                additionalInfoContainer.classList.add('additional-info-visible');
-
-                // Populate the fields based on assistance type
-                populateAdditionalInfoFields();
+                additionalInfoContainer.classList.add('additional-info-visible', 'decrypted-display');
 
                 // Scroll to the additional information section
                 setTimeout(() => {
                     additionalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
-        }
 
-        // Function to populate additional information fields
-        function populateAdditionalInfoFields() {
-            const assistanceType = '@ViewData["Typeassistance"]';
-            const container = document.getElementById('additionalInfoContainer');
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
 
-            if (!container) return;
-
-            let htmlContent = '';
-
-            if (assistanceType === 'Medicine Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Medicine Name:</div>
-                            <div class="info-value" id="medicineName">@ViewData["MedicineName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="medicineQuantity">@ViewData["MedicineQuantity"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="medicineCost">@ViewData["MedicineCost"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Prescribing Doctor:</div>
-                            <div class="info-value" id="prescribingDoctor">@ViewData["PrescribingDoctor"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Doctor Contact:</div>
-                            <div class="info-value" id="doctorContact">@ViewData["DoctorContactDetail"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Laboratory') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Laboratory Center Name:</div>
-                            <div class="info-value" id="labCenterName">@ViewData["LaboratoryCenterName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Center Address:</div>
-                            <div class="info-value" id="labCenterAddress">@ViewData["LaboratoryCenterAddress"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Test Name:</div>
-                            <div class="info-value" id="testName">@ViewData["TestName"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Test Cost:</div>
-                            <div class="info-value" id="testCost">@ViewData["TestCost"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Other Information:</div>
-                            <div class="info-value" id="testOtherInfo">@ViewData["TestOtherInfo"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Therapy') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Therapy Facility Name:</div>
-                            <div class="info-value" id="therapyFacilityName">@ViewData["TherapyFacilityName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Facility Address:</div>
-                            <div class="info-value" id="therapyFacilityAddress">@ViewData["TherapyFacilityAddress"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Facility Contact:</div>
-                            <div class="info-value" id="therapyFacilityContact">@ViewData["TherapyFacilityContact"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Therapy Type:</div>
-                            <div class="info-value" id="therapyType">@ViewData["TherapyType"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Equipment Name:</div>
-                            <div class="info-value" id="equipmentName">@ViewData["EquipmentName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Brand:</div>
-                            <div class="info-value" id="equipmentBrand">@ViewData["EquipmentBrand"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Category:</div>
-                            <div class="info-value" id="equipmentCategory">@ViewData["EquipmentCategory"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="equipmentQuantity">@ViewData["EquipmentQuantity"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="equipmentCost">@ViewData["EquipmentCost"]</div>
-                        </div>
-                    </div>
-                `;
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
             }
-
-            container.querySelector('.row').innerHTML = htmlContent;
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Additional Information';
+            }
         }
 
-        // Function to start the 5-second loading animation
+        // Function to start the 5-second loading animation - ADDED to match funeral pattern
         function startAdditionalInfoLoading() {
             console.log('Starting additional information loading...');
+
+            // Hide alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
+            }
 
             // Show loading container
             const loadingContainer = document.getElementById('additionalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
             }
 
             // Hide any existing additional info container
@@ -1507,8 +2308,258 @@
             }
         }
 
-        // Comments modal functions
+        // IMPORTANT: This function is called from the shared modal after successful decryption
+        // Now uses 5-second loading animation
+        window.onAdditionalInfoDecrypted = function() {
+            showAdditionalInfoAfterDecryption();
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize button state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+            }
+
+            // Initialize Others checkbox visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+
+            if (othersCheckbox && othersRow && cmoNotesInput) {
+                if (othersCheckbox.checked) {
+                    othersRow.style.display = 'flex';
+                    cmoNotesInput.required = true;
+                } else {
+                    othersRow.style.display = 'none';
+                    cmoNotesInput.required = false;
+                    cmoNotesInput.classList.remove('is-invalid');
+                }
+            }
+
+            // Add change event listener to Others checkbox
+            if (othersCheckbox) {
+                othersCheckbox.addEventListener('change', function() {
+                    if (othersCheckbox.checked) {
+                        othersRow.style.display = 'flex';
+                        cmoNotesInput.required = true;
+                    } else {
+                        othersRow.style.display = 'none';
+                        cmoNotesInput.required = false;
+                        cmoNotesInput.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            // Make sure the encrypted section is visible by default
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            const additionalLoadingContainer = document.getElementById('additionalLoadingContainer');
+
+            if (additionalInfoEncrypted) additionalInfoEncrypted.style.display = 'block';
+            if (additionalInfoContainer) additionalInfoContainer.style.display = 'none';
+            if (additionalInfoAlert) additionalInfoAlert.style.display = 'flex';
+            if (additionalLoadingContainer) additionalLoadingContainer.style.display = 'none';
+        });
+
+        // Form Validation Function
+        function validateCMOForm() {
+            let isValid = true;
+            let errorMessages = [];
+
+            // Reset previous errors
+            document.getElementById('supportingDocsError').style.display = 'none';
+            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+            document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+            document.getElementById('grantedAmountError').style.display = 'none';
+
+            // Validate supporting documents
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            if (supportingDocs.length === 0) {
+                isValid = false;
+                document.getElementById('supportingDocsError').style.display = 'block';
+                errorMessages.push('Please select at least one supporting document.');
+            }
+
+            // Validate CMO Notes if Others checkbox is checked
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput || !cmoNotesInput.value.trim()) {
+                    isValid = false;
+                    cmoNotesInput.classList.add('is-invalid');
+                    errorMessages.push('Please specify the other documents when "Others" is selected.');
+                }
+            }
+
+            // Validate Amount Granted
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                isValid = false;
+                grantedAmountInput.classList.add('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'block';
+                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
+            }
+
+            // Show errors if any
+            if (!isValid) {
+                const cmoSection = document.querySelector('.cmo-details');
+                if (cmoSection) {
+                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
+            }
+
+            return isValid;
+        }
+
+        // CMO Others input toggle
+        function toggleOthersInput() {
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+
+            if (!othersCheckbox || !othersRow || !cmoNotesInput) return;
+
+            if (othersCheckbox.checked) {
+                othersRow.style.display = 'flex';
+                cmoNotesInput.required = true;
+            } else {
+                othersRow.style.display = 'none';
+                cmoNotesInput.required = false;
+                cmoNotesInput.classList.remove('is-invalid');
+            }
+        }
+
+        // Update CMO Reflection
+        function updateReflection() {
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
+
+            let parts = [];
+
+            // Add granted amount if exists
+            if (grantedAmountInput && grantedAmountInput.value.trim()) {
+                parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
+            }
+
+            // Add checked documents
+            const checkedDocs = Array.from(docCheckboxes).map(cb => {
+                if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
+                    return `Others: ${cmoNotes.value.trim()}`;
+                }
+                return cb.value;
+            });
+
+            if (checkedDocs.length > 0) {
+                parts.push(`Docs: ${checkedDocs.join(', ')}`);
+            }
+
+            const reflectionValue = parts.join(' , ');
+            if (reflectionField) reflectionField.value = reflectionValue;
+
+            // Update the hidden field as well
+            if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
+
+            console.log('CMO Reflection updated:', reflectionValue);
+            return reflectionValue;
+        }
+
+        // Update hidden fields before submission
+        function updateHiddenFields() {
+            // Update CMO reflection
+            updateReflection();
+
+            // Update granted amount
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const grantedAmountField = document.getElementById('grantedAmountField');
+            if (grantedAmountInput && grantedAmountField) {
+                grantedAmountField.value = grantedAmountInput.value;
+            }
+
+            // Update supporting docs
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const supportingDocsField = document.getElementById('supportingDocsField');
+            if (supportingDocsField) {
+                const docValues = Array.from(supportingDocs).map(cb => cb.value);
+                supportingDocsField.value = docValues.join(',');
+            }
+
+            // Update CMO notes
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            const cmoNotesField = document.getElementById('cmoNotesField');
+            if (cmoNotesInput && cmoNotesField) {
+                cmoNotesField.value = cmoNotesInput.value;
+            }
+        }
+
+        // Get all selected supporting documents including "Others"
+        function getSelectedSupportingDocs() {
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const docValues = [];
+
+            supportingDocs.forEach(checkbox => {
+                if (checkbox.value === 'Others') {
+                    const cmoNotesInput = document.getElementById('cmoNotesInput');
+                    if (cmoNotesInput && cmoNotesInput.value.trim()) {
+                        docValues.push(`Others: ${cmoNotesInput.value.trim()}`);
+                    } else {
+                        docValues.push('Others');
+                    }
+                } else {
+                    docValues.push(checkbox.value);
+                }
+            });
+
+            return docValues;
+        }
+
+        // Status Submission Functions
+        function submitApprove() {
+            console.log('Submitting approve...');
+
+            // Validate the CMO form first
+            if (!validateCMOForm()) {
+                return; // Stop if validation fails
+            }
+
+            // Update hidden fields
+            updateHiddenFields();
+
+            // Set the status and comments
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            if (statusInput) statusInput.value = 'Approve';
+            if (commentsInput) commentsInput.value = ''; // Empty comments for approval
+
+            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
+            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
+            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput') ? document.getElementById('forCMOPersonnelInput').value : 'N/A');
+            console.log('Supporting Docs:', getSelectedSupportingDocs());
+
+            // Show loading modal
+            showSuccessModal();
+
+            // Submit the form after a short delay to show the modal
+            setTimeout(() => {
+                console.log('Final form submission - Approve');
+                const form = document.getElementById('statusForm');
+                if (form) {
+                    console.log('Submitting form...');
+                    form.submit();
+                } else {
+                    console.error('Form not found!');
+                }
+            }, 1500);
+        }
+
         function showCommentsModal() {
+            // No validation needed for Disapprove - just show the modal
             const modal = document.getElementById('commentsModal');
             const textarea = document.getElementById('commentsTextarea');
             if (modal) modal.style.display = 'block';
@@ -1525,7 +2576,7 @@
             }
         }
 
-        function submitDisapprove() {
+        function submitDisapproveWithComments() {
             const commentsTextarea = document.getElementById('commentsTextarea');
             const comments = commentsTextarea ? commentsTextarea.value.trim() : '';
 
@@ -1537,87 +2588,584 @@
                 return;
             }
 
+            console.log('Submitting disapprove...');
+
+            // Update hidden fields
+            updateHiddenFields();
+
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            const processByInput = document.getElementById('processByInput');
-
             if (statusInput) statusInput.value = 'Disapprove';
             if (commentsInput) commentsInput.value = comments;
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
 
-            // Show loading modal
+            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
+            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
+
+            // Close comments modal and show success modal
+            closeCommentsModal();
             showSuccessModal();
 
-            // Submit the form
+            // Submit the form after a short delay
             setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 500);
+                console.log('Final form submission - Disapprove');
+                const form = document.getElementById('statusForm');
+                if (form) {
+                    console.log('Submitting form...');
+                    form.submit();
+                } else {
+                    console.error('Form not found!');
+                }
+            }, 1500);
         }
 
-        // Keyboard shortcuts and navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const zoomModal = document.getElementById("zoomModal");
-                if (zoomModal) zoomModal.style.display = "none";
-                closePDFViewer();
-                closeCommentsModal();
+        function submitRetake() {
+            // No validation needed for Retake - just show the modal
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeReasonTextarea');
+            if (modal) modal.style.display = 'block';
+            if (textarea) textarea.focus();
+        }
+
+        function closeRetakeModal() {
+            const modal = document.getElementById('retakeModal');
+            const textarea = document.getElementById('retakeReasonTextarea');
+            const errorSpan = document.getElementById('retakeReasonError');
+            if (modal) modal.style.display = 'none';
+            if (textarea) {
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+            }
+            if (errorSpan) errorSpan.style.display = 'none';
+        }
+
+        function confirmRetake() {
+            const retakeReasonTextarea = document.getElementById('retakeReasonTextarea');
+            const retakeReason = retakeReasonTextarea ? retakeReasonTextarea.value.trim() : '';
+            const retakeReasonError = document.getElementById('retakeReasonError');
+
+            // Validate that reason is provided and meets minimum length
+            if (retakeReason === '' || retakeReason.length < 10) {
+                if (retakeReasonTextarea) {
+                    retakeReasonTextarea.classList.add('is-invalid');
+                }
+                if (retakeReasonError) {
+                    retakeReasonError.style.display = 'block';
+                }
+                if (retakeReasonTextarea) retakeReasonTextarea.focus();
+                return;
             }
 
-            const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal && pdfModal.style.display === 'block') {
-                switch(e.key) {
-                    case 'ArrowLeft':
+            console.log('Submitting retake with reason...');
+
+            // Update hidden fields
+            updateHiddenFields();
+
+            // Set status to Retake and add the reason to comments
+            const statusInput = document.getElementById('statusInput');
+            const commentsInput = document.getElementById('commentsInput');
+            if (statusInput) statusInput.value = 'Retake';
+            if (commentsInput) commentsInput.value = 'RETAKE REQUEST: ' + retakeReason;
+
+            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
+            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
+
+            // Close retake modal and show success modal
+            closeRetakeModal();
+            showSuccessModal();
+
+            // Submit the form after a short delay
+            setTimeout(() => {
+                console.log('Final form submission - Retake');
+                const form = document.getElementById('statusForm');
+                if (form) {
+                    console.log('Submitting form...');
+                    form.submit();
+                } else {
+                    console.error('Form not found!');
+                }
+            }, 1500);
+        }
+
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) modal.style.display = 'block';
+
+            // Auto-redirect after 3 seconds in case form submission fails
+            setTimeout(() => {
+                window.location.href = '/Admin';
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Others checkbox visibility
+            toggleOthersInput();
+
+            // Add change event listener to Others checkbox
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox) {
+                othersCheckbox.addEventListener('change', function() {
+                    toggleOthersInput();
+                    updateReflection();
+                });
+            }
+
+            // Add event listeners for inputs
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+
+            if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+
+            // Add event listeners to all supporting document checkboxes
+            const supportingDocCheckboxes = document.querySelectorAll('.supporting-doc');
+            supportingDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateReflection);
+            });
+
+            // Initialize reflection field on page load
+            updateReflection();
+
+            // Add form submission debugging
+            const statusForm = document.getElementById('statusForm');
+            if (statusForm) {
+                statusForm.addEventListener('submit', function(e) {
+                    console.log('=== FORM SUBMISSION DEBUG INFO ===');
+                    console.log('Form action:', this.action);
+                    console.log('Form method:', this.method);
+
+                    const statusInput = document.getElementById('statusInput');
+                    const commentsInput = document.getElementById('commentsInput');
+                    const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+                    const processByInput = document.getElementById('processByInput');
+                    const grantedAmountInput = document.getElementById('grantedAmountInput');
+
+                    if (statusInput) console.log('Status:', statusInput.value);
+                    if (commentsInput) console.log('Comments:', commentsInput.value);
+                    if (forCMOPersonnelInput) console.log('CMO Reflection:', forCMOPersonnelInput.value);
+                    if (processByInput) console.log('Processed By:', processByInput.value);
+                    if (grantedAmountInput) console.log('Granted Amount:', grantedAmountInput.value);
+
+                    // Log all checked supporting documents
+                    console.log('Supporting Docs:', getSelectedSupportingDocs());
+
+                    console.log('Form data:', new FormData(this));
+                    console.log('==============================');
+                });
+            }
+        });
+
+        // Keyboard shortcuts for PDF viewer
+        document.addEventListener('keydown', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            switch(e.key) {
+                case 'Escape':
+                    closePDFViewer();
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    pdfPrevPage();
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    pdfNextPage();
+                    e.preventDefault();
+                    break;
+                case '+':
+                case '=':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomIn();
                         e.preventDefault();
-                        prevPage();
-                        break;
-                    case 'ArrowRight':
+                    }
+                    break;
+                case '-':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomOut();
                         e.preventDefault();
-                        nextPage();
-                        break;
-                    case '+':
-                    case '=':
+                    }
+                    break;
+                case '0':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfScale = 1.0;
+                        renderPDFPage(currentPdfPage);
                         e.preventDefault();
-                        zoomIn();
-                        break;
-                    case '-':
-                        e.preventDefault();
-                        zoomOut();
-                        break;
+                    }
+                    break;
+                case 'Home':
+                    currentPdfPage = 1;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+                case 'End':
+                    currentPdfPage = totalPdfPages;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            // Horizontal swipe for page navigation (min 50px swipe)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Swipe left - next page
+                    pdfNextPage();
+                } else {
+                    // Swipe right - previous page
+                    pdfPrevPage();
                 }
             }
         });
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const zoomModal = document.getElementById("zoomModal");
-            const pdfModal = document.getElementById("pdfViewerModal");
-            const commentsModal = document.getElementById("commentsModal");
-            const successModal = document.getElementById("successModal");
+        // Add resize handler for responsive PDF viewer
+        window.addEventListener('resize', function() {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (pdfViewer && pdfViewer.style.display === "block" && pdfDocument) {
+                // Re-render current page on resize
+                renderPDFPage(currentPdfPage);
+            }
+        });
 
-            if (event.target == zoomModal && zoomModal) {
-                zoomModal.style.display = "none";
-            }
-            if (event.target == pdfModal && pdfModal) {
-                closePDFViewer();
-            }
-            if (event.target == commentsModal && commentsModal) {
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const commentsModal = document.getElementById('commentsModal');
+            const retakeModal = document.getElementById('retakeModal');
+            const successModal = document.getElementById('successModal');
+
+            if (event.target === commentsModal) {
                 closeCommentsModal();
             }
-            if (event.target == successModal && successModal) {
-                successModal.style.display = "none";
+            if (event.target === retakeModal) {
+                closeRetakeModal();
+            }
+            if (event.target === successModal) {
+                successModal.style.display = 'none';
+            }
+        });
+
+        // Function to handle single checkbox selection
+        function handleSingleCheckboxSelection(event) {
+            const clickedCheckbox = event.target;
+
+            // If the clicked checkbox is being checked
+            if (clickedCheckbox.checked) {
+                // Uncheck all other single-doc checkboxes
+                const allCheckboxes = document.querySelectorAll('.single-doc');
+                allCheckboxes.forEach(checkbox => {
+                    if (checkbox !== clickedCheckbox) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Hide any error message
+                hideSingleDocError();
+
+                // If "Others" is checked, show the input field
+                if (clickedCheckbox.id === 'othersCheckbox') {
+                    document.getElementById('cmoOthersRow').style.display = 'flex';
+                    document.getElementById('cmoNotesInput').required = true;
+                } else {
+                    // If another checkbox is checked, hide the Others input field
+                    document.getElementById('cmoOthersRow').style.display = 'none';
+                    document.getElementById('cmoNotesInput').required = false;
+                    document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+                }
+            }
+            // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
+            else {
+                const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+                if (checkedCheckboxes.length === 0) {
+                    // Don't allow unchecking if it would leave none checked
+                    clickedCheckbox.checked = true;
+                    showSingleDocError("You must select at least one document.");
+                }
+            }
+
+            // Update CMO reflection
+            updateReflection();
+        }
+
+        // Function to show single document error
+        function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+                errorDiv.style.display = 'block';
             }
         }
 
-        // Function to view encrypted Additional Information
-        function viewOtherAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = getOtherAssistanceFields();
-
-            openViewAdditionalInfoModal('Other', formId, encryptedFields);
+        // Function to hide single document error
+        function hideSingleDocError() {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
         }
+
+        // Function to validate single document selection
+        function validateSingleDocument() {
+            const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+            if (checkedCheckboxes.length === 0) {
+                showSingleDocError("Please select at least one supporting document.");
+                return false;
+            }
+
+            if (checkedCheckboxes.length > 1) {
+                showSingleDocError();
+                return false;
+            }
+
+            // Validate "Others" field if "Others" is selected
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    cmoNotesInput.classList.add('is-invalid');
+                    showSingleDocError("Please specify the other documents when 'Others' is selected.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Update the validation function to use single document validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all single-doc checkboxes
+            const singleDocCheckboxes = document.querySelectorAll('.single-doc');
+            singleDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleSingleCheckboxSelection);
+            });
+
+            // Initialize Others field visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox && othersCheckbox.checked) {
+                document.getElementById('cmoOthersRow').style.display = 'flex';
+            }
+
+            // Update form validation to use single document validation
+            window.validateCMOForm = function() {
+                // Reset errors
+                document.getElementById('supportingDocsError').style.display = 'none';
+                document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'none';
+
+                // Validate single document
+                if (!validateSingleDocument()) {
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return false;
+                }
+
+                // Validate amount granted
+                const grantedAmountInput = document.getElementById('grantedAmountInput');
+                if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                    grantedAmountInput.classList.add('is-invalid');
+                    document.getElementById('grantedAmountError').style.display = 'block';
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    alert('Please enter a valid amount granted (must be greater than 0).');
+                    return false;
+                }
+
+                return true;
+            };
+        });
+
+        // Function to toggle Valid ID view
+        function toggleValidID(frontImagePath, backImagePath) {
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideValidID();
+            } else {
+                // Currently hidden, show the decrypt modal for ID
+                openViewIDModal('@ViewData["Id"]', frontImagePath, backImagePath);
+            }
+        }
+
+        // Function to hide Valid ID
+        function hideValidID() {
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            // Hide decrypted ID container
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+
+            // Show encrypted ID display
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'block';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Valid ID';
+            }
+        }
+
+        // Function to show Valid ID after successful decryption
+        window.onValidIDDecrypted = function(frontImageData, backImageData) {
+            console.log('Showing Valid ID after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the encrypted display section
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Show the Valid ID container (decrypted)
+            const validIDContainer = document.getElementById('validIDContainer');
+            const frontImage = document.getElementById('decryptedFrontIDInline');
+            const backImage = document.getElementById('decryptedBackIDInline');
+            const frontContainer = document.getElementById('frontIDInlineContainer');
+            const backContainer = document.getElementById('backIDInlineContainer');
+
+            if (validIDContainer && frontImage && backImage && frontContainer && backContainer) {
+                // Set the image sources
+                if (frontImageData) {
+                    frontImage.src = 'data:image/jpeg;base64,' + frontImageData;
+                    frontImage.style.display = 'block';
+                    frontContainer.style.display = 'block';
+                } else {
+                    frontContainer.style.display = 'none';
+                }
+
+                if (backImageData) {
+                    backImage.src = 'data:image/jpeg;base64,' + backImageData;
+                    backImage.style.display = 'block';
+                    backContainer.style.display = 'block';
+                } else {
+                    backContainer.style.display = 'none';
+                }
+
+                // Show the container
+                validIDContainer.style.display = 'block';
+                validIDContainer.classList.add('valid-id-container');
+
+                // Scroll to the Valid ID section
+                setTimeout(() => {
+                    validIDContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Valid ID';
+            }
+        };
+
+        // Function to show loading for Valid ID
+        function startValidIDLoading() {
+            console.log('Starting Valid ID loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Hide any existing Valid ID container
+            const validIDContainer = document.getElementById('validIDContainer');
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+        }
+
+        // Make sure the encrypted ID section is visible by default
+        document.addEventListener('DOMContentLoaded', function() {
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDLoading = document.getElementById('validIDLoading');
+
+            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
+            if (validIDContainer) validIDContainer.style.display = 'none';
+            if (validIDLoading) validIDLoading.style.display = 'none';
+        });
+
+        // Add this function to handle the modal callback from _ViewEncryptedDataModalForAdmin
+        window.openViewAdditionalInfoModal = function(assistanceType, formId, fields) {
+            // This function is defined in _ViewEncryptedDataModalForAdmin partial view
+            // It will be called when the user clicks the "View Additional Information" button
+
+            // Start the 5-second loading animation
+            startAdditionalInfoLoading();
+
+            // The actual modal opening and password verification will be handled by the partial view
+            if (typeof window.showPasswordModal === 'function') {
+                window.showPasswordModal(assistanceType, formId, fields, function() {
+                    // This callback will be executed after successful decryption
+                    console.log('Additional info decrypted successfully');
+                });
+            }
+        };
     </script>
 
     @Html.Partial("_ViewEncryptedDataModalForAdmin")
