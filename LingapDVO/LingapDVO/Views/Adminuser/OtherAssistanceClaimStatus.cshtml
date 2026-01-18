@@ -8,6 +8,32 @@
 }
 
 <style>
+    /* In your CSS, change these classes: */
+
+    .decrypted-value {
+        color: #ffffff !important; /* Change from #ecf0f1 to pure white */
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    .decrypted-field .info-label {
+        color: #ffffff !important; /* Change from #bdc3c7 to pure white */
+        font-weight: 500;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ffffff !important; /* Change from #ecf0f1 to pure white */
+        }
+
+    /* Also update the header color for consistency */
+    .decrypted-header {
+        color: #ffffff !important; /* Add white color to header */
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
     /* Remove borders since layout already has them */
     .receipt-container {
         border: none !important;
@@ -78,12 +104,12 @@
         margin-top: 0.25rem;
     }
 
-    .info-label {
+    .decrypted-field .info-label {
         color: #bdc3c7 !important;
         font-weight: 500;
     }
 
-        .info-label i {
+        .decrypted-field .info-label i {
             color: #ecf0f1 !important;
         }
 
@@ -624,7 +650,32 @@
             transform: rotate(360deg);
         }
     }
-</style>
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .info-row {
+            flex-direction: column;
+        }
+
+        .info-label {
+            margin-bottom: 0.3rem;
+        }
+
+        .status-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-claimed {
+            width: 100%;
+            max-width: 300px;
+            margin: 5px 0;
+        }
+
+        .id-image {
+            height: 150px;
+        }
+    }</style>
 
 <!-- Full-screen PDF Viewer -->
 <div id="pdfViewerOverlay" class="pdf-viewer-overlay">
@@ -813,19 +864,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -833,13 +884,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Prescribing Doctor:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctorEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Doctor Contact Detail:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetailEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -852,19 +903,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddressEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Test Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestName"]</span>
+                                        <span class="encrypted-text">@ViewData["TestNameEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -872,13 +923,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Test Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
+                                        <span class="encrypted-text">@ViewData["TestCostEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Other Information:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
+                                        <span class="encrypted-text">@ViewData["TestOtherInfoEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -891,13 +942,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddressEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -905,13 +956,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Contact:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContactEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyTypeEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -924,19 +975,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Brand:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentBrandEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Category:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCategoryEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -944,13 +995,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1184,23 +1235,25 @@
                     </h5>
 
                     <!-- Encrypted ID Display (shown by default) -->
-                    <div class="encrypted-id-section" id="validIDEncrypted">
+                    <div class="encrypted-info-section" id="validIDEncrypted">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
-                                <div class="encrypted-display">
-                                    <i class="bi bi-file-earmark-lock me-2"></i>
-                                    <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                <div class="mb-3">
+                                    <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
+                                    <div class="encrypted-display">
+                                        <i class="bi bi-file-earmark-lock me-2"></i>
+                                        <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                    </div>
                                 </div>
-                                <div class="file-path">File: /Validimg/@ViewData["Validfrontimage"]</div>
                             </div>
                             <div class="col-md-6">
-                                <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
-                                <div class="encrypted-display">
-                                    <i class="bi bi-file-earmark-lock me-2"></i>
-                                    <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                <div class="mb-3">
+                                    <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
+                                    <div class="encrypted-display">
+                                        <i class="bi bi-file-earmark-lock me-2"></i>
+                                        <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                    </div>
                                 </div>
-                                <div class="file-path">File: /Validimg/@ViewData["ValidBackimage"]</div>
                             </div>
                         </div>
                     </div>
@@ -1327,18 +1380,12 @@
                 <div class="info-row">
                     <div class="info-label">Current Status:</div>
                     <div class="info-value">
-                        <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
-                            @ViewData["Status2"]
+                        <span class="status-badge status-@(ViewData["Status3"]?.ToString()?.ToLower())">
+                            @ViewData["Status3"]
                         </span>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="status-buttons">
-                    <button type="button" class="btn btn-claimed" onclick="markAsClaimed()">
-                        <i class="bi bi-check-circle"></i> Mark as Claimed
-                    </button>
-                </div>
             </div>
         </div>
     </form>
@@ -1736,7 +1783,7 @@
             window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption - DIRECT SHOW
+        // Function to show additional information after successful decryption - REMOVED LOADING DELAY
         function showAdditionalInfoAfterDecryption() {
             console.log('Showing additional information after decryption...');
 
@@ -1746,13 +1793,13 @@
                 additionalInfoEncrypted.style.display = 'none';
             }
 
-            // Hide the alert
+            // Hide alert
             const additionalInfoAlert = document.getElementById('additionalInfoAlert');
             if (additionalInfoAlert) {
                 additionalInfoAlert.style.display = 'none';
             }
 
-            // Show the additional information container (decrypted)
+            // Show the additional information container (decrypted) immediately
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
@@ -1785,6 +1832,7 @@
 
         // IMPORTANT: This function is called from the shared modal after successful decryption
         window.onAdditionalInfoDecrypted = function() {
+            // Show decrypted data immediately - no loading delay
             showAdditionalInfoAfterDecryption();
         };
 

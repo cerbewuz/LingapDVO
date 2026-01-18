@@ -8,6 +8,32 @@
 }
 
 <style>
+    /* In your CSS, change these classes: */
+
+    .decrypted-value {
+        color: #ffffff !important; /* Change from #ecf0f1 to pure white */
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    .decrypted-field .info-label {
+        color: #ffffff !important; /* Change from #bdc3c7 to pure white */
+        font-weight: 500;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ffffff !important; /* Change from #ecf0f1 to pure white */
+        }
+
+    /* Also update the header color for consistency */
+    .decrypted-header {
+        color: #ffffff !important; /* Add white color to header */
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
     /* Remove borders since layout already has them */
     .receipt-container {
         border: none !important;
@@ -23,6 +49,168 @@
         padding: 1rem !important;
     }
 
+    /* Additional Information Styles */
+    .additional-info-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    .additional-info-visible {
+        display: block;
+    }
+
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    .decrypted-field .info-label {
+        color: #bdc3c7 !important;
+        font-weight: 500;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ecf0f1 !important;
+        }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        margin-top: 1rem;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+        margin-top: 1rem;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin-bottom: 15px;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
+        }
+
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    /* Zoom Modal */
     .zoom-modal {
         display: none;
         position: fixed;
@@ -40,6 +228,7 @@
         display: block;
         max-width: 90%;
         max-height: 90%;
+        object-fit: contain;
     }
 
     .close-zoom {
@@ -50,184 +239,71 @@
         font-size: 40px;
         font-weight: bold;
         cursor: pointer;
+        transition: color 0.2s ease;
     }
 
-    .id-image-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-        .id-image-container:hover {
-            transform: scale(1.02);
+        .close-zoom:hover {
+            color: #3498db;
         }
 
-    .id-image {
-        width: 100%;
-        height: 200px;
-        object-fit: contain;
-        background-color: #f8f9fa;
-        border: 1px solid var(--border-color);
-        border-radius: 5px;
+    /* PDF Preview Styles */
+    .pdf-preview-container {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin-bottom: 15px;
     }
 
-    .pdf-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
+        .pdf-preview-container:hover {
+            transform: translateY(-2px);
+        }
 
     .pdf-preview {
         display: flex;
         align-items: center;
-        padding: 1rem;
-        border: 2px dashed var(--border-color);
+        padding: 15px;
+        border: 2px solid #e0e0e0;
         border-radius: 8px;
-        background-color: var(--light-gray);
+        background-color: #f8f9fa;
         transition: all 0.3s ease;
     }
 
         .pdf-preview:hover {
-            border-color: var(--primary-color);
-            background-color: var(--primary-light);
-            transform: translateY(-2px);
+            border-color: #3498db;
+            background-color: #e8f4fd;
         }
 
-    .pdf-icon {
+    .pdf-preview-icon {
         font-size: 3rem;
-        color: #dc143c;
-        margin-right: 1rem;
+        color: #e74c3c;
+        margin-right: 15px;
+        flex-shrink: 0;
     }
 
-    .pdf-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-filename {
-        font-weight: 600;
-        color: var(--secondary-color);
-        margin-bottom: 0.25rem;
-    }
-
-    .pdf-label {
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
-    .pdf-viewer-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.95);
-    }
-
-    .pdf-viewer-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-viewer-header {
-        background-color: #333;
-        color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .pdf-viewer-title {
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-
-    .pdf-viewer-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 2rem;
-        cursor: pointer;
-        padding: 0 0.5rem;
-        line-height: 1;
-    }
-
-        .pdf-viewer-close:hover {
-            color: var(--primary-color);
-        }
-
-    .pdf-viewer-body {
+    .pdf-preview-info {
         flex: 1;
-        background-color: #525659;
-        position: relative;
-        overflow: auto;
+        min-width: 0;
     }
 
-    .pdf-container {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        min-height: 100%;
+    .pdf-preview-filename {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1rem;
     }
 
-    #pdfCanvas {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        background-color: white;
-    }
-
-    .pdf-controls {
+    .pdf-preview-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-left: auto;
-        flex-wrap: wrap;
+        gap: 5px;
     }
 
-    .page-info {
-        color: white;
-        font-size: 0.9rem;
-        margin: 0 10px;
-    }
-
-    .zoom-level {
-        color: white;
-        font-size: 0.9rem;
-        min-width: 40px;
-        text-align: center;
-    }
-
-    .pdf-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .pdf-error {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        display: none;
-    }
-
-        .pdf-error i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .pdf-preview-label i {
+            font-size: 0.9rem;
         }
 
     /* Status Buttons Styling */
@@ -239,45 +315,6 @@
         flex-wrap: wrap;
     }
 
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Claimed Button Styling - Same design as approve/disapprove */
     .btn-claimed {
         background-color: #17a2b8;
         border-color: #17a2b8;
@@ -287,6 +324,8 @@
         border-radius: 5px;
         margin: 0 0.5rem;
         transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
     }
 
         .btn-claimed:hover {
@@ -297,81 +336,68 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-    /* Comments Modal Styling */
-    .comments-modal {
+    /* Success Modal */
+    .success-modal {
         display: none;
         position: fixed;
-        z-index: 3000;
+        z-index: 4000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0,0,0,0.7);
     }
 
-    .comments-modal-content {
+    .success-modal-content {
         background-color: white;
-        margin: 10% auto;
+        margin: 15% auto;
         padding: 2rem;
-        border-radius: 8px;
+        border-radius: 10px;
         width: 90%;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
-    .comments-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
         margin-bottom: 1rem;
+    }
+
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
         padding-bottom: 1rem;
         border-bottom: 1px solid var(--border-color);
     }
 
-    .comments-modal-title {
+    .section-header {
         color: var(--primary-color);
         font-weight: 600;
-        margin: 0;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
     }
 
-    .comments-modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #6c757d;
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
     }
 
-        .comments-modal-close:hover {
-            color: var(--primary-color);
-        }
-
-    .comments-required {
-        border: 2px solid #dc3545 !important;
-        background-color: #fff5f5;
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: var(--secondary-color);
+        min-width: 150px;
     }
 
-    /* Form Validation */
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
+    .info-value {
+        flex: 1;
+        color: #555;
+        min-width: 200px;
     }
-
-    .is-invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-        .is-invalid ~ .invalid-feedback {
-            display: block;
-        }
 
     /* Status Badges */
     .status-badge {
@@ -407,156 +433,315 @@
         color: #0c5460;
     }
 
-    /* Receipt Sections */
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
+    .status-retake {
+        background-color: #fff3e0;
+        color: #ff6f00;
     }
 
-    .section-header {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--primary-light);
+    /* Full-screen PDF Viewer Styles (from first code) */
+    .pdf-viewer-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        overflow: hidden;
     }
 
-    .info-row {
+    .pdf-viewer-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
         display: flex;
-        margin-bottom: 0.5rem;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-toolbar {
+        background-color: #1a1a1a;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        flex-shrink: 0;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50%;
+    }
+
+    .pdf-viewer-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-viewer-btn {
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+
+        .pdf-viewer-btn:hover {
+            background-color: #444;
+            border-color: #666;
+        }
+
+        .pdf-viewer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .pdf-page-info {
+        color: #ccc;
+        font-size: 0.9rem;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .pdf-zoom-info {
+        color: #ccc;
+        font-size: 0.9rem;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+        .pdf-viewer-close:hover {
+            background-color: #333;
+        }
+
+    .pdf-viewer-content {
+        flex: 1;
+        overflow: auto;
+        background-color: #525659;
+        position: relative;
+    }
+
+    .pdf-viewer-inner {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100%;
+        padding: 20px;
+    }
+
+    .pdf-canvas-container {
+        position: relative;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        background-color: white;
+        margin: auto;
+    }
+
+    #pdfCanvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .pdf-loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+    }
+
+    .pdf-loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    .pdf-loading-text {
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .pdf-error-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        display: none;
+    }
+
+    .pdf-error-icon {
+        font-size: 4rem;
+        color: #e74c3c;
+        margin-bottom: 20px;
+    }
+
+    .pdf-error-text {
+        color: white;
+        font-size: 1.2rem;
+        text-align: center;
+        max-width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .pdf-retry-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s ease;
+    }
+
+        .pdf-retry-btn:hover {
+            background-color: #2980b9;
+        }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .info-row
+
+    {
+        flex-direction: column;
     }
 
     .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: var(--secondary-color);
+        margin-bottom: 0.3rem;
     }
 
-    .info-value {
-        flex: 1;
-        color: #555;
+    .status-buttons {
+        flex-direction: column;
+        align-items: center;
     }
 
-    /* Success Modal */
-    .success-modal {
-        display: none;
-        position: fixed;
-        z-index: 4000;
-        left: 0;
-        top: 0;
+    .btn-claimed {
         width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
+        max-width: 300px;
+        margin: 5px 0;
     }
 
-    .success-modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 2rem;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    .id-image {
+        height: 150px;
     }
 
-    .success-icon {
-        font-size: 3rem;
-        color: #28a745;
-        margin-bottom: 1rem;
-    }
+    }</style>
 
-    /* Additional Information Container */
-    .additional-info-container {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-    }
-
-    .additional-info-visible {
-        display: block;
-    }
-
-    /* Additional Information Loading Container */
-    .additional-loading-container {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-</style>
+<!-- Full-screen PDF Viewer -->
+<div id="pdfViewerOverlay" class="pdf-viewer-overlay">
+    <div class="pdf-viewer-container">
+        <div class="pdf-viewer-toolbar">
+            <h2 class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</h2>
+            <div class="pdf-viewer-controls">
+                <button class="pdf-viewer-btn" onclick="pdfPrevPage()" id="pdfPrevBtn" title="Previous Page">
+                    <i class="bi bi-chevron-left"></i> Prev
+                </button>
+                <span class="pdf-page-info" id="pdfPageInfo">Page: 1/1</span>
+                <button class="pdf-viewer-btn" onclick="pdfNextPage()" id="pdfNextBtn" title="Next Page">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfZoomOut()" title="Zoom Out">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+                <span class="pdf-zoom-info" id="pdfZoomInfo">100%</span>
+                <button class="pdf-viewer-btn" onclick="pdfZoomIn()" title="Zoom In">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfFitWidth()" title="Fit to Width">
+                    <i class="bi bi-arrows-angle-expand"></i>
+                </button>
+                <button class="pdf-viewer-btn" onclick="pdfFitPage()" title="Fit to Page">
+                    <i class="bi bi-aspect-ratio"></i>
+                </button>
+            </div>
+            <button class="pdf-viewer-close" onclick="closePDFViewer()" title="Close PDF Viewer">
+                &times;
+            </button>
+        </div>
+        <div class="pdf-viewer-content">
+            <div class="pdf-viewer-inner">
+                <div class="pdf-canvas-container" id="pdfCanvasContainer">
+                    <canvas id="pdfCanvas"></canvas>
+                    <div class="pdf-loading-overlay" id="pdfLoadingOverlay">
+                        <div class="pdf-loading-spinner"></div>
+                        <div class="pdf-loading-text">Loading PDF document...</div>
+                    </div>
+                    <div class="pdf-error-overlay" id="pdfErrorOverlay">
+                        <div class="pdf-error-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div class="pdf-error-text" id="pdfErrorText">Error loading PDF document</div>
+                        <button class="pdf-retry-btn" onclick="retryPDFLoad()">Retry</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Image Zoom Modal -->
 <div id="zoomModal" class="zoom-modal">
     <span class="close-zoom">&times;</span>
     <img class="zoom-modal-content" id="zoomedImage">
-</div>
-
-<!-- PDF Viewer Modal -->
-<div id="pdfViewerModal" class="pdf-viewer-modal">
-    <div class="pdf-viewer-content">
-        <div class="pdf-viewer-header">
-            <span class="pdf-viewer-title" id="pdfViewerTitle">PDF Document</span>
-            <div class="pdf-controls">
-                <button class="btn btn-sm btn-light" onclick="prevPage()" id="prevBtn">
-                    <i class="bi bi-chevron-left"></i> Previous
-                </button>
-                <span class="page-info" id="pageInfo">Page: <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
-                <button class="btn btn-sm btn-light" onclick="nextPage()" id="nextBtn">
-                    Next <i class="bi bi-chevron-right"></i>
-                </button>
-                <button class="btn btn-sm btn-light" onclick="zoomOut()">
-                    <i class="bi bi-zoom-out"></i>
-                </button>
-                <span class="zoom-level" id="zoomLevel">100%</span>
-                <button class="btn btn-sm btn-light" onclick="zoomIn()">
-                    <i class="bi bi-zoom-in"></i>
-                </button>
-            </div>
-            <button class="pdf-viewer-close" onclick="closePDFViewer()">&times;</button>
-        </div>
-        <div class="pdf-viewer-body">
-            <div id="pdfLoading" class="pdf-loading">
-                <div class="spinner-border text-light" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p>Loading PDF document...</p>
-            </div>
-            <div id="pdfError" class="pdf-error">
-                <i class="bi bi-exclamation-triangle"></i>
-                <p>Error loading PDF. Please try again.</p>
-            </div>
-            <div class="pdf-container">
-                <canvas id="pdfCanvas"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Comments Modal -->
-<div id="commentsModal" class="comments-modal">
-    <div class="comments-modal-content">
-        <div class="comments-modal-header">
-            <h5 class="comments-modal-title">Comments Required</h5>
-            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
-        </div>
-        <div class="mb-3">
-            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
-            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
-            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-            <button type="button" class="btn btn-disapproved" onclick="submitDisapprove()">Submit Disapproval</button>
-        </div>
-    </div>
 </div>
 
 <!-- Success Modal -->
@@ -663,11 +848,22 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Additional Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewAdditionalInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields())"
-                            title="Click to view encrypted information">
-                        <i class="bi bi-eye-fill me-2"></i>View Additional Information
+                            onclick="toggleAdditionalInfo()"
+                            data-decrypted="false"
+                            title="Click to view encrypted additional information">
+                        <i class="bi bi-eye-fill me-2" id="additionalBtnIcon"></i><span id="additionalBtnText">View Additional Information</span>
                     </button>
                 </h5>
+
+                <!-- Alert shown when Additional Info is encrypted -->
+                <div class="alert alert-info d-flex align-items-center mb-3" id="additionalInfoAlert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                        <strong>Additional Information is Encrypted</strong><br>
+                        For security and privacy, additional information is encrypted. Click the "View Additional Information" button above and enter your password to view it.
+                    </div>
+                </div>
+
                 <!-- Encrypted Additional Information Display (shown by default) -->
                 <div class="encrypted-info-section" id="additionalInfoEncrypted">
                     @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
@@ -677,19 +873,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -697,13 +893,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Prescribing Doctor:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctorEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Doctor Contact Detail:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetailEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -716,19 +912,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddressEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Test Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestName"]</span>
+                                        <span class="encrypted-text">@ViewData["TestNameEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -736,13 +932,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Test Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
+                                        <span class="encrypted-text">@ViewData["TestCostEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Other Information:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
+                                        <span class="encrypted-text">@ViewData["TestOtherInfoEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -755,13 +951,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddressEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -769,13 +965,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Contact:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContactEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyTypeEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -788,19 +984,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Brand:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentBrandEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Category:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCategoryEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -808,13 +1004,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantityEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCostEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -822,24 +1018,202 @@
                     }
                 </div>
 
-                <!-- Additional Information Loading Container (shown while decrypting) -->
-                <div class="additional-loading-container" id="additionalLoadingContainer">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3">Decrypting additional information... Please wait 5 seconds</p>
-                        <div class="progress mt-2" style="height: 8px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                 role="progressbar" id="additionalLoadingProgress" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
-                <div class="additional-info-container" id="additionalInfoContainer">
-                    <div class="row">
-                        <!-- Fields will be dynamically populated here based on assistance type -->
+                <div class="additional-info-container decrypted-display" id="additionalInfoContainer">
+                    <div class="decrypted-header mb-3">
+                        <i class="bi bi-unlock-fill me-2"></i>
+                        <strong>Decrypted Additional Information</strong>
+                    </div>
+                    <div class="row g-3" id="additionalInfoFields">
+                        @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-capsule me-1"></i>Medicine Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineName">
+                                        @ViewData["MedicineName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Medicine Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineQuantity">
+                                        @ViewData["MedicineQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="medicineCost">
+                                        @ViewData["MedicineCost"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="prescribingDoctor">
+                                        @ViewData["PrescribingDoctor"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="doctorContact">
+                                        @ViewData["DoctorContactDetail"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Laboratory/X-ray/ECG/2D Echo Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-building me-1"></i>Laboratory Center Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterName">
+                                        @ViewData["LaboratoryCenterName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="labCenterAddress">
+                                        @ViewData["LaboratoryCenterAddress"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-clipboard-data me-1"></i>Test Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testName">
+                                        @ViewData["TestName"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Test Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testCost">
+                                        @ViewData["TestCost"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-info-circle me-1"></i>Test Other Info:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="testOtherInfo">
+                                        @ViewData["TestOtherInfo"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Therapy/Rehabilitation Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityName">
+                                        @ViewData["TherapyFacilityName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityAddress">
+                                        @ViewData["TherapyFacilityAddress"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyFacilityContact">
+                                        @ViewData["TherapyFacilityContact"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="therapyType">
+                                        @ViewData["TherapyType"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewData["Typeassistance"]?.ToString() == "Medical Equipment/Apparatus Assistance")
+                        {
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tools me-1"></i>Equipment Name:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentName">
+                                        @ViewData["EquipmentName"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-tag me-1"></i>Equipment Brand:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentBrand">
+                                        @ViewData["EquipmentBrand"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCategory">
+                                        @ViewData["EquipmentCategory"]
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-123 me-1"></i>Equipment Quantity:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentQuantity">
+                                        @ViewData["EquipmentQuantity"]
+                                    </div>
+                                </div>
+                                <div class="decrypted-field mb-3">
+                                    <div class="info-label">
+                                        <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
+                                    </div>
+                                    <div class="info-value decrypted-value" id="equipmentCost">
+                                        @ViewData["EquipmentCost"]
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    No additional information available for this assistance type.
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -870,23 +1244,25 @@
                     </h5>
 
                     <!-- Encrypted ID Display (shown by default) -->
-                    <div class="encrypted-id-section" id="validIDEncrypted">
+                    <div class="encrypted-info-section" id="validIDEncrypted">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
-                                <div class="encrypted-display">
-                                    <i class="bi bi-file-earmark-lock me-2"></i>
-                                    <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                <div class="mb-3">
+                                    <div class="info-label"><i class="bi bi-credit-card-2-front me-2"></i>Front ID (Encrypted):</div>
+                                    <div class="encrypted-display">
+                                        <i class="bi bi-file-earmark-lock me-2"></i>
+                                        <span class="encrypted-text">@ViewData["Validfrontimage"]</span>
+                                    </div>
                                 </div>
-                                <div class="file-path">File: /Validimg/@ViewData["Validfrontimage"]</div>
                             </div>
                             <div class="col-md-6">
-                                <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
-                                <div class="encrypted-display">
-                                    <i class="bi bi-file-earmark-lock me-2"></i>
-                                    <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                <div class="mb-3">
+                                    <div class="info-label"><i class="bi bi-credit-card-2-back me-2"></i>Back ID (Encrypted):</div>
+                                    <div class="encrypted-display">
+                                        <i class="bi bi-file-earmark-lock me-2"></i>
+                                        <span class="encrypted-text">@ViewData["ValidBackimage"]</span>
+                                    </div>
                                 </div>
-                                <div class="file-path">File: /Validimg/@ViewData["ValidBackimage"]</div>
                             </div>
                         </div>
                     </div>
@@ -923,12 +1299,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["DoctorPrescription"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -949,12 +1329,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["MedicalCertificate"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -975,12 +1359,16 @@
                         <h5 class="section-header">Supporting Document</h5>
                         @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                         {
-                            <div class="pdf-container">
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                    <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
+                            <div class="pdf-preview-container" onclick="viewPDF('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                <div class="pdf-preview">
+                                    <div class="pdf-preview-icon">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div class="pdf-preview-info">
+                                        <span class="pdf-preview-filename">@ViewData["DeathCertificate"]</span>
+                                        <span class="pdf-preview-label">
+                                            <i class="bi bi-eye"></i> Click to view full-screen PDF
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -1021,28 +1409,19 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Configure PDF.js worker
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
+        // PDF.js configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // PDF Viewer Variables
-        let currentPDF = null;
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentScale = 1.2;
+        // PDF Viewer variables
+        let pdfDocument = null;
+        let currentPdfPage = 1;
+        let totalPdfPages = 1;
+        let pdfScale = 1.0;
+        let currentFileName = '';
+        let currentFileType = '';
+        let currentDisplayName = '';
 
-        // Requestor's Name Variables
-        const requestorFirstname = '@ViewData["RFirstname"]';
-        const requestorMiddlename = '@ViewData["RMiddlename"]';
-        const requestorLastname = '@ViewData["RLastname"]';
-        const requestorSuffix = '@ViewData["RSuffix"]';
-        const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
-
-        // Assistance Type
-        const assistanceType = '@ViewData["Typeassistance"]';
-
-        // Image Zoom Functionality
+        // Image zoom function
         function zoomImage(src) {
             const modal = document.getElementById("zoomModal");
             const modalImg = document.getElementById("zoomedImage");
@@ -1052,7 +1431,7 @@
             }
         }
 
-        // Close zoom modal
+        // Close image zoom
         document.addEventListener('DOMContentLoaded', function() {
             const closeZoom = document.querySelector(".close-zoom");
             if (closeZoom) {
@@ -1061,188 +1440,251 @@
                     if (modal) modal.style.display = "none";
                 }
             }
+
+            // Close on outside click
+            window.onclick = function(event) {
+                const modal = document.getElementById("zoomModal");
+                if (event.target == modal && modal) {
+                    modal.style.display = "none";
+                }
+
+                const pdfViewer = document.getElementById("pdfViewerOverlay");
+                if (event.target == pdfViewer && pdfViewer) {
+                    closePDFViewer();
+                }
+            }
         });
 
-        // PDF Viewer Function
-        async function viewPDFInModal(fileName, fileType, displayName) {
-            const modal = document.getElementById('pdfViewerModal');
-            const title = document.getElementById('pdfViewerTitle');
-            const loading = document.getElementById('pdfLoading');
-            const errorDiv = document.getElementById('pdfError');
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas ? canvas.getContext('2d') : null;
-            const currentPageSpan = document.getElementById('currentPage');
-            const totalPagesSpan = document.getElementById('totalPages');
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
+        // PDF Viewer functions
+        async function viewPDF(fileName, fileType, displayName) {
+            currentFileName = fileName;
+            currentFileType = fileType;
+            currentDisplayName = displayName || fileName;
 
-            if (!modal || !title || !loading || !errorDiv || !canvas || !context) {
-                console.error('PDF viewer elements not found');
-                return;
-            }
+            // Show PDF viewer
+            const overlay = document.getElementById("pdfViewerOverlay");
+            const title = document.getElementById("pdfViewerTitle");
+            const loadingOverlay = document.getElementById("pdfLoadingOverlay");
+            const errorOverlay = document.getElementById("pdfErrorOverlay");
 
-            title.textContent = displayName || 'PDF Document';
-            modal.style.display = 'block';
-            loading.style.display = 'flex';
-            errorDiv.style.display = 'none';
-            canvas.style.display = 'none';
+            if (!overlay || !title || !loadingOverlay || !errorOverlay) return;
 
-            currentPDF = null;
-            currentPage = 1;
-            currentScale = 1.2;
+            // Reset state
+            pdfDocument = null;
+            currentPdfPage = 1;
+            totalPdfPages = 1;
+            pdfScale = 1.0;
+
+            // Update UI
+            overlay.style.display = "block";
+            document.body.style.overflow = "hidden"; // Prevent scrolling
+            title.textContent = currentDisplayName;
+            loadingOverlay.style.display = "flex";
+            errorOverlay.style.display = "none";
+
+            // Update controls
+            updatePDFControls();
 
             try {
+                // Build URL for PDF file
                 const encodedFileName = encodeURIComponent(fileName);
-                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName + '&fileType=' + fileType + '&t=' + Date.now();
+                const url = '@Url.Action("ViewPDF", "Dashboard")?fileName=' + encodedFileName +
+                           '&fileType=' + fileType + '&t=' + Date.now();
 
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // Load PDF document
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDocument = await loadingTask.promise;
+                totalPdfPages = pdfDocument.numPages;
 
-                const pdfData = await response.arrayBuffer();
-                if (!pdfData || pdfData.byteLength === 0) {
-                    throw new Error('PDF data is empty');
-                }
-
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                currentPDF = await loadingTask.promise;
-
-                totalPages = currentPDF.numPages;
-                if (totalPagesSpan) totalPagesSpan.textContent = totalPages;
-                if (currentPageSpan) currentPageSpan.textContent = currentPage;
-
-                updateNavigationButtons();
-                await renderPage(currentPage);
-
-                loading.style.display = 'none';
-                canvas.style.display = 'block';
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+                // Render first page
+                await renderPDFPage(currentPdfPage);
+                loadingOverlay.style.display = "none";
 
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                loading.style.display = 'none';
-                errorDiv.style.display = 'block';
-                if (errorDiv.querySelector('p')) {
-                    errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
-                }
+                console.error("Error loading PDF:", error);
+                loadingOverlay.style.display = "none";
+                errorOverlay.style.display = "flex";
+                document.getElementById("pdfErrorText").textContent =
+                    `Error loading PDF: ${error.message || "Unknown error"}`;
             }
         }
 
-        // Render specific page
-        async function renderPage(pageNum) {
-            if (!currentPDF) return;
+        async function renderPDFPage(pageNum) {
+            if (!pdfDocument || pageNum < 1 || pageNum > totalPdfPages) return;
 
-            const canvas = document.getElementById('pdfCanvas');
-            const context = canvas.getContext('2d');
-            const currentPageSpan = document.getElementById('currentPage');
+            const canvas = document.getElementById("pdfCanvas");
+            const ctx = canvas.getContext("2d");
+            const container = document.getElementById("pdfCanvasContainer");
 
-            if (!canvas || !context) return;
+            if (!canvas || !ctx || !container) return;
 
             try {
-                const page = await currentPDF.getPage(pageNum);
-                const viewport = page.getViewport({ scale: currentScale });
+                // Get page
+                const page = await pdfDocument.getPage(pageNum);
 
+                // Calculate viewport
+                const viewport = page.getViewport({ scale: pdfScale });
+
+                // Set canvas dimensions
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
+                // Update container size
+                container.style.width = viewport.width + "px";
+                container.style.height = viewport.height + "px";
+
+                // Render page
                 const renderContext = {
-                    canvasContext: context,
+                    canvasContext: ctx,
                     viewport: viewport
                 };
 
                 await page.render(renderContext).promise;
-                if (currentPageSpan) currentPageSpan.textContent = pageNum;
+
+                // Update UI
+                currentPdfPage = pageNum;
+                updatePDFControls();
 
             } catch (error) {
-                console.error('Error rendering page:', error);
+                console.error("Error rendering PDF page:", error);
+                showPDFError(`Error rendering page ${pageNum}: ${error.message}`);
             }
         }
 
-        // Navigation functions
-        function nextPage() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-                updateNavigationButtons();
+        function updatePDFControls() {
+            // Update page info
+            const pageInfo = document.getElementById("pdfPageInfo");
+            const zoomInfo = document.getElementById("pdfZoomInfo");
+            const prevBtn = document.getElementById("pdfPrevBtn");
+            const nextBtn = document.getElementById("pdfNextBtn");
+
+            if (pageInfo) {
+                pageInfo.textContent = `Page: ${currentPdfPage}/${totalPdfPages}`;
+            }
+
+            if (zoomInfo) {
+                zoomInfo.textContent = `${Math.round(pdfScale * 100)}%`;
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = currentPdfPage <= 1;
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = currentPdfPage >= totalPdfPages;
             }
         }
 
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-                updateNavigationButtons();
+        function pdfPrevPage() {
+            if (currentPdfPage > 1) {
+                currentPdfPage--;
+                renderPDFPage(currentPdfPage);
             }
         }
 
-        function zoomIn() {
-            currentScale += 0.2;
-            renderPage(currentPage);
-            const zoomLevelSpan = document.getElementById('zoomLevel');
-            if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
-        }
-
-        function zoomOut() {
-            if (currentScale > 0.5) {
-                currentScale -= 0.2;
-                renderPage(currentPage);
-                const zoomLevelSpan = document.getElementById('zoomLevel');
-                if (zoomLevelSpan) zoomLevelSpan.textContent = Math.round(currentScale * 100) + '%';
+        function pdfNextPage() {
+            if (currentPdfPage < totalPdfPages) {
+                currentPdfPage++;
+                renderPDFPage(currentPdfPage);
             }
         }
 
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-
-            if (prevBtn) prevBtn.disabled = currentPage <= 1;
-            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        function pdfZoomIn() {
+            pdfScale = Math.min(pdfScale + 0.1, 3.0); // Max zoom 300%
+            renderPDFPage(currentPdfPage);
         }
 
-        // Close PDF Viewer
+        function pdfZoomOut() {
+            pdfScale = Math.max(pdfScale - 0.1, 0.5); // Min zoom 50%
+            renderPDFPage(currentPdfPage);
+        }
+
+        async function pdfFitWidth() {
+            if (!pdfDocument) return;
+
+            const canvas = document.getElementById("pdfCanvas");
+            const container = document.getElementById("pdfCanvasContainer");
+            if (!canvas || !container) return;
+
+            try {
+                const page = await pdfDocument.getPage(currentPdfPage);
+                const viewport = page.getViewport({ scale: 1 });
+
+                // Calculate scale to fit container width
+                const containerWidth = container.parentElement.clientWidth - 40; // Account for padding
+                pdfScale = containerWidth / viewport.width;
+
+                // Clamp scale
+                pdfScale = Math.max(0.5, Math.min(pdfScale, 3.0));
+
+                renderPDFPage(currentPdfPage);
+
+            } catch (error) {
+                console.error("Error fitting to width:", error);
+            }
+        }
+
+        async function pdfFitPage() {
+            if (!pdfDocument) return;
+
+            const canvas = document.getElementById("pdfCanvas");
+            const container = document.getElementById("pdfCanvasContainer");
+            if (!canvas || !container) return;
+
+            try {
+                const page = await pdfDocument.getPage(currentPdfPage);
+                const viewport = page.getViewport({ scale: 1 });
+
+                // Calculate scale to fit container
+                const containerWidth = container.parentElement.clientWidth - 40;
+                const containerHeight = container.parentElement.clientHeight - 40;
+
+                const scaleX = containerWidth / viewport.width;
+                const scaleY = containerHeight / viewport.height;
+
+                pdfScale = Math.min(scaleX, scaleY);
+
+                // Clamp scale
+                pdfScale = Math.max(0.5, Math.min(pdfScale, 3.0));
+
+                renderPDFPage(currentPdfPage);
+
+            } catch (error) {
+                console.error("Error fitting to page:", error);
+            }
+        }
+
+        function showPDFError(message) {
+            const errorOverlay = document.getElementById("pdfErrorOverlay");
+            const errorText = document.getElementById("pdfErrorText");
+
+            if (errorOverlay && errorText) {
+                errorOverlay.style.display = "flex";
+                errorText.textContent = message || "Error loading PDF";
+            }
+        }
+
+        function retryPDFLoad() {
+            if (currentFileName && currentFileType) {
+                viewPDF(currentFileName, currentFileType, currentDisplayName);
+            }
+        }
+
         function closePDFViewer() {
-            const modal = document.getElementById('pdfViewerModal');
-            if (modal) {
-                modal.style.display = 'none';
+            const overlay = document.getElementById("pdfViewerOverlay");
+            if (overlay) {
+                overlay.style.display = "none";
+                document.body.style.overflow = ""; // Restore scrolling
             }
 
-            if (currentPDF) {
-                currentPDF.destroy();
-                currentPDF = null;
+            // Clean up PDF document
+            if (pdfDocument) {
+                pdfDocument.destroy();
+                pdfDocument = null;
             }
         }
 
-        // Status Submission Functions
-        function markAsClaimed() {
-            // Set the status to "Claimed"
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            const processByInput = document.getElementById('processByInput');
-
-            if (statusInput) statusInput.value = 'Claimed';
-            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
-            if (processByInput) {
-                const processedBy = document.getElementById('processedBy');
-                if (processedBy) processByInput.value = processedBy.value;
-            }
-
-            // Show success modal
-            showSuccessModal();
-
-            // Submit the form after a short delay to show the modal
-            setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 2000); // Show modal for 2 seconds before redirecting
-        }
-
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) modal.style.display = 'block';
-        }
-
-        // Additional Information Functions (from OtherAssistanceProcessingStatus pattern)
+        // Additional Information Functions
         function getOtherAssistanceFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
 
@@ -1253,7 +1695,7 @@
             // Conditional fields based on assistance type
             if (assistanceType === 'Medicine Assistance') {
                 fieldNames = ['MedicineName', 'MedicineQuantity', 'MedicineCost', 'PrescribingDoctor', 'DoctorContactDetail'];
-                fieldLabels = ['Medicine Name', 'Quantity', 'Cost', 'Prescribing Doctor', 'Doctor Contact'];
+                fieldLabels = ['Medicine Name', 'Medicine Quantity', 'Medicine Cost', 'Prescribing Doctor', 'Doctor Contact Detail'];
                 fieldValues = [
                     '@ViewData["MedicineName"]',
                     '@ViewData["MedicineQuantity"]',
@@ -1261,9 +1703,9 @@
                     '@ViewData["PrescribingDoctor"]',
                     '@ViewData["DoctorContactDetail"]'
                 ];
-            } else if (assistanceType === 'Laboratory') {
+            } else if (assistanceType === 'Laboratory/X-ray/ECG/2D Echo Assistance') {
                 fieldNames = ['LaboratoryCenterName', 'LaboratoryCenterAddress', 'TestName', 'TestCost', 'TestOtherInfo'];
-                fieldLabels = ['Laboratory Center Name', 'Center Address', 'Test Name', 'Test Cost', 'Other Information'];
+                fieldLabels = ['Laboratory Center Name', 'Laboratory Center Address', 'Test Name', 'Test Cost', 'Test Other Info'];
                 fieldValues = [
                     '@ViewData["LaboratoryCenterName"]',
                     '@ViewData["LaboratoryCenterAddress"]',
@@ -1271,18 +1713,18 @@
                     '@ViewData["TestCost"]',
                     '@ViewData["TestOtherInfo"]'
                 ];
-            } else if (assistanceType === 'Therapy') {
+            } else if (assistanceType === 'Therapy/Rehabilitation Assistance') {
                 fieldNames = ['TherapyFacilityName', 'TherapyFacilityAddress', 'TherapyFacilityContact', 'TherapyType'];
-                fieldLabels = ['Therapy Facility Name', 'Facility Address', 'Facility Contact', 'Therapy Type'];
+                fieldLabels = ['Therapy Facility Name', 'Therapy Facility Address', 'Therapy Facility Contact', 'Therapy Type'];
                 fieldValues = [
                     '@ViewData["TherapyFacilityName"]',
                     '@ViewData["TherapyFacilityAddress"]',
                     '@ViewData["TherapyFacilityContact"]',
                     '@ViewData["TherapyType"]'
                 ];
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
+            } else if (assistanceType === 'Medical Equipment/Apparatus Assistance') {
                 fieldNames = ['EquipmentName', 'EquipmentBrand', 'EquipmentCategory', 'EquipmentQuantity', 'EquipmentCost'];
-                fieldLabels = ['Equipment Name', 'Brand', 'Category', 'Quantity', 'Cost'];
+                fieldLabels = ['Equipment Name', 'Equipment Brand', 'Equipment Category', 'Equipment Quantity', 'Equipment Cost'];
                 fieldValues = [
                     '@ViewData["EquipmentName"]',
                     '@ViewData["EquipmentBrand"]',
@@ -1299,325 +1741,437 @@
             };
         }
 
+        // Toggle function for Additional Information (View/Hide)
+        function toggleAdditionalInfo() {
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideAdditionalInfo();
+            } else {
+                // Currently hidden, show the decrypt modal
+                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
+            }
+        }
+
         // Function to hide additional information
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
             const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
 
+            // Hide decrypted data container
             if (additionalInfoContainer) {
                 additionalInfoContainer.classList.remove('additional-info-visible');
                 additionalInfoContainer.style.display = 'none';
             }
 
-            // Show the button again when hiding the info
-            if (viewButton) {
-                viewButton.style.display = 'inline-block';
+            // Show encrypted data display
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'block';
             }
+
+            // Show alert
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'flex';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Additional Information';
+            }
+
+            // Clear decrypted data
+            window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption
+        // Function to show additional information after successful decryption - REMOVED LOADING DELAY
         function showAdditionalInfoAfterDecryption() {
             console.log('Showing additional information after decryption...');
 
-            // Hide the loading container
-            const loadingContainer = document.getElementById('additionalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'none';
+            // Hide the encrypted display section
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
             }
 
-            // Hide the "View Additional Information" button
-            const viewButton = document.getElementById('viewAdditionalInfoBtn');
-            if (viewButton) {
-                viewButton.style.display = 'none';
+            // Hide alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
             }
 
-            // Show the additional information container
+            // Show the additional information container (decrypted) immediately
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
-                additionalInfoContainer.classList.add('additional-info-visible');
-
-                // Populate the fields based on assistance type
-                populateAdditionalInfoFields();
+                additionalInfoContainer.classList.add('additional-info-visible', 'decrypted-display');
 
                 // Scroll to the additional information section
                 setTimeout(() => {
                     additionalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const btnIcon = document.getElementById('additionalBtnIcon');
+            const btnText = document.getElementById('additionalBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Additional Information';
+            }
         }
 
-        // Function to populate additional information fields
-        function populateAdditionalInfoFields() {
-            const assistanceType = '@ViewData["Typeassistance"]';
-            const container = document.getElementById('additionalInfoContainer');
+        // IMPORTANT: This function is called from the shared modal after successful decryption
+        window.onAdditionalInfoDecrypted = function() {
+            // Show decrypted data immediately - no loading delay
+            showAdditionalInfoAfterDecryption();
+        };
 
-            if (!container) return;
-
-            let htmlContent = '';
-
-            if (assistanceType === 'Medicine Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Medicine Name:</div>
-                            <div class="info-value" id="medicineName">@ViewData["MedicineName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="medicineQuantity">@ViewData["MedicineQuantity"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="medicineCost">@ViewData["MedicineCost"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Prescribing Doctor:</div>
-                            <div class="info-value" id="prescribingDoctor">@ViewData["PrescribingDoctor"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Doctor Contact:</div>
-                            <div class="info-value" id="doctorContact">@ViewData["DoctorContactDetail"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Laboratory') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Laboratory Center Name:</div>
-                            <div class="info-value" id="labCenterName">@ViewData["LaboratoryCenterName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Center Address:</div>
-                            <div class="info-value" id="labCenterAddress">@ViewData["LaboratoryCenterAddress"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Test Name:</div>
-                            <div class="info-value" id="testName">@ViewData["TestName"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Test Cost:</div>
-                            <div class="info-value" id="testCost">@ViewData["TestCost"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Other Information:</div>
-                            <div class="info-value" id="testOtherInfo">@ViewData["TestOtherInfo"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Therapy') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Therapy Facility Name:</div>
-                            <div class="info-value" id="therapyFacilityName">@ViewData["TherapyFacilityName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Facility Address:</div>
-                            <div class="info-value" id="therapyFacilityAddress">@ViewData["TherapyFacilityAddress"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Facility Contact:</div>
-                            <div class="info-value" id="therapyFacilityContact">@ViewData["TherapyFacilityContact"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Therapy Type:</div>
-                            <div class="info-value" id="therapyType">@ViewData["TherapyType"]</div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Medical Equipment/ Apparatus') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Equipment Name:</div>
-                            <div class="info-value" id="equipmentName">@ViewData["EquipmentName"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Brand:</div>
-                            <div class="info-value" id="equipmentBrand">@ViewData["EquipmentBrand"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Category:</div>
-                            <div class="info-value" id="equipmentCategory">@ViewData["EquipmentCategory"]</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-row">
-                            <div class="info-label">Quantity:</div>
-                            <div class="info-value" id="equipmentQuantity">@ViewData["EquipmentQuantity"]</div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Cost:</div>
-                            <div class="info-value" id="equipmentCost">@ViewData["EquipmentCost"]</div>
-                        </div>
-                    </div>
-                `;
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize button state
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
             }
 
-            container.querySelector('.row').innerHTML = htmlContent;
-        }
-
-        // Function to start the 5-second loading animation
-        function startAdditionalInfoLoading() {
-            console.log('Starting additional information loading...');
-
-            // Show loading container
-            const loadingContainer = document.getElementById('additionalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'block';
-            }
-
-            // Hide any existing additional info container
+            // Make sure the encrypted section is visible by default
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
-            if (additionalInfoContainer) {
-                additionalInfoContainer.style.display = 'none';
-                additionalInfoContainer.classList.remove('additional-info-visible');
-            }
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
 
-            // Start 5-second progress bar
-            const progressBar = document.getElementById('additionalLoadingProgress');
-            if (progressBar) {
-                let progress = 0;
-                const totalTime = 5000; // 5 seconds
-                const interval = 100; // Update every 100ms
-                const increment = (interval / totalTime) * 100;
+            if (additionalInfoEncrypted) additionalInfoEncrypted.style.display = 'block';
+            if (additionalInfoContainer) additionalInfoContainer.style.display = 'none';
+            if (additionalInfoAlert) additionalInfoAlert.style.display = 'flex';
 
-                const progressInterval = setInterval(() => {
-                    progress += increment;
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(progressInterval);
+            // Initialize Valid ID visibility
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDLoading = document.getElementById('validIDLoading');
 
-                        // After 5 seconds, show the additional information
-                        setTimeout(() => {
-                            showAdditionalInfoAfterDecryption();
-                        }, 300);
-                    } else {
-                        progressBar.style.width = progress + '%';
-                    }
-                }, interval);
-            }
-        }
+            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
+            if (validIDContainer) validIDContainer.style.display = 'none';
+            if (validIDLoading) validIDLoading.style.display = 'none';
+        });
 
-        // Comments modal functions
-        function showCommentsModal() {
-            const modal = document.getElementById('commentsModal');
-            const textarea = document.getElementById('commentsTextarea');
-            if (modal) modal.style.display = 'block';
-            if (textarea) textarea.focus();
-        }
+        // Status Submission Functions
+        function markAsClaimed() {
+            console.log('Submitting mark as claimed...');
 
-        function closeCommentsModal() {
-            const modal = document.getElementById('commentsModal');
-            const textarea = document.getElementById('commentsTextarea');
-            if (modal) modal.style.display = 'none';
-            if (textarea) {
-                textarea.value = '';
-                textarea.classList.remove('is-invalid');
-            }
-        }
+            // Requestor's Name Variables
+            const requestorFirstname = '@ViewData["RFirstname"]';
+            const requestorMiddlename = '@ViewData["RMiddlename"]';
+            const requestorLastname = '@ViewData["RLastname"]';
+            const requestorSuffix = '@ViewData["RSuffix"]';
+            const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
 
-        function submitDisapprove() {
-            const commentsTextarea = document.getElementById('commentsTextarea');
-            const comments = commentsTextarea ? commentsTextarea.value.trim() : '';
-
-            if (comments === '') {
-                if (commentsTextarea) {
-                    commentsTextarea.classList.add('is-invalid');
-                    commentsTextarea.focus();
-                }
-                return;
-            }
-
+            // Set the status and comments
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
             const processByInput = document.getElementById('processByInput');
 
-            if (statusInput) statusInput.value = 'Disapprove';
-            if (commentsInput) commentsInput.value = comments;
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
             if (processByInput) {
                 const processedBy = document.getElementById('processedBy');
                 if (processedBy) processByInput.value = processedBy.value;
             }
 
-            // Show loading modal
+            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
+            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
+            console.log('Processed by:', processByInput ? processByInput.value : 'N/A');
+
+            // Show success modal
             showSuccessModal();
 
-            // Submit the form
+            // Submit the form after a short delay to show the modal
             setTimeout(() => {
-                document.getElementById('statusForm').submit();
-            }, 500);
+                console.log('Final form submission - Claimed');
+                const form = document.getElementById('statusForm');
+                if (form) {
+                    console.log('Submitting form...');
+                    form.submit();
+                } else {
+                    console.error('Form not found!');
+                }
+            }, 1500);
         }
 
-        // Keyboard shortcuts and navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const zoomModal = document.getElementById("zoomModal");
-                if (zoomModal) zoomModal.style.display = "none";
-                closePDFViewer();
-                closeCommentsModal();
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) modal.style.display = 'block';
+
+            // Auto-redirect after 3 seconds in case form submission fails
+            setTimeout(() => {
+                window.location.href = '/Admin';
+            }, 3000);
+        }
+
+        // Function to toggle Valid ID view
+        function toggleValidID(frontImagePath, backImagePath) {
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                // Currently showing decrypted data, hide it
+                hideValidID();
+            } else {
+                // Currently hidden, show the decrypt modal for ID
+                openViewIDModal('@ViewData["Id"]', frontImagePath, backImagePath);
+            }
+        }
+
+        // Function to hide Valid ID
+        function hideValidID() {
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            // Hide decrypted ID container
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
             }
 
-            const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal && pdfModal.style.display === 'block') {
-                switch(e.key) {
-                    case 'ArrowLeft':
+            // Show encrypted ID display
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'block';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Valid ID';
+            }
+        }
+
+        // Function to show Valid ID after successful decryption
+        window.onValidIDDecrypted = function(frontImageData, backImageData) {
+            console.log('Showing Valid ID after decryption...');
+
+            // Hide the loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'none';
+            }
+
+            // Hide the encrypted display section
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Show the Valid ID container (decrypted)
+            const validIDContainer = document.getElementById('validIDContainer');
+            const frontImage = document.getElementById('decryptedFrontIDInline');
+            const backImage = document.getElementById('decryptedBackIDInline');
+            const frontContainer = document.getElementById('frontIDInlineContainer');
+            const backContainer = document.getElementById('backIDInlineContainer');
+
+            if (validIDContainer && frontImage && backImage && frontContainer && backContainer) {
+                // Set the image sources
+                if (frontImageData) {
+                    frontImage.src = 'data:image/jpeg;base64,' + frontImageData;
+                    frontImage.style.display = 'block';
+                    frontContainer.style.display = 'block';
+                } else {
+                    frontContainer.style.display = 'none';
+                }
+
+                if (backImageData) {
+                    backImage.src = 'data:image/jpeg;base64,' + backImageData;
+                    backImage.style.display = 'block';
+                    backContainer.style.display = 'block';
+                } else {
+                    backContainer.style.display = 'none';
+                }
+
+                // Show the container
+                validIDContainer.style.display = 'block';
+                validIDContainer.classList.add('valid-id-container');
+
+                // Scroll to the Valid ID section
+                setTimeout(() => {
+                    validIDContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Valid ID';
+            }
+        };
+
+        // Function to show loading for Valid ID
+        function startValidIDLoading() {
+            console.log('Starting Valid ID loading...');
+
+            // Show loading container
+            const loadingContainer = document.getElementById('validIDLoading');
+            if (loadingContainer) {
+                loadingContainer.style.display = 'block';
+            }
+
+            // Hide encrypted display
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            if (validIDEncrypted) {
+                validIDEncrypted.style.display = 'none';
+            }
+
+            // Hide any existing Valid ID container
+            const validIDContainer = document.getElementById('validIDContainer');
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+        }
+
+        // Keyboard shortcuts for PDF viewer
+        document.addEventListener('keydown', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            switch(e.key) {
+                case 'Escape':
+                    closePDFViewer();
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    pdfPrevPage();
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    pdfNextPage();
+                    e.preventDefault();
+                    break;
+                case '+':
+                case '=':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomIn();
                         e.preventDefault();
-                        prevPage();
-                        break;
-                    case 'ArrowRight':
+                    }
+                    break;
+                case '-':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomOut();
                         e.preventDefault();
-                        nextPage();
-                        break;
-                    case '+':
-                    case '=':
+                    }
+                    break;
+                case '0':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfScale = 1.0;
+                        renderPDFPage(currentPdfPage);
                         e.preventDefault();
-                        zoomIn();
-                        break;
-                    case '-':
-                        e.preventDefault();
-                        zoomOut();
-                        break;
+                    }
+                    break;
+                case 'Home':
+                    currentPdfPage = 1;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+                case 'End':
+                    currentPdfPage = totalPdfPages;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            // Horizontal swipe for page navigation (min 50px swipe)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Swipe left - next page
+                    pdfNextPage();
+                } else {
+                    // Swipe right - previous page
+                    pdfPrevPage();
                 }
             }
         });
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const zoomModal = document.getElementById("zoomModal");
-            const pdfModal = document.getElementById("pdfViewerModal");
-            const commentsModal = document.getElementById("commentsModal");
-            const successModal = document.getElementById("successModal");
+        // Add resize handler for responsive PDF viewer
+        window.addEventListener('resize', function() {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (pdfViewer && pdfViewer.style.display === "block" && pdfDocument) {
+                // Re-render current page on resize
+                renderPDFPage(currentPdfPage);
+            }
+        });
 
-            if (event.target == zoomModal && zoomModal) {
-                zoomModal.style.display = "none";
-            }
-            if (event.target == pdfModal && pdfModal) {
-                closePDFViewer();
-            }
-            if (event.target == commentsModal && commentsModal) {
-                closeCommentsModal();
-            }
-            if (event.target == successModal && successModal) {
-                successModal.style.display = "none";
-            }
-        }
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const successModal = document.getElementById('successModal');
 
-        // Function to view encrypted Additional Information
-        function viewOtherAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = getOtherAssistanceFields();
-
-            openViewAdditionalInfoModal('Other', formId, encryptedFields);
-        }
+            if (event.target === successModal) {
+                successModal.style.display = 'none';
+            }
+        });
     </script>
 
     @Html.Partial("_ViewEncryptedDataModalForAdmin")

@@ -2827,7 +2827,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["Status"] = FuneralAssistance.Status;
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;
@@ -2850,7 +2850,7 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = FuneralAssistance.RSubVill;
             ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-                        ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
@@ -2905,12 +2905,12 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // ✓ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, FuneralAssistance.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
-                    debugMessages.Add($"📄 Full path: {prescPath}");
+                    debugMessages.Add($"🔍 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
+                    debugMessages.Add($"📁 Full path: {prescPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
@@ -2926,30 +2926,30 @@ namespace LingapDVO.Controllers
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
                             debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"📄 IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Doctor Prescription in database");
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ✓ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, FuneralAssistance.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
-                    debugMessages.Add($"📄 Full path: {deathPath}");
+                    debugMessages.Add($"🔍 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
+                    debugMessages.Add($"📁 Full path: {deathPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
@@ -2965,27 +2965,27 @@ namespace LingapDVO.Controllers
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
                             debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"📄 IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Death Certificate file NOT FOUND");
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Death Certificate in database");
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"⚠️ GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -2995,10 +2995,21 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = FuneralAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 10 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["DeceasedPersonNameEncrypted"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceasedEncrypted"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeathEncrypted"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeathEncrypted"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeathEncrypted"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeNameEncrypted"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddressEncrypted"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDateEncrypted"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTimeEncrypted"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationTypeEncrypted"] = FuneralAssistance.BurialCremationType;
 
-            // Funeral Assistance Fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["DeceasedPersonName"] = DecryptFieldText(FuneralAssistance.DeceasedPersonName);
             ViewData["RelationshipToDeceased"] = DecryptFieldText(FuneralAssistance.RelationshipToDeceased);
             ViewData["DateOfDeath"] = DecryptFieldText(FuneralAssistance.DateOfDeath);
@@ -3810,7 +3821,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = FuneralAssistance.Status2;
+            ViewData["Status"] = FuneralAssistance.Status;
             ViewData["Id"] = FuneralAssistance.Id;
             ViewData["Lastname"] = FuneralAssistance.Lastname;
             ViewData["Firstname"] = FuneralAssistance.Firstname;
@@ -3833,7 +3844,7 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = FuneralAssistance.RSubVill;
             ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-                        ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
@@ -3888,12 +3899,12 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // ✓ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, FuneralAssistance.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
-                    debugMessages.Add($"📄 Full path: {prescPath}");
+                    debugMessages.Add($"🔍 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
+                    debugMessages.Add($"📁 Full path: {prescPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
@@ -3909,30 +3920,30 @@ namespace LingapDVO.Controllers
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
                             debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"📄 IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Doctor Prescription in database");
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ✓ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, FuneralAssistance.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
-                    debugMessages.Add($"📄 Full path: {deathPath}");
+                    debugMessages.Add($"🔍 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
+                    debugMessages.Add($"📁 Full path: {deathPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
@@ -3948,27 +3959,27 @@ namespace LingapDVO.Controllers
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
                             debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"📄 IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Death Certificate file NOT FOUND");
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Death Certificate in database");
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"⚠️ GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -3978,10 +3989,21 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = FuneralAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 10 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["DeceasedPersonNameEncrypted"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceasedEncrypted"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeathEncrypted"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeathEncrypted"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeathEncrypted"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeNameEncrypted"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddressEncrypted"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDateEncrypted"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTimeEncrypted"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationTypeEncrypted"] = FuneralAssistance.BurialCremationType;
 
-            // Funeral Assistance Fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["DeceasedPersonName"] = DecryptFieldText(FuneralAssistance.DeceasedPersonName);
             ViewData["RelationshipToDeceased"] = DecryptFieldText(FuneralAssistance.RelationshipToDeceased);
             ViewData["DateOfDeath"] = DecryptFieldText(FuneralAssistance.DateOfDeath);
@@ -4220,7 +4242,7 @@ namespace LingapDVO.Controllers
             }
 
             // Basic ViewData setup
-            ViewData["Status2"] = medicallabform.Status2;
+            ViewData["Status3"] = medicallabform.Status3;
             ViewData["Id"] = medicallabform.Id;
             ViewData["Lastname"] = medicallabform.Lastname;
             ViewData["Firstname"] = medicallabform.Firstname;
@@ -4527,7 +4549,7 @@ namespace LingapDVO.Controllers
             ViewData["RBlkLotStreet"] = FuneralAssistance.RBlkLotStreet;
             ViewData["RSubVill"] = FuneralAssistance.RSubVill;
             ViewData["RBrgy"] = FuneralAssistance.RBrgy;
-                        ViewData["ContactNo"] = FuneralAssistance.ContactNo;
+            ViewData["ContactNo"] = FuneralAssistance.ContactNo;
 
             // Type of assistance
             var typeAssistanceRaw = FuneralAssistance.Typeassistance ?? "";
@@ -4582,12 +4604,12 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // ✓ DOCTOR PRESCRIPTION - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DOCTOR PRESCRIPTION - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DoctorPrescription))
                 {
                     string prescPath = Path.Combine(doctorPrescriptionFolder, FuneralAssistance.DoctorPrescription);
-                    debugMessages.Add($"📄 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
-                    debugMessages.Add($"📄 Full path: {prescPath}");
+                    debugMessages.Add($"🔍 Doctor Prescription filename: {FuneralAssistance.DoctorPrescription}");
+                    debugMessages.Add($"📁 Full path: {prescPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(prescPath)}");
 
                     if (System.IO.File.Exists(prescPath))
@@ -4603,30 +4625,30 @@ namespace LingapDVO.Controllers
                             ViewData["IsDoctorPrescriptionPdf"] = isPdf;
 
                             debugMessages.Add($"✓ Doctor Prescription decrypted - {decryptedPresc.Length} bytes");
-                            debugMessages.Add($"📄 IsDoctorPrescriptionPdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDoctorPrescriptionPdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Doctor Prescription decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Doctor Prescription decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Doctor Prescription file NOT FOUND");
+                        debugMessages.Add("❌ Doctor Prescription file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Doctor Prescription in database");
+                    debugMessages.Add("ℹ️ No Doctor Prescription in database");
                 }
 
-                // ✓ DEATH CERTIFICATE - UPDATED TO USE CONFIGURATION-BASED KEY
+                // ✅ DEATH CERTIFICATE - UPDATED
                 if (!string.IsNullOrEmpty(FuneralAssistance.DeathCertificate))
                 {
                     string deathPath = Path.Combine(deathCertificateFolder, FuneralAssistance.DeathCertificate);
-                    debugMessages.Add($"📄 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
-                    debugMessages.Add($"📄 Full path: {deathPath}");
+                    debugMessages.Add($"🔍 Death Certificate filename: {FuneralAssistance.DeathCertificate}");
+                    debugMessages.Add($"📁 Full path: {deathPath}");
                     debugMessages.Add($"📄 File exists: {System.IO.File.Exists(deathPath)}");
 
                     if (System.IO.File.Exists(deathPath))
@@ -4642,27 +4664,27 @@ namespace LingapDVO.Controllers
                             ViewData["IsDeathCertificatePdf"] = isPdf;
 
                             debugMessages.Add($"✓ Death Certificate decrypted - {decryptedDeath.Length} bytes");
-                            debugMessages.Add($"📄 IsDeathCertificatePdf = {isPdf}");
-                            debugMessages.Add($"📄 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
+                            debugMessages.Add($"🔍 IsDeathCertificatePdf = {isPdf}");
+                            debugMessages.Add($"📋 PDF Magic Number Detected: {(isPdf ? "YES" : "NO")}");
                         }
                         catch (Exception ex)
                         {
-                            debugMessages.Add($"✗ Death Certificate decryption failed: {ex.Message}");
+                            debugMessages.Add($"❌ Death Certificate decryption failed: {ex.Message}");
                         }
                     }
                     else
                     {
-                        debugMessages.Add("✗ Death Certificate file NOT FOUND");
+                        debugMessages.Add("❌ Death Certificate file NOT FOUND");
                     }
                 }
                 else
                 {
-                    debugMessages.Add("📄 No Death Certificate in database");
+                    debugMessages.Add("ℹ️ No Death Certificate in database");
                 }
             }
             catch (Exception ex)
             {
-                debugMessages.Add($"⚠️ GENERAL ERROR: {ex.Message}");
+                debugMessages.Add($"❌ GENERAL ERROR: {ex.Message}");
                 ViewData["DecryptionError"] = "Unable to decrypt files: " + ex.Message;
             }
 
@@ -4672,10 +4694,21 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = FuneralAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 10 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["DeceasedPersonNameEncrypted"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceasedEncrypted"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeathEncrypted"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeathEncrypted"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeathEncrypted"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeNameEncrypted"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddressEncrypted"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDateEncrypted"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTimeEncrypted"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationTypeEncrypted"] = FuneralAssistance.BurialCremationType;
 
-            // Funeral Assistance Fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["DeceasedPersonName"] = DecryptFieldText(FuneralAssistance.DeceasedPersonName);
             ViewData["RelationshipToDeceased"] = DecryptFieldText(FuneralAssistance.RelationshipToDeceased);
             ViewData["DateOfDeath"] = DecryptFieldText(FuneralAssistance.DateOfDeath);
