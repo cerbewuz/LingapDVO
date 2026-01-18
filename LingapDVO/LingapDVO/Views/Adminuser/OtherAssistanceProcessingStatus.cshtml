@@ -1,25 +1,14 @@
 @model OtherAssistanceDto
 @{
-    Layout = "_AdminProcessingLayout";
-    ViewData["Title"] = "Process Other Assistance";
+    Layout = "_ViewFormsLayout";
+    ViewData["Title"] = "Other Assistance View";
     var selectedSex = ViewData["Sex"]?.ToString();
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <style>
-    .decrypted-field .info-label {
-        color: #bdc3c7 !important;
-    }
-
-        .decrypted-field .info-label i {
-            color: #ecf0f1 !important;
-        }
-
-    .align-first-checkbox {
-        margin-top: 0 !important;
-    }
-
+    /* Remove borders since layout already has them */
     .receipt-container {
         border: none !important;
         box-shadow: none !important;
@@ -34,7 +23,393 @@
         padding: 1rem !important;
     }
 
-    /* Full-screen PDF Viewer Styles */
+    /* Additional Information Styles */
+    .additional-info-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    .additional-info-visible {
+        display: block;
+    }
+
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    .info-label {
+        color: #bdc3c7 !important;
+        font-weight: 500;
+    }
+
+        .info-label i {
+            color: #ecf0f1 !important;
+        }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        margin-top: 1rem;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+        margin-top: 1rem;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin-bottom: 15px;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
+        }
+
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    /* Zoom Modal */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+        .close-zoom:hover {
+            color: #3498db;
+        }
+
+    /* PDF Preview Styles */
+    .pdf-preview-container {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin-bottom: 15px;
+    }
+
+        .pdf-preview-container:hover {
+            transform: translateY(-2px);
+        }
+
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+        .pdf-preview:hover {
+            border-color: #3498db;
+            background-color: #e8f4fd;
+        }
+
+    .pdf-preview-icon {
+        font-size: 3rem;
+        color: #e74c3c;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .pdf-preview-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pdf-preview-filename {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 1rem;
+    }
+
+    .pdf-preview-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .pdf-preview-label i {
+            font-size: 0.9rem;
+        }
+
+    /* Status Buttons Styling */
+    .status-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-claimed {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-claimed:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-header {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: var(--secondary-color);
+        min-width: 150px;
+    }
+
+    .info-value {
+        flex: 1;
+        color: #555;
+        min-width: 200px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approve {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-disapprove {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-processing {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-claimed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-retake {
+        background-color: #fff3e0;
+        color: #ff6f00;
+    }
+
+    /* Full-screen PDF Viewer Styles (from first code) */
     .pdf-viewer-overlay {
         display: none;
         position: fixed;
@@ -249,680 +624,6 @@
             transform: rotate(360deg);
         }
     }
-
-    /* PDF Preview Styles */
-    .pdf-preview-container {
-        cursor: pointer;
-        transition: transform 0.2s ease;
-        margin-bottom: 15px;
-    }
-
-        .pdf-preview-container:hover {
-            transform: translateY(-2px);
-        }
-
-    .pdf-preview {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
-    }
-
-        .pdf-preview:hover {
-            border-color: #3498db;
-            background-color: #e8f4fd;
-        }
-
-    .pdf-preview-icon {
-        font-size: 3rem;
-        color: #e74c3c;
-        margin-right: 15px;
-        flex-shrink: 0;
-    }
-
-    .pdf-preview-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .pdf-preview-filename {
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 5px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 1rem;
-    }
-
-    .pdf-preview-label {
-        font-size: 0.85rem;
-        color: #7f8c8d;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-        .pdf-preview-label i {
-            font-size: 0.9rem;
-        }
-
-    /* Image Zoom Modal */
-    .zoom-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        padding-top: 50px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.9);
-    }
-
-    .zoom-modal-content {
-        margin: auto;
-        display: block;
-        max-width: 90%;
-        max-height: 90%;
-        object-fit: contain;
-    }
-
-    .close-zoom {
-        position: absolute;
-        top: 15px;
-        right: 35px;
-        color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.2s ease;
-    }
-
-        .close-zoom:hover {
-            color: #3498db;
-        }
-
-    /* ID Image Styles */
-    .id-image-container {
-        cursor: pointer;
-        transition: transform 0.2s ease;
-        margin-bottom: 15px;
-    }
-
-        .id-image-container:hover {
-            transform: scale(1.02);
-        }
-
-    .id-image {
-        width: 100%;
-        height: 200px;
-        object-fit: contain;
-        background-color: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        padding: 10px;
-    }
-
-    /* Modal Styles */
-    .comments-modal {
-        display: none;
-        position: fixed;
-        z-index: 3000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .comments-modal-content {
-        background-color: white;
-        margin: 10% auto;
-        padding: 2rem;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .comments-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .comments-modal-title {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .comments-modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #6c757d;
-    }
-
-        .comments-modal-close:hover {
-            color: var(--primary-color);
-        }
-
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-
-    .is-invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-        .is-invalid ~ .invalid-feedback {
-            display: block;
-        }
-
-    /* Success Modal */
-    .success-modal {
-        display: none;
-        position: fixed;
-        z-index: 4000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
-    }
-
-    .success-modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 2rem;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-
-    .success-icon {
-        font-size: 3rem;
-        color: #28a745;
-        margin-bottom: 1rem;
-    }
-
-    /* CMO Details Styles */
-    .cmo-details {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-    }
-
-    .cmo-section-title {
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1rem;
-    }
-
-    .cmo-checkbox-group {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 10px;
-        margin-bottom: 1.5rem;
-    }
-
-    .cmo-checkbox-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        background-color: white;
-        border-radius: 6px;
-        border: 1px solid #dee2e6;
-        transition: all 0.2s ease;
-    }
-
-        .cmo-checkbox-item:hover {
-            border-color: #3498db;
-            background-color: #e8f4fd;
-        }
-
-        .cmo-checkbox-item input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-
-        .cmo-checkbox-item label {
-            margin-bottom: 0;
-            cursor: pointer;
-            font-weight: 500;
-            color: #2c3e50;
-        }
-
-    .cmo-processed-by {
-        background-color: white;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 12px;
-        text-align: center;
-        font-weight: 600;
-        color: #2c3e50;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    /* CMO Others Field Styling */
-    .cmo-others-row {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 1.5rem;
-        align-items: flex-end;
-    }
-
-    .cmo-others-checkbox {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        background-color: white;
-        border-radius: 6px;
-        border: 1px solid var(--border-color);
-        height: fit-content;
-        min-height: 46px;
-    }
-
-    .cmo-others-input {
-        flex: 1;
-    }
-
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .section-header {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #3498db;
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: #2c3e50;
-        min-width: 150px;
-    }
-
-    .info-value {
-        flex: 1;
-        color: #555;
-        min-width: 200px;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.35rem 0.75rem;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-    }
-
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-    }
-
-    .status-approve {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-disapprove {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-
-    .status-processing {
-        background-color: #cce5ff;
-        color: #004085;
-    }
-
-    .status-claimed {
-        background-color: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .status-retake {
-        background-color: #fff3e0;
-        color: #ff6f00;
-    }
-
-    /* Black/Grey Additional Information Container (Matching Hospital Assistance) */
-    .additional-info-container {
-        display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-        color: white;
-    }
-
-    .additional-info-visible {
-        display: block;
-    }
-
-    .decrypted-display {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        color: white;
-    }
-
-    .decrypted-header {
-        color: #ecf0f1;
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #3498db;
-        margin-bottom: 1rem !important;
-    }
-
-    .decrypted-field {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-
-        .decrypted-field:hover {
-            border-color: #3498db;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-            transform: translateY(-1px);
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-
-    .decrypted-value {
-        color: #ecf0f1;
-        font-weight: 500;
-        font-size: 0.95rem;
-        margin-top: 0.25rem;
-    }
-
-    /* Animation for decrypted display */
-    @@keyframes fadeInScale {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    /* Encrypted Display Styles */
-    .encrypted-info-section {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 1rem;
-        border: 1px solid #dee2e6;
-    }
-
-    .encrypted-display {
-        background-color: white;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 0.75rem;
-        font-family: 'Courier New', monospace;
-        font-size: 0.85rem;
-        color: #6c757d;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    .encrypted-text {
-        letter-spacing: 0.5px;
-    }
-
-    /* Alert styling */
-    .alert-info {
-        background-color: #e7f3ff;
-        border-color: #b3d9ff;
-        color: #004085;
-    }
-
-        .alert-info i {
-            font-size: 1.25rem;
-            color: #0066cc;
-        }
-
-    /* Additional Information Loading Container - UPDATED: Removed the 5-second loading */
-    .additional-loading-container {
-        display: none;
-        background-color: #2c3e50;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #34495e;
-        text-align: center;
-        color: white;
-    }
-
-    /* Valid ID Styles */
-    .valid-id-loading {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    .valid-id-container {
-        display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-        color: white;
-    }
-
-    /* Status Buttons Styling */
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-warning {
-        background-color: #ff9800;
-        border-color: #ff9800;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-        .btn-warning:hover {
-            background-color: #e68900;
-            border-color: #d17d00;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Responsive adjustments */
-    @@media (max-width: 768px) {
-        .pdf-viewer-toolbar {
-            flex-wrap: wrap;
-            padding: 10px;
-            gap: 10px;
-        }
-
-        .pdf-viewer-title {
-            max-width: 100%;
-            order: 1;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .pdf-viewer-controls {
-            order: 2;
-            width: 100%;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .pdf-viewer-btn {
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-
-        .pdf-viewer-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 35px;
-            height: 35px;
-            font-size: 1.5rem;
-        }
-
-        .pdf-viewer-content {
-            padding: 10px;
-        }
-
-        .pdf-preview {
-            padding: 12px;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .pdf-preview-icon {
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .id-image {
-            height: 150px;
-        }
-
-        .cmo-checkbox-group {
-            grid-template-columns: 1fr;
-        }
-
-        .cmo-others-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .cmo-others-checkbox {
-            min-height: 40px;
-        }
-
-        .info-row {
-            flex-direction: column;
-        }
-
-        .info-label {
-            margin-bottom: 0.3rem;
-        }
-
-        .status-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .btn-approved,
-        .btn-disapproved,
-        .btn-warning {
-            width: 100%;
-            max-width: 300px;
-            margin: 5px 0;
-        }
-    }
 </style>
 
 <!-- Full-screen PDF Viewer -->
@@ -983,60 +684,6 @@
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<!-- Comments Modal for Disapprove -->
-<div id="commentsModal" class="comments-modal">
-    <div class="comments-modal-content">
-        <div class="comments-modal-header">
-            <h5 class="comments-modal-title">Comments Required</h5>
-            <button class="comments-modal-close" onclick="closeCommentsModal()">&times;</button>
-        </div>
-        <div class="mb-3">
-            <label for="commentsTextarea" class="form-label">Please provide comments for disapproval:</label>
-            <textarea class="form-control" id="commentsTextarea" rows="4" placeholder="Enter comments explaining why the application is disapproved..." required></textarea>
-            <div class="invalid-feedback">Comments are required when disapproving an application.</div>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" onclick="closeCommentsModal()">Cancel</button>
-            <button type="button" class="btn btn-disapproved" onclick="submitDisapproveWithComments()">Submit Disapproval</button>
-        </div>
-    </div>
-</div>
-
-<!-- Retake Modal -->
-<div id="retakeModal" class="comments-modal">
-    <div class="comments-modal-content">
-        <div class="comments-modal-header" style="background: linear-gradient(135deg, #ff9800, #ff5722);">
-            <h5 class="comments-modal-title"><i class="bi bi-arrow-clockwise me-2"></i>Retake Application Request</h5>
-            <button class="comments-modal-close" onclick="closeRetakeModal()">&times;</button>
-        </div>
-        <div class="alert alert-warning mb-3" style="font-size: 0.9rem;">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Important:</strong> Requesting a retake will allow the applicant to re-upload their attachments. Please provide a clear reason explaining what needs to be corrected.
-        </div>
-        <div class="mb-3">
-            <label for="retakeReasonTextarea" class="form-label"><strong>Reason for Retake (Required):</strong></label>
-            <textarea class="form-control" id="retakeReasonTextarea" rows="4"
-                      placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
-                      required></textarea>
-            <div class="invalid-feedback" style="display: block; color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
-                <span id="retakeReasonError" style="display: none;"><i class="bi bi-exclamation-triangle me-1"></i>A detailed reason is required for retake requests.</span>
-            </div>
-            <small class="text-muted d-block mt-2">
-                <i class="bi bi-lightbulb me-1"></i>
-                Tip: Be specific about which documents need to be updated and why.
-            </small>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">
-                <i class="bi bi-x-circle me-1"></i>Cancel
-            </button>
-            <button type="button" class="btn btn-warning" onclick="confirmRetake()" style="background-color: #ff9800; border-color: #ff9800; color: white;">
-                <i class="bi bi-check-circle me-1"></i>Request Retake
-            </button>
-        </div>
-    </div>
-</div>
-
 <!-- Success Modal -->
 <div id="successModal" class="success-modal">
     <div class="success-modal-content">
@@ -1044,6 +691,7 @@
             <i class="bi bi-check-circle-fill"></i>
         </div>
         <h4>Status Updated Successfully!</h4>
+        <p>Application marked as <strong>Claimed</strong></p>
         <p>Redirecting to Admin page...</p>
         <div class="mt-3">
             <div class="spinner-border text-primary" role="status">
@@ -1054,26 +702,17 @@
 </div>
 
 <div class="receipt-container">
-    <form asp-action="OtherAssistanceProcessingStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+    <form asp-action="OtherAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
         @Html.AntiForgeryToken()
 
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="id" value="@ViewData["Id"]" />
-        <input type="hidden" id="statusInput" name="Status2" value="" />
+        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
         <input type="hidden" id="commentsInput" name="Comments" value="" />
         <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
         <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
-        <input type="hidden" id="grantedAmountField" name="GrantedAmount" value="" />
-        <input type="hidden" id="supportingDocsField" name="SupportingDocs" value="" />
-        <input type="hidden" id="cmoNotesField" name="CmoNotes" value="" />
 
         <div class="receipt-body">
-
-            <div class="info-row">
-                <div class="info-label">
-                    Application ID: <strong>@ViewData["Id"]</strong>
-                </div>
-            </div>
 
             <!-- Patient Information -->
             <div class="receipt-section">
@@ -1174,19 +813,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineNameEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineName"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineQuantityEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineQuantity"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Medicine Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["MedicineCostEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["MedicineCost"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1194,13 +833,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Prescribing Doctor:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["PrescribingDoctorEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["PrescribingDoctor"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Doctor Contact Detail:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DoctorContactDetailEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["DoctorContactDetail"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1213,19 +852,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterNameEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterName"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Laboratory/Center Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddressEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["LaboratoryCenterAddress"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Test Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestNameEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TestName"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1233,13 +872,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Test Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestCostEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TestCost"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Other Information:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TestOtherInfoEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TestOtherInfo"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1252,13 +891,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityNameEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityName"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddressEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityAddress"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1266,13 +905,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Facility Contact:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyFacilityContactEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyFacilityContact"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Therapy Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["TherapyTypeEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["TherapyType"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1285,19 +924,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentNameEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentName"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Brand:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentBrandEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentBrand"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Category:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCategoryEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCategory"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1305,13 +944,13 @@
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Quantity:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentQuantityEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentQuantity"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Equipment Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["EquipmentCostEncrypted"]</span>
+                                        <span class="encrypted-text">@ViewData["EquipmentCost"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1522,69 +1161,7 @@
             <!-- CMO Section -->
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
-                <div class="cmo-details">
-                    <div class="mt-4">
-                        <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
-                        <small class="text-muted d-block mb-2">Select only one supporting document</small>
-                        <div class="cmo-checkbox-group">
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="medicalCertificate" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
-                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="laboratoryRequest" value="Laboratory/X-ray Results" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
-                                <label class="form-check-label" for="laboratoryRequest">Laboratory/X-ray Results</label>
-                            </div>
-                            <div class="cmo-checkbox-item">
-                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
-                                <label class="form-check-label" for="othersCheckbox">Others</label>
-                            </div>
-                        </div>
-
-                        <!-- Single Document Error Message -->
-                        <div class="alert alert-warning mt-2" id="singleDocError" style="display: none;">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            Only one document can be selected at a time. Please choose only one supporting document.
-                        </div>
-
-                        <!-- Others Field -->
-                        <div class="cmo-others-row" id="cmoOthersRow" style="display: none;">
-                            <div class="cmo-others-input">
-                                <label class="form-label">Specify Other Documents: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter other supporting documents..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
-                                <div class="invalid-feedback" id="cmoNotesError">
-                                    Please specify the other documents.
-                                </div>
-                                <small class="text-muted">Enter the specific document(s) not listed above</small>
-                            </div>
-                        </div>
-
-                        <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
-                            Please select at least one supporting document.
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mt-3">
-                        <div class="col-md-6">
-                            <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
-                            <div class="invalid-feedback" id="grantedAmountError">
-                                Please enter the amount granted.
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="cmo-processed-by">
-                                <div>Processed by:</div>
-                                <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="display: none">
-                        <label class="form-label">CMO Reflection info:</label>
-                        <input type="text" class="form-control" id="cmoReflectionField" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
-                    </div>
-                </div>
+                <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
             </div>
 
             <!-- Valid ID and Submitted Documents Section -->
@@ -1750,21 +1327,16 @@
                 <div class="info-row">
                     <div class="info-label">Current Status:</div>
                     <div class="info-value">
-                        <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
-                            @ViewData["Status"]
+                        <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
+                            @ViewData["Status2"]
                         </span>
                     </div>
                 </div>
 
+                <!-- Action Buttons -->
                 <div class="status-buttons">
-                    <button type="button" class="btn btn-approved" onclick="submitApprove()">
-                        <i class="bi bi-check-circle"></i> Approve
-                    </button>
-                    <button type="button" class="btn btn-warning" onclick="submitRetake()">
-                        <i class="bi bi-arrow-clockwise"></i> Retake Application
-                    </button>
-                    <button type="button" class="btn btn-disapproved" onclick="showCommentsModal()">
-                        <i class="bi bi-x-circle"></i> Disapprove
+                    <button type="button" class="btn btn-claimed" onclick="markAsClaimed()">
+                        <i class="bi bi-check-circle"></i> Mark as Claimed
                     </button>
                 </div>
             </div>
@@ -2050,7 +1622,7 @@
             }
         }
 
-        // Additional Information Functions (Simplified - No 5-second loading)
+        // Additional Information Functions
         function getOtherAssistanceFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
 
@@ -2164,7 +1736,7 @@
             window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption - DIRECT SHOW (No 5-second delay)
+        // Function to show additional information after successful decryption - DIRECT SHOW
         function showAdditionalInfoAfterDecryption() {
             console.log('Showing additional information after decryption...');
 
@@ -2212,7 +1784,6 @@
         }
 
         // IMPORTANT: This function is called from the shared modal after successful decryption
-        // DIRECT SHOW - No 5-second loading animation
         window.onAdditionalInfoDecrypted = function() {
             showAdditionalInfoAfterDecryption();
         };
@@ -2225,36 +1796,6 @@
                 viewButton.setAttribute('data-decrypted', 'false');
             }
 
-            // Initialize Others checkbox visibility
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            const othersRow = document.getElementById('cmoOthersRow');
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-
-            if (othersCheckbox && othersRow && cmoNotesInput) {
-                if (othersCheckbox.checked) {
-                    othersRow.style.display = 'flex';
-                    cmoNotesInput.required = true;
-                } else {
-                    othersRow.style.display = 'none';
-                    cmoNotesInput.required = false;
-                    cmoNotesInput.classList.remove('is-invalid');
-                }
-            }
-
-            // Add change event listener to Others checkbox
-            if (othersCheckbox) {
-                othersCheckbox.addEventListener('change', function() {
-                    if (othersCheckbox.checked) {
-                        othersRow.style.display = 'flex';
-                        cmoNotesInput.required = true;
-                    } else {
-                        othersRow.style.display = 'none';
-                        cmoNotesInput.required = false;
-                        cmoNotesInput.classList.remove('is-invalid');
-                    }
-                });
-            }
-
             // Make sure the encrypted section is visible by default
             const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
@@ -2263,320 +1804,50 @@
             if (additionalInfoEncrypted) additionalInfoEncrypted.style.display = 'block';
             if (additionalInfoContainer) additionalInfoContainer.style.display = 'none';
             if (additionalInfoAlert) additionalInfoAlert.style.display = 'flex';
+
+            // Initialize Valid ID visibility
+            const validIDEncrypted = document.getElementById('validIDEncrypted');
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDLoading = document.getElementById('validIDLoading');
+
+            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
+            if (validIDContainer) validIDContainer.style.display = 'none';
+            if (validIDLoading) validIDLoading.style.display = 'none';
         });
 
-        // Form Validation Function
-        function validateCMOForm() {
-            let isValid = true;
-            let errorMessages = [];
-
-            // Reset previous errors
-            document.getElementById('supportingDocsError').style.display = 'none';
-            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
-            document.getElementById('grantedAmountInput').classList.remove('is-invalid');
-            document.getElementById('grantedAmountError').style.display = 'none';
-
-            // Validate supporting documents - FIXED: Now includes "Others" checkbox
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
-            if (supportingDocs.length === 0) {
-                isValid = false;
-                document.getElementById('supportingDocsError').style.display = 'block';
-                errorMessages.push('Please select at least one supporting document.');
-            }
-
-            // Validate CMO Notes if Others checkbox is checked
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-            if (othersCheckbox && othersCheckbox.checked) {
-                if (!cmoNotesInput || !cmoNotesInput.value.trim()) {
-                    isValid = false;
-                    cmoNotesInput.classList.add('is-invalid');
-                    errorMessages.push('Please specify the other documents when "Others" is selected.');
-                }
-            }
-
-            // Validate Amount Granted
-            const grantedAmountInput = document.getElementById('grantedAmountInput');
-            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
-                isValid = false;
-                grantedAmountInput.classList.add('is-invalid');
-                document.getElementById('grantedAmountError').style.display = 'block';
-                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
-            }
-
-            // Show errors if any
-            if (!isValid) {
-                const cmoSection = document.querySelector('.cmo-details');
-                if (cmoSection) {
-                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
-            }
-
-            return isValid;
-        }
-
-        // CMO Others input toggle - FIXED: Now properly toggles based on "Others" checkbox
-        function toggleOthersInput() {
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            const othersRow = document.getElementById('cmoOthersRow');
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-
-            if (!othersCheckbox || !othersRow || !cmoNotesInput) return;
-
-            if (othersCheckbox.checked) {
-                othersRow.style.display = 'flex';
-                cmoNotesInput.required = true;
-            } else {
-                othersRow.style.display = 'none';
-                cmoNotesInput.required = false;
-                cmoNotesInput.classList.remove('is-invalid');
-            }
-        }
-
-        // Update CMO Reflection - FIXED: Now includes "Others" in reflection
-        function updateReflection() {
-            const grantedAmountInput = document.getElementById('grantedAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-            const reflectionField = document.getElementById('cmoReflectionField');
-            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
-
-            let parts = [];
-
-            // Add granted amount if exists
-            if (grantedAmountInput && grantedAmountInput.value.trim()) {
-                parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
-            }
-
-            // Add checked documents - FIXED: Now includes "Others" value properly
-            const checkedDocs = Array.from(docCheckboxes).map(cb => {
-                if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
-                    return `Others: ${cmoNotes.value.trim()}`;
-                }
-                return cb.value;
-            });
-
-            if (checkedDocs.length > 0) {
-                parts.push(`Docs: ${checkedDocs.join(', ')}`);
-            }
-
-            const reflectionValue = parts.join(' , ');
-            if (reflectionField) reflectionField.value = reflectionValue;
-
-            // Update the hidden field as well
-            if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
-
-            console.log('CMO Reflection updated:', reflectionValue);
-            return reflectionValue;
-        }
-
-        // Update hidden fields before submission - FIXED: Now properly handles "Others"
-        function updateHiddenFields() {
-            // Update CMO reflection
-            updateReflection();
-
-            // Update granted amount
-            const grantedAmountInput = document.getElementById('grantedAmountInput');
-            const grantedAmountField = document.getElementById('grantedAmountField');
-            if (grantedAmountInput && grantedAmountField) {
-                grantedAmountField.value = grantedAmountInput.value;
-            }
-
-            // Update supporting docs - FIXED: Now includes "Others" properly
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
-            const supportingDocsField = document.getElementById('supportingDocsField');
-            if (supportingDocsField) {
-                const docValues = Array.from(supportingDocs).map(cb => cb.value);
-                supportingDocsField.value = docValues.join(',');
-            }
-
-            // Update CMO notes
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-            const cmoNotesField = document.getElementById('cmoNotesField');
-            if (cmoNotesInput && cmoNotesField) {
-                cmoNotesField.value = cmoNotesInput.value;
-            }
-        }
-
-        // Get all selected supporting documents including "Others"
-        function getSelectedSupportingDocs() {
-            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
-            const docValues = [];
-
-            supportingDocs.forEach(checkbox => {
-                if (checkbox.value === 'Others') {
-                    const cmoNotesInput = document.getElementById('cmoNotesInput');
-                    if (cmoNotesInput && cmoNotesInput.value.trim()) {
-                        docValues.push(`Others: ${cmoNotesInput.value.trim()}`);
-                    } else {
-                        docValues.push('Others');
-                    }
-                } else {
-                    docValues.push(checkbox.value);
-                }
-            });
-
-            return docValues;
-        }
-
         // Status Submission Functions
-        function submitApprove() {
-            console.log('Submitting approve...');
+        function markAsClaimed() {
+            console.log('Submitting mark as claimed...');
 
-            // Validate the CMO form first
-            if (!validateCMOForm()) {
-                return; // Stop if validation fails
-            }
-
-            // Update hidden fields
-            updateHiddenFields();
+            // Requestor's Name Variables
+            const requestorFirstname = '@ViewData["RFirstname"]';
+            const requestorMiddlename = '@ViewData["RMiddlename"]';
+            const requestorLastname = '@ViewData["RLastname"]';
+            const requestorSuffix = '@ViewData["RSuffix"]';
+            const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
 
             // Set the status and comments
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
-            if (statusInput) statusInput.value = 'Approve';
-            if (commentsInput) commentsInput.value = ''; // Empty comments for approval
+            const processByInput = document.getElementById('processByInput');
+
+            if (statusInput) statusInput.value = 'Claimed';
+            if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
+            if (processByInput) {
+                const processedBy = document.getElementById('processedBy');
+                if (processedBy) processByInput.value = processedBy.value;
+            }
 
             console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
             console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
-            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput') ? document.getElementById('forCMOPersonnelInput').value : 'N/A');
-            console.log('Supporting Docs:', getSelectedSupportingDocs());
+            console.log('Processed by:', processByInput ? processByInput.value : 'N/A');
 
-            // Show loading modal
+            // Show success modal
             showSuccessModal();
 
             // Submit the form after a short delay to show the modal
             setTimeout(() => {
-                console.log('Final form submission - Approve');
-                const form = document.getElementById('statusForm');
-                if (form) {
-                    console.log('Submitting form...');
-                    form.submit();
-                } else {
-                    console.error('Form not found!');
-                }
-            }, 1500);
-        }
-
-        function showCommentsModal() {
-            // No validation needed for Disapprove - just show the modal
-            const modal = document.getElementById('commentsModal');
-            const textarea = document.getElementById('commentsTextarea');
-            if (modal) modal.style.display = 'block';
-            if (textarea) textarea.focus();
-        }
-
-        function closeCommentsModal() {
-            const modal = document.getElementById('commentsModal');
-            const textarea = document.getElementById('commentsTextarea');
-            if (modal) modal.style.display = 'none';
-            if (textarea) {
-                textarea.value = '';
-                textarea.classList.remove('is-invalid');
-            }
-        }
-
-        function submitDisapproveWithComments() {
-            const commentsTextarea = document.getElementById('commentsTextarea');
-            const comments = commentsTextarea ? commentsTextarea.value.trim() : '';
-
-            if (comments === '') {
-                if (commentsTextarea) {
-                    commentsTextarea.classList.add('is-invalid');
-                    commentsTextarea.focus();
-                }
-                return;
-            }
-
-            console.log('Submitting disapprove...');
-
-            // Update hidden fields
-            updateHiddenFields();
-
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            if (statusInput) statusInput.value = 'Disapprove';
-            if (commentsInput) commentsInput.value = comments;
-
-            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
-            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
-
-            // Close comments modal and show success modal
-            closeCommentsModal();
-            showSuccessModal();
-
-            // Submit the form after a short delay
-            setTimeout(() => {
-                console.log('Final form submission - Disapprove');
-                const form = document.getElementById('statusForm');
-                if (form) {
-                    console.log('Submitting form...');
-                    form.submit();
-                } else {
-                    console.error('Form not found!');
-                }
-            }, 1500);
-        }
-
-        function submitRetake() {
-            // No validation needed for Retake - just show the modal
-            const modal = document.getElementById('retakeModal');
-            const textarea = document.getElementById('retakeReasonTextarea');
-            if (modal) modal.style.display = 'block';
-            if (textarea) textarea.focus();
-        }
-
-        function closeRetakeModal() {
-            const modal = document.getElementById('retakeModal');
-            const textarea = document.getElementById('retakeReasonTextarea');
-            const errorSpan = document.getElementById('retakeReasonError');
-            if (modal) modal.style.display = 'none';
-            if (textarea) {
-                textarea.value = '';
-                textarea.classList.remove('is-invalid');
-            }
-            if (errorSpan) errorSpan.style.display = 'none';
-        }
-
-        function confirmRetake() {
-            const retakeReasonTextarea = document.getElementById('retakeReasonTextarea');
-            const retakeReason = retakeReasonTextarea ? retakeReasonTextarea.value.trim() : '';
-            const retakeReasonError = document.getElementById('retakeReasonError');
-
-            // Validate that reason is provided and meets minimum length
-            if (retakeReason === '' || retakeReason.length < 10) {
-                if (retakeReasonTextarea) {
-                    retakeReasonTextarea.classList.add('is-invalid');
-                }
-                if (retakeReasonError) {
-                    retakeReasonError.style.display = 'block';
-                }
-                if (retakeReasonTextarea) retakeReasonTextarea.focus();
-                return;
-            }
-
-            console.log('Submitting retake with reason...');
-
-            // Update hidden fields
-            updateHiddenFields();
-
-            // Set status to Retake and add the reason to comments
-            const statusInput = document.getElementById('statusInput');
-            const commentsInput = document.getElementById('commentsInput');
-            if (statusInput) statusInput.value = 'Retake';
-            if (commentsInput) commentsInput.value = 'RETAKE REQUEST: ' + retakeReason;
-
-            console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
-            console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
-
-            // Close retake modal and show success modal
-            closeRetakeModal();
-            showSuccessModal();
-
-            // Submit the form after a short delay
-            setTimeout(() => {
-                console.log('Final form submission - Retake');
+                console.log('Final form submission - Claimed');
                 const form = document.getElementById('statusForm');
                 if (form) {
                     console.log('Submitting form...');
@@ -2597,310 +1868,7 @@
             }, 3000);
         }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Others checkbox visibility
-            toggleOthersInput();
-
-            // Add change event listener to Others checkbox
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            if (othersCheckbox) {
-                othersCheckbox.addEventListener('change', function() {
-                    toggleOthersInput();
-                    updateReflection();
-                });
-            }
-
-            // Add event listeners for inputs
-            const grantedAmountInput = document.getElementById('grantedAmountInput');
-            const cmoNotes = document.getElementById('cmoNotesInput');
-
-            if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
-            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
-
-            // Add event listeners to all supporting document checkboxes
-            const supportingDocCheckboxes = document.querySelectorAll('.supporting-doc');
-            supportingDocCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateReflection);
-            });
-
-            // Initialize reflection field on page load
-            updateReflection();
-
-            // Add form submission debugging
-            const statusForm = document.getElementById('statusForm');
-            if (statusForm) {
-                statusForm.addEventListener('submit', function(e) {
-                    console.log('=== FORM SUBMISSION DEBUG INFO ===');
-                    console.log('Form action:', this.action);
-                    console.log('Form method:', this.method);
-
-                    const statusInput = document.getElementById('statusInput');
-                    const commentsInput = document.getElementById('commentsInput');
-                    const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
-                    const processByInput = document.getElementById('processByInput');
-                    const grantedAmountInput = document.getElementById('grantedAmountInput');
-
-                    if (statusInput) console.log('Status:', statusInput.value);
-                    if (commentsInput) console.log('Comments:', commentsInput.value);
-                    if (forCMOPersonnelInput) console.log('CMO Reflection:', forCMOPersonnelInput.value);
-                    if (processByInput) console.log('Processed By:', processByInput.value);
-                    if (grantedAmountInput) console.log('Granted Amount:', grantedAmountInput.value);
-
-                    // Log all checked supporting documents
-                    console.log('Supporting Docs:', getSelectedSupportingDocs());
-
-                    console.log('Form data:', new FormData(this));
-                    console.log('==============================');
-                });
-            }
-        });
-
-        // Keyboard shortcuts for PDF viewer
-        document.addEventListener('keydown', function(e) {
-            const pdfViewer = document.getElementById("pdfViewerOverlay");
-            if (!pdfViewer || pdfViewer.style.display !== "block") return;
-
-            switch(e.key) {
-                case 'Escape':
-                    closePDFViewer();
-                    e.preventDefault();
-                    break;
-                case 'ArrowLeft':
-                    pdfPrevPage();
-                    e.preventDefault();
-                    break;
-                case 'ArrowRight':
-                    pdfNextPage();
-                    e.preventDefault();
-                    break;
-                case '+':
-                case '=':
-                    if (e.ctrlKey || e.metaKey) {
-                        pdfZoomIn();
-                        e.preventDefault();
-                    }
-                    break;
-                case '-':
-                    if (e.ctrlKey || e.metaKey) {
-                        pdfZoomOut();
-                        e.preventDefault();
-                    }
-                    break;
-                case '0':
-                    if (e.ctrlKey || e.metaKey) {
-                        pdfScale = 1.0;
-                        renderPDFPage(currentPdfPage);
-                        e.preventDefault();
-                    }
-                    break;
-                case 'Home':
-                    currentPdfPage = 1;
-                    renderPDFPage(currentPdfPage);
-                    e.preventDefault();
-                    break;
-                case 'End':
-                    currentPdfPage = totalPdfPages;
-                    renderPDFPage(currentPdfPage);
-                    e.preventDefault();
-                    break;
-            }
-        });
-
-        // Touch gestures for mobile
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', function(e) {
-            const pdfViewer = document.getElementById("pdfViewerOverlay");
-            if (!pdfViewer || pdfViewer.style.display !== "block") return;
-
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', function(e) {
-            const pdfViewer = document.getElementById("pdfViewerOverlay");
-            if (!pdfViewer || pdfViewer.style.display !== "block") return;
-
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const diffX = touchStartX - touchEndX;
-            const diffY = touchStartY - touchEndY;
-
-            // Horizontal swipe for page navigation (min 50px swipe)
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-                if (diffX > 0) {
-                    // Swipe left - next page
-                    pdfNextPage();
-                } else {
-                    // Swipe right - previous page
-                    pdfPrevPage();
-                }
-            }
-        });
-
-        // Add resize handler for responsive PDF viewer
-        window.addEventListener('resize', function() {
-            const pdfViewer = document.getElementById("pdfViewerOverlay");
-            if (pdfViewer && pdfViewer.style.display === "block" && pdfDocument) {
-                // Re-render current page on resize
-                renderPDFPage(currentPdfPage);
-            }
-        });
-
-        // Close modals when clicking outside
-        window.addEventListener('click', function(event) {
-            const commentsModal = document.getElementById('commentsModal');
-            const retakeModal = document.getElementById('retakeModal');
-            const successModal = document.getElementById('successModal');
-
-            if (event.target === commentsModal) {
-                closeCommentsModal();
-            }
-            if (event.target === retakeModal) {
-                closeRetakeModal();
-            }
-            if (event.target === successModal) {
-                successModal.style.display = 'none';
-            }
-        });
-
-        // Function to handle single checkbox selection
-        function handleSingleCheckboxSelection(event) {
-            const clickedCheckbox = event.target;
-
-            // If the clicked checkbox is being checked
-            if (clickedCheckbox.checked) {
-                // Uncheck all other single-doc checkboxes
-                const allCheckboxes = document.querySelectorAll('.single-doc');
-                allCheckboxes.forEach(checkbox => {
-                    if (checkbox !== clickedCheckbox) {
-                        checkbox.checked = false;
-                    }
-                });
-
-                // Hide any error message
-                hideSingleDocError();
-
-                // If "Others" is checked, show the input field
-                if (clickedCheckbox.id === 'othersCheckbox') {
-                    document.getElementById('cmoOthersRow').style.display = 'flex';
-                    document.getElementById('cmoNotesInput').required = true;
-                } else {
-                    // If another checkbox is checked, hide the Others input field
-                    document.getElementById('cmoOthersRow').style.display = 'none';
-                    document.getElementById('cmoNotesInput').required = false;
-                    document.getElementById('cmoNotesInput').classList.remove('is-invalid');
-                }
-            }
-            // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
-            else {
-                const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-                if (checkedCheckboxes.length === 0) {
-                    // Don't allow unchecking if it would leave none checked
-                    clickedCheckbox.checked = true;
-                    showSingleDocError("You must select at least one document.");
-                }
-            }
-
-            // Update CMO reflection
-            updateReflection();
-        }
-
-        // Function to show single document error
-        function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
-            const errorDiv = document.getElementById('singleDocError');
-            if (errorDiv) {
-                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        // Function to hide single document error
-        function hideSingleDocError() {
-            const errorDiv = document.getElementById('singleDocError');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        // Function to validate single document selection
-        function validateSingleDocument() {
-            const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
-
-            if (checkedCheckboxes.length === 0) {
-                showSingleDocError("Please select at least one supporting document.");
-                return false;
-            }
-
-            if (checkedCheckboxes.length > 1) {
-                showSingleDocError();
-                return false;
-            }
-
-            // Validate "Others" field if "Others" is selected
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            const cmoNotesInput = document.getElementById('cmoNotesInput');
-            if (othersCheckbox && othersCheckbox.checked) {
-                if (!cmoNotesInput.value.trim()) {
-                    cmoNotesInput.classList.add('is-invalid');
-                    showSingleDocError("Please specify the other documents when 'Others' is selected.");
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        // Update the validation function to use single document validation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners to all single-doc checkboxes
-            const singleDocCheckboxes = document.querySelectorAll('.single-doc');
-            singleDocCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', handleSingleCheckboxSelection);
-            });
-
-            // Initialize Others field visibility
-            const othersCheckbox = document.getElementById('othersCheckbox');
-            if (othersCheckbox && othersCheckbox.checked) {
-                document.getElementById('cmoOthersRow').style.display = 'flex';
-            }
-
-            // Update form validation to use single document validation
-            window.validateCMOForm = function() {
-                // Reset errors
-                document.getElementById('supportingDocsError').style.display = 'none';
-                document.getElementById('grantedAmountInput').classList.remove('is-invalid');
-                document.getElementById('grantedAmountError').style.display = 'none';
-
-                // Validate single document
-                if (!validateSingleDocument()) {
-                    const cmoSection = document.querySelector('.cmo-details');
-                    if (cmoSection) {
-                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    return false;
-                }
-
-                // Validate amount granted
-                const grantedAmountInput = document.getElementById('grantedAmountInput');
-                if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
-                    grantedAmountInput.classList.add('is-invalid');
-                    document.getElementById('grantedAmountError').style.display = 'block';
-                    const cmoSection = document.querySelector('.cmo-details');
-                    if (cmoSection) {
-                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    alert('Please enter a valid amount granted (must be greater than 0).');
-                    return false;
-                }
-
-                return true;
-            };
-        });
-
-        // Function to toggle Valid ID view (similar to Additional Information)
+        // Function to toggle Valid ID view
         function toggleValidID(frontImagePath, backImagePath) {
             const viewButton = document.getElementById('viewValidIDBtn');
             const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
@@ -3040,15 +2008,106 @@
             }
         }
 
-        // Make sure the encrypted ID section is visible by default
-        document.addEventListener('DOMContentLoaded', function() {
-            const validIDEncrypted = document.getElementById('validIDEncrypted');
-            const validIDContainer = document.getElementById('validIDContainer');
-            const validIDLoading = document.getElementById('validIDLoading');
+        // Keyboard shortcuts for PDF viewer
+        document.addEventListener('keydown', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
 
-            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
-            if (validIDContainer) validIDContainer.style.display = 'none';
-            if (validIDLoading) validIDLoading.style.display = 'none';
+            switch(e.key) {
+                case 'Escape':
+                    closePDFViewer();
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    pdfPrevPage();
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    pdfNextPage();
+                    e.preventDefault();
+                    break;
+                case '+':
+                case '=':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomIn();
+                        e.preventDefault();
+                    }
+                    break;
+                case '-':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfZoomOut();
+                        e.preventDefault();
+                    }
+                    break;
+                case '0':
+                    if (e.ctrlKey || e.metaKey) {
+                        pdfScale = 1.0;
+                        renderPDFPage(currentPdfPage);
+                        e.preventDefault();
+                    }
+                    break;
+                case 'Home':
+                    currentPdfPage = 1;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+                case 'End':
+                    currentPdfPage = totalPdfPages;
+                    renderPDFPage(currentPdfPage);
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (!pdfViewer || pdfViewer.style.display !== "block") return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            // Horizontal swipe for page navigation (min 50px swipe)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Swipe left - next page
+                    pdfNextPage();
+                } else {
+                    // Swipe right - previous page
+                    pdfPrevPage();
+                }
+            }
+        });
+
+        // Add resize handler for responsive PDF viewer
+        window.addEventListener('resize', function() {
+            const pdfViewer = document.getElementById("pdfViewerOverlay");
+            if (pdfViewer && pdfViewer.style.display === "block" && pdfDocument) {
+                // Re-render current page on resize
+                renderPDFPage(currentPdfPage);
+            }
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const successModal = document.getElementById('successModal');
+
+            if (event.target === successModal) {
+                successModal.style.display = 'none';
+            }
         });
     </script>
 
