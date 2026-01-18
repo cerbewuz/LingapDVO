@@ -1025,6 +1025,16 @@
                             <i class="bi bi-eye-fill me-2" id="hospitalBtnIcon"></i><span id="hospitalBtnText">View Hospital Information</span>
                         </button>
                     </h5>
+
+                    <!-- Alert shown when Hospital Info is encrypted -->
+                    <div class="alert alert-info d-flex align-items-center mb-3" id="hospitalInfoAlert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <strong>Hospital Information is Encrypted</strong><br>
+                            For security and privacy, hospital information is encrypted. Click the "View Hospital Information" button above and enter your password to view it.
+                        </div>
+                    </div>
+
                     <!-- Encrypted Hospital Information Display (shown by default) -->
                     <div class="encrypted-info-section" id="hospitalInfoEncrypted">
                         <div class="row g-3">
@@ -1032,25 +1042,25 @@
                                 <div class="mb-3">
                                     <div class="info-label">Hospital/Facility Name:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalFacilityName"]</span>
+                                        <span class="encrypted-text">@ViewData["HospitalFacilityNameEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Hospital Address:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalFacilityAddress"]</span>
+                                        <span class="encrypted-text">@ViewData["HospitalFacilityAddressEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Diagnosis/Medical Condition:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DiagnosisMedicalCondition"]</span>
+                                        <span class="encrypted-text">@ViewData["DiagnosisMedicalConditionEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Ward/Room Type:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["WardRoomType"]</span>
+                                        <span class="encrypted-text">@ViewData["WardRoomTypeEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>
@@ -1058,19 +1068,19 @@
                                 <div class="mb-3">
                                     <div class="info-label">Hospital Bill/Cost:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalBillCost"]</span>
+                                        <span class="encrypted-text">@ViewData["HospitalBillCostEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Admission Date:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["AdmissionDate"]</span>
+                                        <span class="encrypted-text">@ViewData["AdmissionDateEncrypted"]</span>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="info-label">Discharge Date:</div>
                                     <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DischargeDate"]</span>
+                                        <span class="encrypted-text">@ViewData["DischargeDateEncrypted"]</span>
                                     </div>
                                 </div>
                             </div>

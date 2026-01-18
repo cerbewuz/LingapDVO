@@ -467,29 +467,124 @@
         margin-bottom: 1rem;
     }
 
-    /* Hospital Info Container */
+    /* Hospital Info Container - Dark Theme for Decrypted */
     .hospital-info-container {
         display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
         padding: 1.5rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
     }
 
     .hospital-info-visible {
         display: block;
     }
 
-    /* Hospital Loading Container */
+    /* Hospital Loading Container - Dark Theme */
     .hospital-loading-container {
         display: none;
-        background-color: #f8f9fa;
+        background-color: #2c3e50;
         border-radius: 8px;
         padding: 2rem;
         margin-top: 1rem;
-        border: 1px solid #dee2e6;
+        border: 1px solid #34495e;
         text-align: center;
+        color: white;
+    }
+
+        .hospital-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hospital-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Decrypted Display Styles */
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-field .info-label {
+        color: #bdc3c7 !important;
+    }
+
+        .decrypted-field .info-label i {
+            color: #ecf0f1 !important;
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 </style>
 
@@ -663,15 +758,22 @@
                 <h5 class="section-header d-flex align-items-center justify-content-between">
                     <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
                     <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
-                            onclick="openViewAdditionalInfoModal('Hospital', '@ViewData["Id"]', {
-                                labels: ['Hospital/Facility Name', 'Hospital Address', 'Diagnosis/Medical Condition', 'Ward/Room Type', 'Hospital Bill/Cost', 'Admission Date', 'Discharge Date'],
-                                values: ['@ViewData["HospitalFacilityName"]', '@ViewData["HospitalFacilityAddress"]', '@ViewData["DiagnosisMedicalCondition"]', '@ViewData["WardRoomType"]', '@ViewData["HospitalBillCost"]', '@ViewData["AdmissionDate"]', '@ViewData["DischargeDate"]'],
-                                names: ['HospitalFacilityName', 'HospitalFacilityAddress', 'DiagnosisMedicalCondition', 'WardRoomType', 'HospitalBillCost', 'AdmissionDate', 'DischargeDate']
-                            })"
+                            onclick="toggleHospitalInfo()"
+                            data-decrypted="false"
                             title="Click to view encrypted hospital information">
-                        <i class="bi bi-eye-fill me-2"></i>View Hospital Information
+                        <i class="bi bi-eye-fill me-2" id="hospitalBtnIcon"></i><span id="hospitalBtnText">View Hospital Information</span>
                     </button>
                 </h5>
+
+                <!-- Alert shown when Hospital Info is encrypted -->
+                <div class="alert alert-info d-flex align-items-center mb-3" id="hospitalInfoAlert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                        <strong>Hospital Information is Encrypted</strong><br>
+                        For security and privacy, hospital information is encrypted. Click the "View Hospital Information" button above and enter your password to view it.
+                    </div>
+                </div>
+
                 <!-- Encrypted Hospital Information Display (shown by default) -->
                 <div class="encrypted-info-section" id="hospitalInfoEncrypted">
                     <div class="row g-3">
@@ -679,25 +781,25 @@
                             <div class="mb-3">
                                 <div class="info-label">Hospital/Facility Name:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["HospitalFacilityName"]</span>
+                                    <span class="encrypted-text">@ViewData["HospitalFacilityNameEncrypted"]</span>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="info-label">Hospital Address:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["HospitalFacilityAddress"]</span>
+                                    <span class="encrypted-text">@ViewData["HospitalFacilityAddressEncrypted"]</span>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="info-label">Diagnosis/Medical Condition:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["DiagnosisMedicalCondition"]</span>
+                                    <span class="encrypted-text">@ViewData["DiagnosisMedicalConditionEncrypted"]</span>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="info-label">Ward/Room Type:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["WardRoomType"]</span>
+                                    <span class="encrypted-text">@ViewData["WardRoomTypeEncrypted"]</span>
                                 </div>
                             </div>
                         </div>
@@ -705,19 +807,19 @@
                             <div class="mb-3">
                                 <div class="info-label">Hospital Bill/Cost:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["HospitalBillCost"]</span>
+                                    <span class="encrypted-text">@ViewData["HospitalBillCostEncrypted"]</span>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="info-label">Admission Date:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["AdmissionDate"]</span>
+                                    <span class="encrypted-text">@ViewData["AdmissionDateEncrypted"]</span>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="info-label">Discharge Date:</div>
                                 <div class="encrypted-display">
-                                    <span class="encrypted-text">@ViewData["DischargeDate"]</span>
+                                    <span class="encrypted-text">@ViewData["DischargeDateEncrypted"]</span>
                                 </div>
                             </div>
                         </div>
