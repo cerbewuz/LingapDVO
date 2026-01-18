@@ -15,6 +15,7 @@
         .decrypted-field .info-label i {
             color: #ecf0f1 !important;
         }
+
     .align-first-checkbox {
         margin-top: 0 !important;
     }
@@ -725,7 +726,7 @@
             color: #0066cc;
         }
 
-    /* Additional Information Loading Container */
+    /* Additional Information Loading Container - UPDATED: Removed the 5-second loading */
     .additional-loading-container {
         display: none;
         background-color: #2c3e50;
@@ -736,14 +737,6 @@
         text-align: center;
         color: white;
     }
-
-        .additional-loading-container .progress {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .additional-loading-container .progress-bar {
-            background-color: #3498db;
-        }
 
     /* Valid ID Styles */
     .valid-id-loading {
@@ -1324,20 +1317,6 @@
                             </div>
                         </div>
                     }
-                </div>
-
-                <!-- Additional Information Loading Container (shown while decrypting) -->
-                <div class="additional-loading-container" id="additionalLoadingContainer">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3">Decrypting additional information... Please wait 5 seconds</p>
-                        <div class="progress mt-2" style="height: 8px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                 role="progressbar" id="additionalLoadingProgress" style="width: 0%"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
@@ -2071,7 +2050,7 @@
             }
         }
 
-        // Additional Information Functions (Matching Hospital Assistance pattern)
+        // Additional Information Functions (Simplified - No 5-second loading)
         function getOtherAssistanceFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
 
@@ -2185,15 +2164,9 @@
             window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption
+        // Function to show additional information after successful decryption - DIRECT SHOW (No 5-second delay)
         function showAdditionalInfoAfterDecryption() {
             console.log('Showing additional information after decryption...');
-
-            // Hide the loading container
-            const loadingContainer = document.getElementById('additionalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'none';
-            }
 
             // Hide the encrypted display section
             const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
@@ -2212,9 +2185,6 @@
             if (additionalInfoContainer) {
                 additionalInfoContainer.style.display = 'block';
                 additionalInfoContainer.classList.add('additional-info-visible', 'decrypted-display');
-
-                // Populate the fields based on assistance type
-                populateAdditionalInfoFields();
 
                 // Scroll to the additional information section
                 setTimeout(() => {
@@ -2241,257 +2211,10 @@
             }
         }
 
-        // Function to populate additional information fields
-        function populateAdditionalInfoFields() {
-            const assistanceType = '@ViewData["Typeassistance"]';
-            const container = document.getElementById('additionalInfoFields');
-
-            if (!container) return;
-
-            let htmlContent = '';
-
-            if (assistanceType === 'Medicine Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-capsule me-1"></i>Medicine Name:
-                            </div>
-                            <div class="info-value decrypted-value" id="medicineName">
-                                @ViewData["MedicineName"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-123 me-1"></i>Medicine Quantity:
-                            </div>
-                            <div class="info-value decrypted-value" id="medicineQuantity">
-                                @ViewData["MedicineQuantity"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
-                            </div>
-                            <div class="info-value decrypted-value" id="medicineCost">
-                                @ViewData["MedicineCost"]
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
-                            </div>
-                            <div class="info-value decrypted-value" id="prescribingDoctor">
-                                @ViewData["PrescribingDoctor"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
-                            </div>
-                            <div class="info-value decrypted-value" id="doctorContact">
-                                @ViewData["DoctorContactDetail"]
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Laboratory/X-ray/ECG/2D Echo Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-building me-1"></i>Laboratory Center Name:
-                            </div>
-                            <div class="info-value decrypted-value" id="labCenterName">
-                                @ViewData["LaboratoryCenterName"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
-                            </div>
-                            <div class="info-value decrypted-value" id="labCenterAddress">
-                                @ViewData["LaboratoryCenterAddress"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-clipboard-data me-1"></i>Test Name:
-                            </div>
-                            <div class="info-value decrypted-value" id="testName">
-                                @ViewData["TestName"]
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-cash-stack me-1"></i>Test Cost:
-                            </div>
-                            <div class="info-value decrypted-value" id="testCost">
-                                @ViewData["TestCost"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-info-circle me-1"></i>Test Other Info:
-                            </div>
-                            <div class="info-value decrypted-value" id="testOtherInfo">
-                                @ViewData["TestOtherInfo"]
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Therapy/Rehabilitation Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
-                            </div>
-                            <div class="info-value decrypted-value" id="therapyFacilityName">
-                                @ViewData["TherapyFacilityName"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
-                            </div>
-                            <div class="info-value decrypted-value" id="therapyFacilityAddress">
-                                @ViewData["TherapyFacilityAddress"]
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
-                            </div>
-                            <div class="info-value decrypted-value" id="therapyFacilityContact">
-                                @ViewData["TherapyFacilityContact"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
-                            </div>
-                            <div class="info-value decrypted-value" id="therapyType">
-                                @ViewData["TherapyType"]
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (assistanceType === 'Medical Equipment/Apparatus Assistance') {
-                htmlContent = `
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-tools me-1"></i>Equipment Name:
-                            </div>
-                            <div class="info-value decrypted-value" id="equipmentName">
-                                @ViewData["EquipmentName"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-tag me-1"></i>Equipment Brand:
-                            </div>
-                            <div class="info-value decrypted-value" id="equipmentBrand">
-                                @ViewData["EquipmentBrand"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
-                            </div>
-                            <div class="info-value decrypted-value" id="equipmentCategory">
-                                @ViewData["EquipmentCategory"]
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-123 me-1"></i>Equipment Quantity:
-                            </div>
-                            <div class="info-value decrypted-value" id="equipmentQuantity">
-                                @ViewData["EquipmentQuantity"]
-                            </div>
-                        </div>
-                        <div class="decrypted-field mb-3">
-                            <div class="info-label">
-                                <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
-                            </div>
-                            <div class="info-value decrypted-value" id="equipmentCost">
-                                @ViewData["EquipmentCost"]
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = htmlContent;
-        }
-
-        // Function to start the 5-second loading animation
-        function startAdditionalInfoLoading() {
-            console.log('Starting additional information loading...');
-
-            // Hide alert
-            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
-            if (additionalInfoAlert) {
-                additionalInfoAlert.style.display = 'none';
-            }
-
-            // Show loading container
-            const loadingContainer = document.getElementById('additionalLoadingContainer');
-            if (loadingContainer) {
-                loadingContainer.style.display = 'block';
-            }
-
-            // Hide encrypted display
-            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
-            if (additionalInfoEncrypted) {
-                additionalInfoEncrypted.style.display = 'none';
-            }
-
-            // Hide any existing additional info container
-            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
-            if (additionalInfoContainer) {
-                additionalInfoContainer.style.display = 'none';
-                additionalInfoContainer.classList.remove('additional-info-visible');
-            }
-
-            // Start 5-second progress bar
-            const progressBar = document.getElementById('additionalLoadingProgress');
-            if (progressBar) {
-                let progress = 0;
-                const totalTime = 5000; // 5 seconds
-                const interval = 100; // Update every 100ms
-                const increment = (interval / totalTime) * 100;
-
-                const progressInterval = setInterval(() => {
-                    progress += increment;
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(progressInterval);
-
-                        // After 5 seconds, show the additional information
-                        setTimeout(() => {
-                            showAdditionalInfoAfterDecryption();
-                        }, 300);
-                    } else {
-                        progressBar.style.width = progress + '%';
-                    }
-                }, interval);
-            }
-        }
-
         // IMPORTANT: This function is called from the shared modal after successful decryption
+        // DIRECT SHOW - No 5-second loading animation
         window.onAdditionalInfoDecrypted = function() {
-            startAdditionalInfoLoading();
+            showAdditionalInfoAfterDecryption();
         };
 
         // Initialize page
