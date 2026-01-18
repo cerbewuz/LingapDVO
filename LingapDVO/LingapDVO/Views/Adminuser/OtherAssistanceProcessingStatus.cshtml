@@ -126,6 +126,120 @@
         }
     }
 
+    /* CMO Details Styles */
+    .cmo-details {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .cmo-section-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .cmo-checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+
+    .cmo-checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+
+        .cmo-checkbox-item:hover {
+            border-color: #3498db;
+            background-color: #e8f4fd;
+        }
+
+        .cmo-checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .cmo-checkbox-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+    .cmo-processed-by {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+        text-align: center;
+        font-weight: 600;
+        color: #2c3e50;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* CMO Others Field Styling */
+    .cmo-others-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        align-items: flex-end;
+    }
+
+    .cmo-others-checkbox {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        height: fit-content;
+        min-height: 46px;
+    }
+
+    .cmo-others-input {
+        flex: 1;
+    }
+
+    /* Single Document Error Message */
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+    }
+
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
     /* Encrypted Display Styles */
     .encrypted-info-section {
         background-color: #f8f9fa;
@@ -719,6 +833,19 @@
         .id-image {
             height: 150px;
         }
+        /* CMO responsive adjustments */
+        .cmo-checkbox-group {
+            grid-template-columns: 1fr;
+        }
+
+        .cmo-others-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cmo-others-checkbox {
+            min-height: 40px;
+        }
         /* PDF viewer responsive adjustments from first code */
         .pdf-viewer-toolbar {
             flex-wrap: wrap;
@@ -819,27 +946,6 @@
 
         .comments-modal-close:hover {
             color: var(--primary-color);
-        }
-
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-
-    .is-invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-        .is-invalid ~ .invalid-feedback {
-            display: block;
         }
 
     /* Retake Modal from first code */
@@ -1026,15 +1132,18 @@
 </div>
 
 <div class="receipt-container">
-    <form asp-action="OtherAssistanceApproveStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
+    <form asp-action="OtherAssistanceProcessingStatus" asp-route-id="@ViewData["Id"]" method="post" id="statusForm">
         @Html.AntiForgeryToken()
 
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="id" value="@ViewData["Id"]" />
-        <input type="hidden" id="statusInput" name="status3" value="@ViewData["Status3"]">
+        <input type="hidden" id="statusInput" name="Status2" value="" />
         <input type="hidden" id="commentsInput" name="Comments" value="" />
         <input type="hidden" id="forCMOPersonnelInput" name="ForCMOPERSONNEL" value="@ViewData["ForCMOPERSONNEL"]" />
         <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
+        <input type="hidden" id="grantedAmountField" name="GrantedAmount" value="" />
+        <input type="hidden" id="supportingDocsField" name="SupportingDocs" value="" />
+        <input type="hidden" id="cmoNotesField" name="CmoNotes" value="" />
 
         <div class="receipt-body">
 
@@ -1485,7 +1594,69 @@
             <!-- CMO Section -->
             <div class="receipt-section">
                 <h5 class="section-header">CMO Details</h5>
-                <div class="info-value">@ViewData["ForCMOPERSONNEL"]</div>
+                <div class="cmo-details">
+                    <div class="mt-4">
+                        <label class="form-label cmo-section-title">Supporting Documents Attached: <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">Select only one supporting document</small>
+                        <div class="cmo-checkbox-group">
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="medicalCertificate" value="Medical Certificate" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Medical Certificate") ? "checked" : "")>
+                                <label class="form-check-label" for="medicalCertificate">Medical Certificate</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="laboratoryRequest" value="Laboratory/X-ray Results" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Laboratory Request") ? "checked" : "")>
+                                <label class="form-check-label" for="laboratoryRequest">Laboratory/X-ray Results</label>
+                            </div>
+                            <div class="cmo-checkbox-item">
+                                <input class="form-check-input supporting-doc single-doc" type="checkbox" id="othersCheckbox" value="Others" @(checkedCMO.ContainsKey("Docs") && checkedCMO["Docs"].Contains("Others") ? "checked" : "")>
+                                <label class="form-check-label" for="othersCheckbox">Others</label>
+                            </div>
+                        </div>
+
+                        <!-- Single Document Error Message -->
+                        <div class="alert alert-warning mt-2" id="singleDocError" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Only one document can be selected at a time. Please choose only one supporting document.
+                        </div>
+
+                        <!-- Others Field -->
+                        <div class="cmo-others-row" id="cmoOthersRow" style="display: none;">
+                            <div class="cmo-others-input">
+                                <label class="form-label">Specify Other Documents: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="cmoNotesInput" placeholder="Enter other supporting documents..." value="@(checkedCMO.ContainsKey("Others") ? checkedCMO["Others"] : "")">
+                                <div class="invalid-feedback" id="cmoNotesError">
+                                    Please specify the other documents.
+                                </div>
+                                <small class="text-muted">Enter the specific document(s) not listed above</small>
+                            </div>
+                        </div>
+
+                        <div class="invalid-feedback" id="supportingDocsError" style="display: none;">
+                            Please select at least one supporting document.
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label cmo-section-title">Amount Granted: <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="grantedAmountInput" required value="@(checkedCMO.ContainsKey("GrantedAmount") ? checkedCMO["GrantedAmount"] : "")">
+                            <div class="invalid-feedback" id="grantedAmountError">
+                                Please enter the amount granted.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="cmo-processed-by">
+                                <div>Processed by:</div>
+                                <div>@(Context.Session.GetString("AdminFullname") ?? "Admin Name Not Found")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display: none">
+                        <label class="form-label">CMO Reflection info:</label>
+                        <input type="text" class="form-control" id="cmoReflectionField" placeholder="Auto-generated info..." value="@ViewData["ForCMOPERSONNEL"]">
+                    </div>
+                </div>
             </div>
 
             <!-- Valid ID and Submitted Documents Section -->
@@ -1653,8 +1824,8 @@
                 <div class="info-row">
                     <div class="info-label">Current Status:</div>
                     <div class="info-value">
-                        <span class="status-badge status-@(ViewData["Status2"]?.ToString()?.ToLower())">
-                            @ViewData["Status2"]
+                        <span class="status-badge status-@(ViewData["Status"]?.ToString()?.ToLower())">
+                            @ViewData["Status"]
                         </span>
                     </div>
                 </div>
@@ -2146,11 +2317,22 @@
             if (validIDEncrypted) validIDEncrypted.style.display = 'block';
             if (validIDContainer) validIDContainer.style.display = 'none';
             if (validIDLoading) validIDLoading.style.display = 'none';
+
+            // Initialize CMO functionality
+            initializeCMOFunctionality();
         });
 
         // Status Submission Functions (UPDATED to match first code)
         function submitApprove() {
             console.log('Submitting approve...');
+
+            // Validate the CMO form first
+            if (!validateCMOForm()) {
+                return; // Stop if validation fails
+            }
+
+            // Update hidden fields
+            updateHiddenFields();
 
             // Set the status and comments
             const statusInput = document.getElementById('statusInput');
@@ -2160,6 +2342,7 @@
 
             console.log('Status set to:', statusInput ? statusInput.value : 'N/A');
             console.log('Comments:', commentsInput ? commentsInput.value : 'N/A');
+            console.log('CMO Reflection:', document.getElementById('forCMOPersonnelInput') ? document.getElementById('forCMOPersonnelInput').value : 'N/A');
 
             // Show loading modal
             showSuccessModal();
@@ -2208,6 +2391,9 @@
             }
 
             console.log('Submitting disapprove...');
+
+            // Update hidden fields
+            updateHiddenFields();
 
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
@@ -2272,6 +2458,9 @@
             }
 
             console.log('Submitting retake with reason...');
+
+            // Update hidden fields
+            updateHiddenFields();
 
             // Set status to Retake and add the reason to comments
             const statusInput = document.getElementById('statusInput');
@@ -2448,6 +2637,326 @@
                 validIDContainer.style.display = 'none';
             }
         }
+
+        // CMO Functions
+        function initializeCMOFunctionality() {
+            // Initialize Others checkbox visibility
+            toggleOthersInput();
+
+            // Add change event listener to Others checkbox
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox) {
+                othersCheckbox.addEventListener('change', function() {
+                    toggleOthersInput();
+                    updateReflection();
+                });
+            }
+
+            // Add event listeners for inputs
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+
+            if (grantedAmountInput) grantedAmountInput.addEventListener('input', updateReflection);
+            if (cmoNotes) cmoNotes.addEventListener('input', updateReflection);
+
+            // Add event listeners to all supporting document checkboxes
+            const supportingDocCheckboxes = document.querySelectorAll('.supporting-doc');
+            supportingDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateReflection);
+            });
+
+            // Initialize reflection field on page load
+            updateReflection();
+        }
+
+        // CMO Others input toggle
+        function toggleOthersInput() {
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const othersRow = document.getElementById('cmoOthersRow');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+
+            if (!othersCheckbox || !othersRow || !cmoNotesInput) return;
+
+            if (othersCheckbox.checked) {
+                othersRow.style.display = 'flex';
+                cmoNotesInput.required = true;
+            } else {
+                othersRow.style.display = 'none';
+                cmoNotesInput.required = false;
+                cmoNotesInput.classList.remove('is-invalid');
+            }
+        }
+
+        // Update CMO Reflection
+        function updateReflection() {
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const cmoNotes = document.getElementById('cmoNotesInput');
+            const reflectionField = document.getElementById('cmoReflectionField');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
+            const docCheckboxes = document.querySelectorAll('.supporting-doc:checked');
+
+            let parts = [];
+
+            // Add granted amount if exists
+            if (grantedAmountInput && grantedAmountInput.value.trim()) {
+                parts.push(`GrantedAmount: ${grantedAmountInput.value.trim()}`);
+            }
+
+            // Add checked documents
+            const checkedDocs = Array.from(docCheckboxes).map(cb => {
+                if (cb.value === 'Others' && cmoNotes && cmoNotes.value.trim()) {
+                    return `Others: ${cmoNotes.value.trim()}`;
+                }
+                return cb.value;
+            });
+
+            if (checkedDocs.length > 0) {
+                parts.push(`Docs: ${checkedDocs.join(', ')}`);
+            }
+
+            const reflectionValue = parts.join(' , ');
+            if (reflectionField) reflectionField.value = reflectionValue;
+
+            // Update the hidden field as well
+            if (forCMOPersonnelInput) forCMOPersonnelInput.value = reflectionValue;
+
+            console.log('CMO Reflection updated:', reflectionValue);
+            return reflectionValue;
+        }
+
+        // Update hidden fields before submission
+        function updateHiddenFields() {
+            // Update CMO reflection
+            updateReflection();
+
+            // Update granted amount
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            const grantedAmountField = document.getElementById('grantedAmountField');
+            if (grantedAmountInput && grantedAmountField) {
+                grantedAmountField.value = grantedAmountInput.value;
+            }
+
+            // Update supporting docs
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const supportingDocsField = document.getElementById('supportingDocsField');
+            if (supportingDocsField) {
+                const docValues = Array.from(supportingDocs).map(cb => cb.value);
+                supportingDocsField.value = docValues.join(',');
+            }
+
+            // Update CMO notes
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            const cmoNotesField = document.getElementById('cmoNotesField');
+            if (cmoNotesInput && cmoNotesField) {
+                cmoNotesField.value = cmoNotesInput.value;
+            }
+        }
+
+        // Get all selected supporting documents including "Others"
+        function getSelectedSupportingDocs() {
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            const docValues = [];
+
+            supportingDocs.forEach(checkbox => {
+                if (checkbox.value === 'Others') {
+                    const cmoNotesInput = document.getElementById('cmoNotesInput');
+                    if (cmoNotesInput && cmoNotesInput.value.trim()) {
+                        docValues.push(`Others: ${cmoNotesInput.value.trim()}`);
+                    } else {
+                        docValues.push('Others');
+                    }
+                } else {
+                    docValues.push(checkbox.value);
+                }
+            });
+
+            return docValues;
+        }
+
+        // Form Validation Function
+        function validateCMOForm() {
+            let isValid = true;
+            let errorMessages = [];
+
+            // Reset previous errors
+            document.getElementById('supportingDocsError').style.display = 'none';
+            document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+            document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+            document.getElementById('grantedAmountError').style.display = 'none';
+
+            // Validate supporting documents - includes "Others" checkbox
+            const supportingDocs = document.querySelectorAll('.supporting-doc:checked');
+            if (supportingDocs.length === 0) {
+                isValid = false;
+                document.getElementById('supportingDocsError').style.display = 'block';
+                errorMessages.push('Please select at least one supporting document.');
+            }
+
+            // Validate CMO Notes if Others checkbox is checked
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput || !cmoNotesInput.value.trim()) {
+                    isValid = false;
+                    cmoNotesInput.classList.add('is-invalid');
+                    errorMessages.push('Please specify the other documents when "Others" is selected.');
+                }
+            }
+
+            // Validate Amount Granted
+            const grantedAmountInput = document.getElementById('grantedAmountInput');
+            if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                isValid = false;
+                grantedAmountInput.classList.add('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'block';
+                errorMessages.push('Please enter a valid amount granted (must be greater than 0).');
+            }
+
+            // Show errors if any
+            if (!isValid) {
+                const cmoSection = document.querySelector('.cmo-details');
+                if (cmoSection) {
+                    cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
+            }
+
+            return isValid;
+        }
+
+        // Function to handle single checkbox selection
+        function handleSingleCheckboxSelection(event) {
+            const clickedCheckbox = event.target;
+
+            // If the clicked checkbox is being checked
+            if (clickedCheckbox.checked) {
+                // Uncheck all other single-doc checkboxes
+                const allCheckboxes = document.querySelectorAll('.single-doc');
+                allCheckboxes.forEach(checkbox => {
+                    if (checkbox !== clickedCheckbox) {
+                        checkbox.checked = false;
+                    }
+                });
+
+                // Hide any error message
+                hideSingleDocError();
+
+                // If "Others" is checked, show the input field
+                if (clickedCheckbox.id === 'othersCheckbox') {
+                    document.getElementById('cmoOthersRow').style.display = 'flex';
+                    document.getElementById('cmoNotesInput').required = true;
+                } else {
+                    // If another checkbox is checked, hide the Others input field
+                    document.getElementById('cmoOthersRow').style.display = 'none';
+                    document.getElementById('cmoNotesInput').required = false;
+                    document.getElementById('cmoNotesInput').classList.remove('is-invalid');
+                }
+            }
+            // If the clicked checkbox is being unchecked, don't allow it if it's the only one checked
+            else {
+                const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+                if (checkedCheckboxes.length === 0) {
+                    // Don't allow unchecking if it would leave none checked
+                    clickedCheckbox.checked = true;
+                    showSingleDocError("You must select at least one document.");
+                }
+            }
+
+            // Update CMO reflection
+            updateReflection();
+        }
+
+        // Function to show single document error
+        function showSingleDocError(message = "Only one document can be selected at a time. Please choose only one supporting document.") {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${message}`;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // Function to hide single document error
+        function hideSingleDocError() {
+            const errorDiv = document.getElementById('singleDocError');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Function to validate single document selection
+        function validateSingleDocument() {
+            const checkedCheckboxes = document.querySelectorAll('.single-doc:checked');
+
+            if (checkedCheckboxes.length === 0) {
+                showSingleDocError("Please select at least one supporting document.");
+                return false;
+            }
+
+            if (checkedCheckboxes.length > 1) {
+                showSingleDocError();
+                return false;
+            }
+
+            // Validate "Others" field if "Others" is selected
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            const cmoNotesInput = document.getElementById('cmoNotesInput');
+            if (othersCheckbox && othersCheckbox.checked) {
+                if (!cmoNotesInput.value.trim()) {
+                    cmoNotesInput.classList.add('is-invalid');
+                    showSingleDocError("Please specify the other documents when 'Others' is selected.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Update the validation function to use single document validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all single-doc checkboxes
+            const singleDocCheckboxes = document.querySelectorAll('.single-doc');
+            singleDocCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', handleSingleCheckboxSelection);
+            });
+
+            // Initialize Others field visibility
+            const othersCheckbox = document.getElementById('othersCheckbox');
+            if (othersCheckbox && othersCheckbox.checked) {
+                document.getElementById('cmoOthersRow').style.display = 'flex';
+            }
+
+            // Update form validation to use single document validation
+            window.validateCMOForm = function() {
+                // Reset errors
+                document.getElementById('supportingDocsError').style.display = 'none';
+                document.getElementById('grantedAmountInput').classList.remove('is-invalid');
+                document.getElementById('grantedAmountError').style.display = 'none';
+
+                // Validate single document
+                if (!validateSingleDocument()) {
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return false;
+                }
+
+                // Validate amount granted
+                const grantedAmountInput = document.getElementById('grantedAmountInput');
+                if (!grantedAmountInput.value || parseFloat(grantedAmountInput.value) <= 0) {
+                    grantedAmountInput.classList.add('is-invalid');
+                    document.getElementById('grantedAmountError').style.display = 'block';
+                    const cmoSection = document.querySelector('.cmo-details');
+                    if (cmoSection) {
+                        cmoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    alert('Please enter a valid amount granted (must be greater than 0).');
+                    return false;
+                }
+
+                return true;
+            };
+        });
 
         // Keyboard shortcuts for PDF viewer (from first code)
         document.addEventListener('keydown', function(e) {
