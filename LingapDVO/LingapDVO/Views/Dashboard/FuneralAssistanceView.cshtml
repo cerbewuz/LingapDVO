@@ -134,10 +134,12 @@
                 background: #a8a8a8;
             }
 
-    /* Standard timeline for vertical display */
+    /* UPDATED TIMELINE TO MATCH HOSPITAL VIEW */
     .timeline {
         position: relative;
         padding-left: 2rem;
+        display: flex;
+        flex-direction: column-reverse; /* This reverses the order - newest at top */
     }
 
         .timeline::before {
@@ -155,7 +157,7 @@
         margin-bottom: 1.5rem;
     }
 
-        .timeline-item:last-child {
+        .timeline-item:first-child {
             margin-bottom: 0;
         }
 
@@ -300,213 +302,7 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Existing styles for other elements (keep from original) */
-    .zoom-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        padding-top: 50px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.9);
-    }
-
-    .zoom-modal-content {
-        margin: auto;
-        display: block;
-        max-width: 90%;
-        max-height: 90%;
-    }
-
-    .close-zoom {
-        position: absolute;
-        top: 15px;
-        right: 35px;
-        color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .id-image-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-        .id-image-container:hover {
-            transform: scale(1.02);
-        }
-
-    .id-image {
-        width: 100%;
-        height: 200px;
-        object-fit: contain;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-    }
-
-    .pdf-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .pdf-preview {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
-    }
-
-        .pdf-preview:hover {
-            border-color: #16496B;
-            background-color: #e8f4fe;
-            transform: translateY(-2px);
-        }
-
-    .pdf-icon {
-        font-size: 3rem;
-        color: #dc143c;
-        margin-right: 1rem;
-    }
-
-    .pdf-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-filename {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 0.25rem;
-    }
-
-    .pdf-label {
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
-    .pdf-viewer-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.95);
-    }
-
-    .pdf-viewer-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-viewer-header {
-        background-color: #333;
-        color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .pdf-viewer-title {
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-
-    .pdf-viewer-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 2rem;
-        cursor: pointer;
-        padding: 0 0.5rem;
-        line-height: 1;
-    }
-
-        .pdf-viewer-close:hover {
-            color: #16496B;
-        }
-
-    .pdf-viewer-body {
-        flex: 1;
-        background-color: #525659;
-        position: relative;
-        overflow: auto;
-    }
-
-    .pdf-container {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        min-height: 100%;
-    }
-
-    #pdfCanvas {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        background-color: white;
-    }
-
-    .pdf-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: auto;
-        flex-wrap: wrap;
-    }
-
-    .page-info {
-        color: white;
-        font-size: 0.9rem;
-        margin: 0 10px;
-    }
-
-    .zoom-level {
-        color: white;
-        font-size: 0.9rem;
-        min-width: 40px;
-        text-align: center;
-    }
-
-    .pdf-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .pdf-error {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        display: none;
-    }
-
-        .pdf-error i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+    /* Keep all other styles the same as before... */
 
     /* Status Buttons Styling */
     .status-buttons {
@@ -729,141 +525,6 @@
         margin-bottom: 1rem;
     }
 
-    /* Encrypted Display Styles */
-    .encrypted-info-section {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 1rem;
-        border: 1px solid #dee2e6;
-    }
-
-    .encrypted-display {
-        background-color: white;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 0.75rem;
-        font-family: 'Courier New', monospace;
-        font-size: 0.85rem;
-        color: #6c757d;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    .encrypted-text {
-        letter-spacing: 0.5px;
-    }
-
-    /* Funeral Information Container */
-    .funeral-info-container {
-        display: none;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-    }
-
-    .funeral-info-visible {
-        display: block;
-    }
-
-    .decrypted-display {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
-        border-radius: 12px;
-        padding: 1.5rem;
-    }
-
-    .decrypted-header {
-        color: #16496B;
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #67AFEB;
-        margin-bottom: 1rem !important;
-    }
-
-    .decrypted-field {
-        background-color: white;
-        border-radius: 8px;
-        padding: 0.75rem;
-        border: 1px solid #e0f2fe;
-        transition: all 0.3s ease;
-    }
-
-        .decrypted-field:hover {
-            border-color: #67AFEB;
-            box-shadow: 0 2px 8px rgba(103, 175, 235, 0.15);
-            transform: translateY(-1px);
-        }
-
-    .decrypted-value {
-        color: #1e293b;
-        font-weight: 500;
-        font-size: 0.95rem;
-        margin-top: 0.25rem;
-    }
-
-    /* Animation for decrypted display */
-    @@keyframes fadeInScale {
-        from
-
-    {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    }
-
-    /* Alert styling */
-    .alert-info {
-        background-color: #e7f3ff;
-        border-color: #b3d9ff;
-        color: #004085;
-    }
-
-        .alert-info i {
-            font-size: 1.25rem;
-            color: #0066cc;
-        }
-
-    /* Funeral Loading Container */
-    .funeral-loading-container {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    /* Valid ID Styles */
-    .valid-id-loading {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    .valid-id-container {
-        display: none;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #67AFEB;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-    }
-
     /* Retake Comments Modal */
     .retake-modal {
         display: none;
@@ -913,29 +574,451 @@
             color: #16496B;
         }
 
-    /* Responsive adjustments */
-    @@media (max-width: 992px) {
-        .application-container
+    /* UPDATED: Funeral Information Container with DARKER THEME */
+    .funeral-info-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
 
-    {
+    .funeral-info-visible {
+        display: block;
+    }
+
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* UPDATED: Funeral Loading Container with DARKER THEME */
+    .funeral-loading-container {
+        display: none;
+        background-color: #2c3e50;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #34495e;
+        text-align: center;
+        color: white;
+    }
+
+        .funeral-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .funeral-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
+    /* Info label color for dark background */
+    .info-label {
+        color: #bdc3c7;
+    }
+
+    /* Valid ID Styles */
+    .valid-id-loading {
+        display: none;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    /* Valid ID Container with DARKER THEME */
+    .valid-id-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Image Zoom Modal */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    /* Image preview styles */
+    .id-image-container {
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid #dee2e6;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+        .id-image-container:hover {
+            border-color: #67AFEB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+    .id-image {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* PDF STYLES COPIED FROM HOSPITAL VIEW */
+    /* PDF Viewer Modal - FULLY COPIED FROM HOSPITAL VIEW */
+    .pdf-viewer-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.95);
+    }
+
+    .pdf-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
         flex-direction: column;
     }
 
-    .application-tracking {
-        width: 100%;
-        min-width: auto;
-        position: static;
-        order: -1; /* Show tracking first on mobile */
+    .pdf-viewer-header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    .timeline {
-        padding-left: 1.5rem;
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
     }
 
-    .timeline-marker {
-        left: -1.75rem;
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        line-height: 1;
     }
 
+        .pdf-viewer-close:hover {
+            color: #16496B;
+        }
+
+    .pdf-viewer-body {
+        flex: 1;
+        background-color: #525659;
+        position: relative;
+        overflow: auto;
+    }
+
+    .pdf-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100%;
+    }
+
+    #pdfCanvas {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: white;
+    }
+
+    /* PDF Controls - COPIED FROM HOSPITAL VIEW */
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .page-info {
+        color: white;
+        font-size: 0.9rem;
+        margin: 0 10px;
+    }
+
+    .zoom-level {
+        color: white;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pdf-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        display: none;
+    }
+
+        .pdf-error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+    /* PDF Control Buttons - COPIED FROM HOSPITAL VIEW */
+    .pdf-controls .btn {
+        background-color: #404040;
+        border-color: #505050;
+        color: #fff;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 85px;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+        .pdf-controls .btn:hover:not(:disabled) {
+            background-color: #505050;
+            border-color: #606060;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .pdf-controls .btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .pdf-controls .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .pdf-controls .btn i {
+            font-size: 0.9rem;
+        }
+
+    /* PDF Preview in Document Section - COPIED FROM HOSPITAL VIEW */
+    .pdf-preview {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        margin-top: 0.5rem;
+    }
+
+        .pdf-preview:hover {
+            border-color: #16496B;
+            background-color: #e8f4fe;
+            transform: translateY(-2px);
+        }
+
+    .pdf-icon {
+        font-size: 3rem;
+        color: #dc143c;
+        margin-right: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-filename {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .pdf-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 992px) {
+        .application-container {
+            flex-direction: column;
+        }
+
+        .application-tracking {
+            width: 100%;
+            min-width: auto;
+            position: static;
+            order: -1; /* Show tracking first on mobile */
+        }
+
+        .timeline {
+            padding-left: 1.5rem;
+        }
+
+        .timeline-marker {
+            left: -1.75rem;
+        }
+
+        .pdf-controls {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .page-info {
+            display: none;
+        }
+
+        .pdf-preview {
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+
+        .pdf-icon {
+            font-size: 2rem;
+        }
     }
 </style>
 
@@ -945,7 +1028,7 @@
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<!-- PDF Viewer Modal -->
+<!-- PDF Viewer Modal - COPIED FROM HOSPITAL VIEW -->
 <div id="pdfViewerModal" class="pdf-viewer-modal">
     <div class="pdf-viewer-content">
         <div class="pdf-viewer-header">
@@ -1549,8 +1632,8 @@
             </div>
             <div class="tracking-body">
                 <div class="timeline">
-                    <!-- Standard timeline order: Top to bottom, oldest to newest -->
-                    <!-- Step 1: Document Submitted - TOP (oldest) -->
+                    <!-- UPDATED TIMELINE ORDER TO MATCH HOSPITAL VIEW: Bottom (Oldest) to Top (Newest) -->
+                    <!-- Step 1: Document Submitted - BOTTOM (Start of Journey) -->
                     <div class="timeline-item">
                         <div class="timeline-marker submitted">
                             <i class="fas fa-paper-plane"></i>
@@ -1643,7 +1726,7 @@
                         }
                     }
 
-                    <!-- Step 4: Claim Status (Only show if approved) - BOTTOM (newest) -->
+                    <!-- Step 4: Claim Status (Most Recent) - TOP (Current Status/End of Journey) -->
                     @if (status2 == "Approve")
                     {
                         @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
@@ -1688,7 +1771,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        // PDF Viewer Variables
+        // PDF Viewer Variables - COPIED FROM HOSPITAL VIEW
         let currentPDF = null;
         let currentPage = 1;
         let totalPages = 1;
@@ -1722,7 +1805,7 @@
             }
         });
 
-        // PDF Viewer Function
+        // PDF Viewer Function - COPIED FROM HOSPITAL VIEW
         async function viewPDFInModal(fileName, fileType, displayName) {
             const modal = document.getElementById('pdfViewerModal');
             const title = document.getElementById('pdfViewerTitle');
@@ -1789,7 +1872,7 @@
             }
         }
 
-        // Render specific page
+        // Render specific page - COPIED FROM HOSPITAL VIEW
         async function renderPage(pageNum) {
             if (!currentPDF) return;
 
@@ -1819,7 +1902,7 @@
             }
         }
 
-        // Navigation functions
+        // Navigation functions - COPIED FROM HOSPITAL VIEW
         function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
@@ -1860,7 +1943,7 @@
             if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
-        // Close PDF Viewer
+        // Close PDF Viewer - COPIED FROM HOSPITAL VIEW
         function closePDFViewer() {
             const modal = document.getElementById('pdfViewerModal');
             if (modal) {
@@ -2237,7 +2320,7 @@
             showSuccessModal('Disapprove');
         }
 
-        // Keyboard shortcuts and navigation
+        // Keyboard shortcuts and navigation - COPIED FROM HOSPITAL VIEW
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const zoomModal = document.getElementById("zoomModal");
@@ -2271,7 +2354,7 @@
             }
         });
 
-        // Close modal when clicking outside
+        // Close modal when clicking outside - COPIED FROM HOSPITAL VIEW
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
