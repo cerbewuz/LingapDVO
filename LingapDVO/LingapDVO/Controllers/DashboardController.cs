@@ -3702,10 +3702,18 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = HospitalAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 7 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["HospitalFacilityNameEncrypted"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddressEncrypted"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalConditionEncrypted"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCostEncrypted"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDateEncrypted"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDateEncrypted"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomTypeEncrypted"] = HospitalAssistance.WardRoomType;
 
-            // Use your existing DecryptFile logic to decrypt text fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["HospitalFacilityName"] = DecryptFieldText(HospitalAssistance.HospitalFacilityName);
             ViewData["HospitalFacilityAddress"] = DecryptFieldText(HospitalAssistance.HospitalFacilityAddress);
             ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(HospitalAssistance.DiagnosisMedicalCondition);
@@ -3777,11 +3785,11 @@ namespace LingapDVO.Controllers
                                         !string.IsNullOrWhiteSpace(HospitalAssistance.Processby);
 
             ViewData["HasResult"] = HospitalAssistance.Result > DateTime.MinValue &&
-                                   HospitalAssistance.Result.Year > 1;
+                                    HospitalAssistance.Result.Year > 1;
 
             ViewData["HasClaimed"] = HospitalAssistance.ClaimedAt > DateTime.MinValue &&
-                                    HospitalAssistance.ClaimedAt.Year > 1 &&
-                                    HospitalAssistance.Status3 == "Claimed";
+                                     HospitalAssistance.ClaimedAt.Year > 1 &&
+                                     HospitalAssistance.Status3 == "Claimed";
 
             ViewData["IsApproved"] = HospitalAssistance.Status2 == "Approve";
             ViewData["IsRetake"] = HospitalAssistance.Status2 == "Retake";
@@ -4332,6 +4340,39 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = medicallabform.Comments;
 
             // ============================================
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
+            // ADDED: Store ENCRYPTED values (for initial display in grey/black boxes)
+            // ============================================
+
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            // Medicine Assistance Fields
+            ViewData["MedicineNameEncrypted"] = medicallabform.MedicineName;
+            ViewData["MedicineQuantityEncrypted"] = medicallabform.MedicineQuantity;
+            ViewData["MedicineCostEncrypted"] = medicallabform.MedicineCost;
+            ViewData["PrescribingDoctorEncrypted"] = medicallabform.PrescribingDoctor;
+            ViewData["DoctorContactDetailEncrypted"] = medicallabform.DoctorContactDetail;
+
+            // Laboratory Assistance Fields
+            ViewData["LaboratoryCenterNameEncrypted"] = medicallabform.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddressEncrypted"] = medicallabform.LaboratoryCenterAddress;
+            ViewData["TestNameEncrypted"] = medicallabform.TestName;
+            ViewData["TestCostEncrypted"] = medicallabform.TestCost;
+            ViewData["TestOtherInfoEncrypted"] = medicallabform.TestOtherInfo;
+
+            // Therapy Assistance Fields
+            ViewData["TherapyFacilityNameEncrypted"] = medicallabform.TherapyFacilityName;
+            ViewData["TherapyFacilityAddressEncrypted"] = medicallabform.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContactEncrypted"] = medicallabform.TherapyFacilityContact;
+            ViewData["TherapyTypeEncrypted"] = medicallabform.TherapyType;
+
+            // Equipment Assistance Fields
+            ViewData["EquipmentNameEncrypted"] = medicallabform.EquipmentName;
+            ViewData["EquipmentBrandEncrypted"] = medicallabform.EquipmentBrand;
+            ViewData["EquipmentCategoryEncrypted"] = medicallabform.EquipmentCategory;
+            ViewData["EquipmentQuantityEncrypted"] = medicallabform.EquipmentQuantity;
+            ViewData["EquipmentCostEncrypted"] = medicallabform.EquipmentCost;
+
+            // ============================================
             // ADD DECRYPTION FOR THESE 19 FIELDS ONLY
             // ============================================
 
@@ -4455,7 +4496,6 @@ namespace LingapDVO.Controllers
 
             return View();
         }
-
 
         // UPDATED ViewPDF METHOD
         [HttpGet]
