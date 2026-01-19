@@ -134,10 +134,12 @@
                 background: #a8a8a8;
             }
 
-    /* Standard timeline for vertical display */
+    /* REVERSED TIMELINE - Bottom to Top */
     .timeline {
         position: relative;
         padding-left: 2rem;
+        display: flex;
+        flex-direction: column-reverse; /* This reverses the order */
     }
 
         .timeline::before {
@@ -155,7 +157,7 @@
         margin-bottom: 1.5rem;
     }
 
-        .timeline-item:last-child {
+        .timeline-item:first-child {
             margin-bottom: 0;
         }
 
@@ -300,7 +302,140 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Existing styles for other elements (keep from original) */
+    /* Hospital Info Container - Dark Theme for Decrypted */
+    .hospital-info-container {
+        display: none;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: fadeInScale 0.4s ease-out;
+        color: white;
+    }
+
+    .hospital-info-visible {
+        display: block;
+    }
+
+    /* Hospital Loading Container - Dark Theme */
+    .hospital-loading-container {
+        display: none;
+        background-color: #2c3e50;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1rem;
+        border: 1px solid #34495e;
+        text-align: center;
+        color: white;
+    }
+
+        .hospital-loading-container .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hospital-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Decrypted Display Styles */
+    .decrypted-display {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border: 2px solid #1a252f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+    }
+
+    .decrypted-header {
+        color: #ecf0f1;
+        font-size: 1.1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 1rem !important;
+    }
+
+    .decrypted-field {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .decrypted-field:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .decrypted-field .info-label {
+            color: #bdc3c7 !important;
+        }
+
+            .decrypted-field .info-label i {
+                color: #ecf0f1 !important;
+            }
+
+    .decrypted-value {
+        color: #ecf0f1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .encrypted-display {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+        border: 1px solid;
+        padding: 1rem;
+    }
+
+    .alert-info {
+        background-color: #e8f4fe;
+        border-color: #67AFEB;
+        color: #16496B;
+    }
+
+    /* Image Zoom Modal */
     .zoom-modal {
         display: none;
         position: fixed;
@@ -729,31 +864,6 @@
         margin-bottom: 1rem;
     }
 
-    /* Hospital Info Container */
-    .hospital-info-container {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-    }
-
-    .hospital-info-visible {
-        display: block;
-    }
-
-    /* Hospital Loading Container */
-    .hospital-loading-container {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
     /* Retake Comments Modal */
     .retake-modal {
         display: none;
@@ -1014,78 +1124,78 @@
                             <div class="info-value">@ViewData["Typeassistance"]</div>
                         </div>
 
-                <!-- Hospital Information Section (Password-Protected) -->
-                <div class="receipt-section">
-                    <h5 class="section-header d-flex align-items-center justify-content-between">
-                        <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
-                        <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
-                                onclick="toggleHospitalInfo()"
-                                data-decrypted="false"
-                                title="Click to view encrypted hospital information">
-                            <i class="bi bi-eye-fill me-2" id="hospitalBtnIcon"></i><span id="hospitalBtnText">View Hospital Information</span>
-                        </button>
-                    </h5>
+                        <!-- Hospital Information Section (Password-Protected) -->
+                        <div class="receipt-section">
+                            <h5 class="section-header d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-shield-lock-fill me-2"></i>Hospital Information (Encrypted)</span>
+                                <button type="button" class="btn btn-sm btn-primary" id="viewHospitalInfoBtn"
+                                        onclick="toggleHospitalInfo()"
+                                        data-decrypted="false"
+                                        title="Click to view encrypted hospital information">
+                                    <i class="bi bi-eye-fill me-2" id="hospitalBtnIcon"></i><span id="hospitalBtnText">View Hospital Information</span>
+                                </button>
+                            </h5>
 
-                    <!-- Alert shown when Hospital Info is encrypted -->
-                    <div class="alert alert-info d-flex align-items-center mb-3" id="hospitalInfoAlert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                        <div>
-                            <strong>Hospital Information is Encrypted</strong><br>
-                            For security and privacy, hospital information is encrypted. Click the "View Hospital Information" button above and enter your password to view it.
-                        </div>
-                    </div>
+                            <!-- Alert shown when Hospital Info is encrypted -->
+                            <div class="alert alert-info d-flex align-items-center mb-3" id="hospitalInfoAlert">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <div>
+                                    <strong>Hospital Information is Encrypted</strong><br>
+                                    For security and privacy, hospital information is encrypted. Click the "View Hospital Information" button above and enter your password to view it.
+                                </div>
+                            </div>
 
-                    <!-- Encrypted Hospital Information Display (shown by default) -->
-                    <div class="encrypted-info-section" id="hospitalInfoEncrypted">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="info-label">Hospital/Facility Name:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalFacilityNameEncrypted"]</span>
+                            <!-- Encrypted Hospital Information Display (shown by default) -->
+                            <div class="encrypted-info-section" id="hospitalInfoEncrypted">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="info-label">Hospital/Facility Name:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["HospitalFacilityNameEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Hospital Address:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["HospitalFacilityAddressEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Diagnosis/Medical Condition:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["DiagnosisMedicalConditionEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Ward/Room Type:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["WardRoomTypeEncrypted"]</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="info-label">Hospital Address:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalFacilityAddressEncrypted"]</span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="info-label">Diagnosis/Medical Condition:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DiagnosisMedicalConditionEncrypted"]</span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="info-label">Ward/Room Type:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["WardRoomTypeEncrypted"]</span>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="info-label">Hospital Bill/Cost:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["HospitalBillCostEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Admission Date:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["AdmissionDateEncrypted"]</span>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="info-label">Discharge Date:</div>
+                                            <div class="encrypted-display">
+                                                <span class="encrypted-text">@ViewData["DischargeDateEncrypted"]</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="info-label">Hospital Bill/Cost:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["HospitalBillCostEncrypted"]</span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="info-label">Admission Date:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["AdmissionDateEncrypted"]</span>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="info-label">Discharge Date:</div>
-                                    <div class="encrypted-display">
-                                        <span class="encrypted-text">@ViewData["DischargeDateEncrypted"]</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                             <!-- Hospital Loading Container (shown while decrypting) -->
                             <div class="hospital-loading-container" id="hospitalLoadingContainer">
@@ -1101,43 +1211,75 @@
                                 </div>
                             </div>
 
-                            @* <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
-                            <div class="hospital-info-container" id="hospitalInfoContainer">
-                                <div class="row">
+                            <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
+                            <div class="hospital-info-container decrypted-display" id="hospitalInfoContainer">
+                                <div class="decrypted-header mb-3">
+                                    <i class="bi bi-unlock-fill me-2"></i>
+                                    <strong>Decrypted Hospital Information</strong>
+                                </div>
+                                <div class="row g-3">
                                     <div class="col-md-6">
-                                        <div class="info-row">
-                                            <div class="info-label">Hospital/Facility Name:</div>
-                                            <div class="info-value" id="hospitalName">@ViewData["HospitalFacilityName"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-hospital me-1"></i>Hospital/Facility Name:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="hospitalName">
+                                                @ViewData["HospitalFacilityName"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Hospital Address:</div>
-                                            <div class="info-value" id="hospitalAddress">@ViewData["HospitalFacilityAddress"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-geo-alt-fill me-1"></i>Hospital Address:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="hospitalAddress">
+                                                @ViewData["HospitalFacilityAddress"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Diagnosis/Medical Condition:</div>
-                                            <div class="info-value" id="diagnosis">@ViewData["DiagnosisMedicalCondition"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-heart-pulse me-1"></i>Diagnosis/Medical Condition:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="diagnosis">
+                                                @ViewData["DiagnosisMedicalCondition"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Ward/Room Type:</div>
-                                            <div class="info-value" id="wardRoomType">@ViewData["WardRoomType"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-door-closed me-1"></i>Ward/Room Type:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="wardRoomType">
+                                                @ViewData["WardRoomType"]
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="info-row">
-                                            <div class="info-label">Hospital Bill/Cost:</div>
-                                            <div class="info-value" id="hospitalBill">@ViewData["HospitalBillCost"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-cash-stack me-1"></i>Hospital Bill/Cost:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="hospitalBill">
+                                                @ViewData["HospitalBillCost"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Admission Date:</div>
-                                            <div class="info-value" id="admissionDate">@ViewData["AdmissionDate"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-calendar-plus me-1"></i>Admission Date:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="admissionDate">
+                                                @ViewData["AdmissionDate"]
+                                            </div>
                                         </div>
-                                        <div class="info-row">
-                                            <div class="info-label">Discharge Date:</div>
-                                            <div class="info-value" id="dischargeDate">@ViewData["DischargeDate"]</div>
+                                        <div class="decrypted-field mb-3">
+                                            <div class="info-label">
+                                                <i class="bi bi-calendar-check me-1"></i>Discharge Date:
+                                            </div>
+                                            <div class="info-value decrypted-value" id="dischargeDate">
+                                                @ViewData["DischargeDate"]
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div> *@
+                            </div>
                         </div>
 
                         <!-- CMO Section -->
@@ -1165,14 +1307,14 @@
                                     }
                                 </h5>
 
-                        <!-- Alert shown when IDs are encrypted -->
-                        <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            <div>
-                                <strong>ID Images are Encrypted</strong><br>
-                                For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
-                            </div>
-                        </div>
+                                <!-- Alert shown when IDs are encrypted -->
+                                <div class="alert alert-info d-flex align-items-center mb-3" id="validIDAlert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <div>
+                                        <strong>ID Images are Encrypted</strong><br>
+                                        For security, ID images are encrypted. Click the "View Valid ID" button above and enter your password to view them.
+                                    </div>
+                                </div>
 
                                 <!-- Loading Container (shown while decrypting) -->
                                 <div class="valid-id-loading" id="validIDLoading">
@@ -1366,8 +1508,8 @@
             </div>
             <div class="tracking-body">
                 <div class="timeline">
-                    <!-- Standard timeline order: Top to bottom, oldest to newest -->
-                    <!-- Step 1: Document Submitted - TOP (oldest) -->
+                    <!-- UPWARD TRACKING: Bottom (Oldest) to Top (Newest) -->
+                    <!-- Step 1: Document Submitted - BOTTOM (Start of Journey) -->
                     <div class="timeline-item">
                         <div class="timeline-marker submitted">
                             <i class="fas fa-paper-plane"></i>
@@ -1460,7 +1602,7 @@
                         }
                     }
 
-                    <!-- Step 4: Claim Status (Only show if approved) - BOTTOM (newest) -->
+                    <!-- Step 4: Claim Status (Most Recent) - TOP (Current Status/End of Journey) -->
                     @if (status2 == "Approve")
                     {
                         @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
@@ -1690,7 +1832,7 @@
             }
         }
 
-        // Status Submission Functions (same as before)
+        // Status Submission Functions
         function markAsApprove() {
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
@@ -1795,7 +1937,7 @@
             }, 2000); // Show modal for 2 seconds before redirecting
         }
 
-        // Hospital Information Functions (same as before)
+        // Hospital Information Functions
         function toggleHospitalInfo() {
             const viewButton = document.getElementById('viewHospitalInfoBtn');
             const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
@@ -1814,6 +1956,7 @@
         function hideHospitalInfo() {
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
+            const hospitalInfoAlert = document.getElementById('hospitalInfoAlert');
             const viewButton = document.getElementById('viewHospitalInfoBtn');
             const btnIcon = document.getElementById('hospitalBtnIcon');
             const btnText = document.getElementById('hospitalBtnText');
@@ -1822,6 +1965,16 @@
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.classList.remove('hospital-info-visible');
                 hospitalInfoContainer.style.display = 'none';
+            }
+
+            // Show encrypted data display
+            if (hospitalInfoEncrypted) {
+                hospitalInfoEncrypted.style.display = 'block';
+            }
+
+            // Show alert
+            if (hospitalInfoAlert) {
+                hospitalInfoAlert.style.display = 'flex';
             }
 
             // Update button to "View" state
@@ -1844,22 +1997,37 @@
         function showHospitalInfoAfterDecryption() {
             console.log('Showing hospital information after decryption...');
 
+            // Hide the loading container
             const loadingContainer = document.getElementById('hospitalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'none';
             }
 
-            // Show the hospital information container
+            // Hide the encrypted display section
+            const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
+            if (hospitalInfoEncrypted) {
+                hospitalInfoEncrypted.style.display = 'none';
+            }
+
+            // Hide the alert
+            const hospitalInfoAlert = document.getElementById('hospitalInfoAlert');
+            if (hospitalInfoAlert) {
+                hospitalInfoAlert.style.display = 'none';
+            }
+
+            // Show the hospital information container (decrypted)
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.style.display = 'block';
                 hospitalInfoContainer.classList.add('hospital-info-visible', 'decrypted-display');
 
+                // Scroll to the hospital information section
                 setTimeout(() => {
                     hospitalInfoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
 
+            // Update button to "Hide" state
             const viewButton = document.getElementById('viewHospitalInfoBtn');
             const btnIcon = document.getElementById('hospitalBtnIcon');
             const btnText = document.getElementById('hospitalBtnText');
@@ -1878,25 +2046,41 @@
             }
         }
 
+        // Function to start the 5-second loading animation
         function startHospitalInfoLoading() {
             console.log('Starting hospital information loading...');
 
+            // Hide alert
+            const hospitalInfoAlert = document.getElementById('hospitalInfoAlert');
+            if (hospitalInfoAlert) {
+                hospitalInfoAlert.style.display = 'none';
+            }
+
+            // Show loading container
             const loadingContainer = document.getElementById('hospitalLoadingContainer');
             if (loadingContainer) {
                 loadingContainer.style.display = 'block';
             }
 
+            // Hide encrypted display
+            const hospitalInfoEncrypted = document.getElementById('hospitalInfoEncrypted');
+            if (hospitalInfoEncrypted) {
+                hospitalInfoEncrypted.style.display = 'none';
+            }
+
+            // Hide any existing hospital info container
             const hospitalInfoContainer = document.getElementById('hospitalInfoContainer');
             if (hospitalInfoContainer) {
                 hospitalInfoContainer.style.display = 'none';
                 hospitalInfoContainer.classList.remove('hospital-info-visible');
             }
 
+            // Start 5-second progress bar
             const progressBar = document.getElementById('hospitalLoadingProgress');
             if (progressBar) {
                 let progress = 0;
-                const totalTime = 5000;
-                const interval = 100;
+                const totalTime = 5000; // 5 seconds
+                const interval = 100; // Update every 100ms
                 const increment = (interval / totalTime) * 100;
 
                 const progressInterval = setInterval(() => {
@@ -1905,6 +2089,7 @@
                         progress = 100;
                         clearInterval(progressInterval);
 
+                        // After 5 seconds, show the hospital information
                         setTimeout(() => {
                             showHospitalInfoAfterDecryption();
                         }, 300);

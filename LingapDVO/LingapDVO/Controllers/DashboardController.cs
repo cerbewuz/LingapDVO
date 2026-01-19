@@ -3658,10 +3658,18 @@ namespace LingapDVO.Controllers
             ViewData["Comments"] = HospitalAssistance.Comments;
 
             // ============================================
-            // ADD DECRYPTION FOR THESE 7 FIELDS ONLY
+            // STORE BOTH ENCRYPTED AND DECRYPTED VALUES
             // ============================================
+            // Store ENCRYPTED values (for initial display in grey/black boxes)
+            ViewData["HospitalFacilityNameEncrypted"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddressEncrypted"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalConditionEncrypted"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCostEncrypted"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDateEncrypted"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDateEncrypted"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomTypeEncrypted"] = HospitalAssistance.WardRoomType;
 
-            // Use your existing DecryptFile logic to decrypt text fields
+            // Store DECRYPTED values (for display after password verification)
             ViewData["HospitalFacilityName"] = DecryptFieldText(HospitalAssistance.HospitalFacilityName);
             ViewData["HospitalFacilityAddress"] = DecryptFieldText(HospitalAssistance.HospitalFacilityAddress);
             ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(HospitalAssistance.DiagnosisMedicalCondition);
@@ -3733,11 +3741,11 @@ namespace LingapDVO.Controllers
                                         !string.IsNullOrWhiteSpace(HospitalAssistance.Processby);
 
             ViewData["HasResult"] = HospitalAssistance.Result > DateTime.MinValue &&
-                                   HospitalAssistance.Result.Year > 1;
+                                    HospitalAssistance.Result.Year > 1;
 
             ViewData["HasClaimed"] = HospitalAssistance.ClaimedAt > DateTime.MinValue &&
-                                    HospitalAssistance.ClaimedAt.Year > 1 &&
-                                    HospitalAssistance.Status3 == "Claimed";
+                                     HospitalAssistance.ClaimedAt.Year > 1 &&
+                                     HospitalAssistance.Status3 == "Claimed";
 
             ViewData["IsApproved"] = HospitalAssistance.Status2 == "Approve";
             ViewData["IsRetake"] = HospitalAssistance.Status2 == "Retake";
