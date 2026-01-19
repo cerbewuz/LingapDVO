@@ -470,58 +470,54 @@
     /* Funeral Information Container - UPDATED to match first code */
     .funeral-info-container {
         display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
         margin-top: 1rem;
         animation: fadeInScale 0.4s ease-out;
-        color: white;
     }
 
     .funeral-info-visible {
         display: block;
     }
 
+    /* Decrypted display - match encrypted section styling */
     .decrypted-display {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        color: white;
-    }
-
-    .decrypted-header {
-        color: #ecf0f1;
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #3498db;
-        margin-bottom: 1rem !important;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
     }
 
     .decrypted-field {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
     }
 
         .decrypted-field:hover {
-            border-color: #3498db;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-            transform: translateY(-1px);
-            background-color: rgba(255, 255, 255, 0.15);
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
+            background-color: transparent;
         }
 
     .decrypted-value {
-        color: #ecf0f1;
-        font-weight: 500;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
         font-size: 0.95rem;
-        margin-top: 0.25rem;
+        color: #2d3748;
+        flex: 1;
     }
 
-    /* Encrypted Display Styles - ADDED from first code */
+    /* Encrypted Display Styles */
     .encrypted-info-section {
         background-color: #f8f9fa;
         border-radius: 8px;
@@ -545,7 +541,7 @@
         letter-spacing: 0.5px;
     }
 
-    /* Alert styling - ADDED from first code */
+    /* Alert styling */
     .alert-info {
         background-color: #e7f3ff;
         border-color: #b3d9ff;
@@ -556,6 +552,11 @@
             font-size: 1.25rem;
             color: #0066cc;
         }
+
+    /* Info label color for dark background */
+    .info-label {
+        color: #bdc3c7;
+    }
 
     /* Funeral Loading Container - UPDATED */
     .funeral-loading-container {
@@ -902,15 +903,11 @@
 
                 <!-- Funeral Information Container (hidden by default, shown after successful decryption) -->
                 <div class="funeral-info-container decrypted-display" id="funeralInfoContainer">
-                    <div class="decrypted-header mb-3">
-                        <i class="bi bi-unlock-fill me-2"></i>
-                        <strong>Decrypted Funeral Information</strong>
-                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-person-fill me-1"></i>Name of Deceased Person:
+                                    Name of Deceased Person:
                                 </div>
                                 <div class="info-value decrypted-value" id="deceasedPersonName">
                                     @ViewData["DeceasedPersonName"]
@@ -918,7 +915,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-people-fill me-1"></i>Relationship to Deceased:
+                                    Relationship to Deceased:
                                 </div>
                                 <div class="info-value decrypted-value" id="relationshipToDeceased">
                                     @ViewData["RelationshipToDeceased"]
@@ -926,7 +923,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-calendar-x me-1"></i>Date of Death:
+                                    Date of Death:
                                 </div>
                                 <div class="info-value decrypted-value" id="dateOfDeath">
                                     @ViewData["DateOfDeath"]
@@ -934,7 +931,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-clock me-1"></i>Time of Death:
+                                    Time of Death:
                                 </div>
                                 <div class="info-value decrypted-value" id="timeOfDeath">
                                     @ViewData["TimeOfDeath"]
@@ -942,7 +939,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-heart-pulse me-1"></i>Cause of Death:
+                                    Cause of Death:
                                 </div>
                                 <div class="info-value decrypted-value" id="causeOfDeath">
                                     @ViewData["CauseOfDeath"]
@@ -952,7 +949,7 @@
                         <div class="col-md-6">
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-building me-1"></i>Funeral Home/Parlor Name:
+                                    Funeral Home/Parlor Name:
                                 </div>
                                 <div class="info-value decrypted-value" id="funeralHomeName">
                                     @ViewData["FuneralHomeName"]
@@ -960,7 +957,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-geo-alt-fill me-1"></i>Funeral Home/Parlor Address:
+                                    Funeral Home/Parlor Address:
                                 </div>
                                 <div class="info-value decrypted-value" id="funeralHomeAddress">
                                     @ViewData["FuneralHomeAddress"]
@@ -968,7 +965,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-calendar-event me-1"></i>Date of Burial/Cremation:
+                                    Date of Burial/Cremation:
                                 </div>
                                 <div class="info-value decrypted-value" id="burialCremationDate">
                                     @ViewData["BurialCremationDate"]
@@ -976,7 +973,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-clock-fill me-1"></i>Time of Burial/Cremation:
+                                    Time of Burial/Cremation:
                                 </div>
                                 <div class="info-value decrypted-value" id="burialCremationTime">
                                     @ViewData["BurialCremationTime"]
@@ -984,7 +981,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-card-checklist me-1"></i>Type (Burial/Cremation):
+                                    Type (Burial/Cremation):
                                 </div>
                                 <div class="info-value decrypted-value" id="burialCremationType">
                                     @ViewData["BurialCremationType"]

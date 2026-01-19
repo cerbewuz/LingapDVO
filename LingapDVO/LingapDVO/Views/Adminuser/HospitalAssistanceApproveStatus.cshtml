@@ -467,87 +467,82 @@
         margin-bottom: 1rem;
     }
 
-    /* Hospital Info Container - Dark Theme for Decrypted */
+    /* Hospital Info Container - match encrypted section styling */
     .hospital-info-container {
         display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
         margin-top: 1rem;
         animation: fadeInScale 0.4s ease-out;
-        color: white;
     }
 
     .hospital-info-visible {
         display: block;
     }
 
-    /* Hospital Loading Container - Dark Theme */
+    /* Hospital Loading Container */
     .hospital-loading-container {
         display: none;
-        background-color: #2c3e50;
+        background-color: #f8f9fa;
         border-radius: 8px;
         padding: 2rem;
         margin-top: 1rem;
-        border: 1px solid #34495e;
+        border: 1px solid #dee2e6;
         text-align: center;
-        color: white;
     }
 
         .hospital-loading-container .progress {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #e9ecef;
         }
 
         .hospital-loading-container .progress-bar {
             background-color: #3498db;
         }
 
-    /* Decrypted Display Styles */
+    /* Decrypted Display Styles - match encrypted section styling */
     .decrypted-display {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        color: white;
-    }
-
-    .decrypted-header {
-        color: #ecf0f1;
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #3498db;
-        margin-bottom: 1rem !important;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
     }
 
     .decrypted-field {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
     }
 
         .decrypted-field:hover {
-            border-color: #3498db;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-            transform: translateY(-1px);
-            background-color: rgba(255, 255, 255, 0.15);
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
+            background-color: transparent;
         }
 
     .decrypted-field .info-label {
-        color: #bdc3c7 !important;
+        color: #6c757d !important;
+        font-weight: 500;
     }
 
         .decrypted-field .info-label i {
-            color: #ecf0f1 !important;
+            color: #2d3748 !important;
         }
 
     .decrypted-value {
-        color: #ecf0f1;
-        font-weight: 500;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
         font-size: 0.95rem;
-        margin-top: 0.25rem;
+        color: #2d3748;
+        flex: 1;
     }
 
     /* Encrypted Display Styles */
@@ -842,15 +837,11 @@
 
                 <!-- Hospital Information Container (hidden by default, shown after successful decryption) -->
                 <div class="hospital-info-container decrypted-display" id="hospitalInfoContainer">
-                    <div class="decrypted-header mb-3">
-                        <i class="bi bi-unlock-fill me-2"></i>
-                        <strong>Decrypted Hospital Information</strong>
-                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-hospital me-1"></i>Hospital/Facility Name:
+                                    Hospital/Facility Name:
                                 </div>
                                 <div class="info-value decrypted-value" id="hospitalName">
                                     @ViewData["HospitalFacilityName"]
@@ -858,7 +849,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-geo-alt-fill me-1"></i>Hospital Address:
+                                    Hospital Address:
                                 </div>
                                 <div class="info-value decrypted-value" id="hospitalAddress">
                                     @ViewData["HospitalFacilityAddress"]
@@ -866,7 +857,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-heart-pulse me-1"></i>Diagnosis/Medical Condition:
+                                    Diagnosis/Medical Condition:
                                 </div>
                                 <div class="info-value decrypted-value" id="diagnosis">
                                     @ViewData["DiagnosisMedicalCondition"]
@@ -874,7 +865,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-door-closed me-1"></i>Ward/Room Type:
+                                    Ward/Room Type:
                                 </div>
                                 <div class="info-value decrypted-value" id="wardRoomType">
                                     @ViewData["WardRoomType"]
@@ -884,7 +875,7 @@
                         <div class="col-md-6">
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-cash-stack me-1"></i>Hospital Bill/Cost:
+                                    Hospital Bill/Cost:
                                 </div>
                                 <div class="info-value decrypted-value" id="hospitalBill">
                                     @ViewData["HospitalBillCost"]
@@ -892,7 +883,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-calendar-plus me-1"></i>Admission Date:
+                                    Admission Date:
                                 </div>
                                 <div class="info-value decrypted-value" id="admissionDate">
                                     @ViewData["AdmissionDate"]
@@ -900,7 +891,7 @@
                             </div>
                             <div class="decrypted-field mb-3">
                                 <div class="info-label">
-                                    <i class="bi bi-calendar-check me-1"></i>Discharge Date:
+                                    Discharge Date:
                                 </div>
                                 <div class="info-value decrypted-value" id="dischargeDate">
                                     @ViewData["DischargeDate"]

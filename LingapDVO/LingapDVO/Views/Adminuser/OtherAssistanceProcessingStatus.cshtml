@@ -8,32 +8,6 @@
 }
 
 <style>
-    /* In your CSS, change these classes: */
-
-    .decrypted-value {
-        color: #ffffff !important; /* Change from #ecf0f1 to pure white */
-        font-weight: 500;
-        font-size: 0.95rem;
-        margin-top: 0.25rem;
-    }
-
-    .decrypted-field .info-label {
-        color: #ffffff !important; /* Change from #bdc3c7 to pure white */
-        font-weight: 500;
-    }
-
-        .decrypted-field .info-label i {
-            color: #ffffff !important; /* Change from #ecf0f1 to pure white */
-        }
-
-    /* Also update the header color for consistency */
-    .decrypted-header {
-        color: #ffffff !important; /* Add white color to header */
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #3498db;
-        margin-bottom: 1rem !important;
-    }
     /* Remove borders since layout already has them */
     .receipt-container {
         border: none !important;
@@ -52,65 +26,60 @@
     /* Additional Information Styles */
     .additional-info-container {
         display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
         margin-top: 1rem;
         animation: fadeInScale 0.4s ease-out;
-        color: white;
     }
 
     .additional-info-visible {
         display: block;
     }
 
+    /* Decrypted display - match encrypted section styling */
     .decrypted-display {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        color: white;
-    }
-
-    .decrypted-header {
-        color: #ecf0f1;
-        font-size: 1.1rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #3498db;
-        margin-bottom: 1rem !important;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
     }
 
     .decrypted-field {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-        margin-bottom: 1rem;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
     }
 
         .decrypted-field:hover {
-            border-color: #3498db;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-            transform: translateY(-1px);
-            background-color: rgba(255, 255, 255, 0.15);
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
+            background-color: transparent;
         }
 
     .decrypted-value {
-        color: #ecf0f1;
-        font-weight: 500;
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0.75rem;
         font-size: 0.95rem;
-        margin-top: 0.25rem;
+        color: #2d3748;
+        flex: 1;
     }
 
     .decrypted-field .info-label {
-        color: #bdc3c7 !important;
+        color: #6c757d !important;
         font-weight: 500;
     }
 
         .decrypted-field .info-label i {
-            color: #ecf0f1 !important;
+            color: #2d3748 !important;
         }
 
     /* Animation for decrypted display */
@@ -246,7 +215,6 @@
         border-radius: 8px;
         padding: 1rem;
         border: 1px solid #dee2e6;
-        margin-top: 1rem;
     }
 
     .encrypted-display {
@@ -259,7 +227,6 @@
         color: #6c757d;
         overflow-x: auto;
         white-space: nowrap;
-        margin-bottom: 0.5rem;
     }
 
     .encrypted-text {
@@ -271,13 +238,17 @@
         background-color: #e7f3ff;
         border-color: #b3d9ff;
         color: #004085;
-        margin-top: 1rem;
     }
 
         .alert-info i {
             font-size: 1.25rem;
             color: #0066cc;
         }
+
+    /* Info label color for dark background */
+    .info-label {
+        color: #bdc3c7;
+    }
 
     /* Valid ID Styles */
     .valid-id-loading {
@@ -1097,19 +1068,19 @@
                       placeholder="Example: The uploaded medical certificate is unclear/incomplete. Please upload a clearer copy with all pages visible..."
                       required></textarea>
             <div class="invalid-feedback" style="display: block; color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
-                <span id="retakeReasonError" style="display: none;"><i class="bi bi-exclamation-triangle me-1"></i>A detailed reason is required for retake requests.</span>
+                <span id="retakeReasonError" style="display: none;">A detailed reason is required for retake requests.</span>
             </div>
             <small class="text-muted d-block mt-2">
-                <i class="bi bi-lightbulb me-1"></i>
+                
                 Tip: Be specific about which documents need to be updated and why.
             </small>
         </div>
         <div class="d-flex justify-content-end gap-2">
             <button type="button" class="btn btn-secondary" onclick="closeRetakeModal()">
-                <i class="bi bi-x-circle me-1"></i>Cancel
+                Cancel
             </button>
             <button type="button" class="btn btn-warning" onclick="confirmRetake()" style="background-color: #ff9800; border-color: #ff9800; color: white;">
-                <i class="bi bi-check-circle me-1"></i>Request Retake
+                Request Retake
             </button>
         </div>
     </div>
@@ -1393,17 +1364,13 @@
 
                 <!-- Additional Information Container (hidden by default, shown after successful decryption) -->
                 <div class="additional-info-container decrypted-display" id="additionalInfoContainer">
-                    <div class="decrypted-header mb-3">
-                        <i class="bi bi-unlock-fill me-2"></i>
-                        <strong>Decrypted Additional Information</strong>
-                    </div>
                     <div class="row g-3" id="additionalInfoFields">
                         @if (ViewData["Typeassistance"]?.ToString() == "Medicine Assistance")
                         {
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-capsule me-1"></i>Medicine Name:
+                                        Medicine Name:
                                     </div>
                                     <div class="info-value decrypted-value" id="medicineName">
                                         @ViewData["MedicineName"]
@@ -1411,7 +1378,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-123 me-1"></i>Medicine Quantity:
+                                        Medicine Quantity:
                                     </div>
                                     <div class="info-value decrypted-value" id="medicineQuantity">
                                         @ViewData["MedicineQuantity"]
@@ -1419,7 +1386,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-cash-stack me-1"></i>Medicine Cost:
+                                        Medicine Cost:
                                     </div>
                                     <div class="info-value decrypted-value" id="medicineCost">
                                         @ViewData["MedicineCost"]
@@ -1429,7 +1396,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-person-badge me-1"></i>Prescribing Doctor:
+                                        Prescribing Doctor:
                                     </div>
                                     <div class="info-value decrypted-value" id="prescribingDoctor">
                                         @ViewData["PrescribingDoctor"]
@@ -1437,7 +1404,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-telephone me-1"></i>Doctor Contact Detail:
+                                        Doctor Contact Detail:
                                     </div>
                                     <div class="info-value decrypted-value" id="doctorContact">
                                         @ViewData["DoctorContactDetail"]
@@ -1450,7 +1417,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-building me-1"></i>Laboratory Center Name:
+                                        Laboratory Center Name:
                                     </div>
                                     <div class="info-value decrypted-value" id="labCenterName">
                                         @ViewData["LaboratoryCenterName"]
@@ -1458,7 +1425,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-geo-alt-fill me-1"></i>Laboratory Center Address:
+                                        Laboratory Center Address:
                                     </div>
                                     <div class="info-value decrypted-value" id="labCenterAddress">
                                         @ViewData["LaboratoryCenterAddress"]
@@ -1466,7 +1433,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-clipboard-data me-1"></i>Test Name:
+                                        Test Name:
                                     </div>
                                     <div class="info-value decrypted-value" id="testName">
                                         @ViewData["TestName"]
@@ -1476,7 +1443,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-cash-stack me-1"></i>Test Cost:
+                                        Test Cost:
                                     </div>
                                     <div class="info-value decrypted-value" id="testCost">
                                         @ViewData["TestCost"]
@@ -1484,7 +1451,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-info-circle me-1"></i>Test Other Info:
+                                        Test Other Info:
                                     </div>
                                     <div class="info-value decrypted-value" id="testOtherInfo">
                                         @ViewData["TestOtherInfo"]
@@ -1497,7 +1464,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-hospital me-1"></i>Therapy Facility Name:
+                                        Therapy Facility Name:
                                     </div>
                                     <div class="info-value decrypted-value" id="therapyFacilityName">
                                         @ViewData["TherapyFacilityName"]
@@ -1505,7 +1472,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-geo-alt-fill me-1"></i>Therapy Facility Address:
+                                        Therapy Facility Address:
                                     </div>
                                     <div class="info-value decrypted-value" id="therapyFacilityAddress">
                                         @ViewData["TherapyFacilityAddress"]
@@ -1515,7 +1482,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-telephone me-1"></i>Therapy Facility Contact:
+                                        Therapy Facility Contact:
                                     </div>
                                     <div class="info-value decrypted-value" id="therapyFacilityContact">
                                         @ViewData["TherapyFacilityContact"]
@@ -1523,7 +1490,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-heart-pulse me-1"></i>Therapy Type:
+                                        Therapy Type:
                                     </div>
                                     <div class="info-value decrypted-value" id="therapyType">
                                         @ViewData["TherapyType"]
@@ -1536,7 +1503,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-tools me-1"></i>Equipment Name:
+                                        Equipment Name:
                                     </div>
                                     <div class="info-value decrypted-value" id="equipmentName">
                                         @ViewData["EquipmentName"]
@@ -1544,7 +1511,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-tag me-1"></i>Equipment Brand:
+                                        Equipment Brand:
                                     </div>
                                     <div class="info-value decrypted-value" id="equipmentBrand">
                                         @ViewData["EquipmentBrand"]
@@ -1552,7 +1519,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-grid-3x3 me-1"></i>Equipment Category:
+                                        Equipment Category:
                                     </div>
                                     <div class="info-value decrypted-value" id="equipmentCategory">
                                         @ViewData["EquipmentCategory"]
@@ -1562,7 +1529,7 @@
                             <div class="col-md-6">
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-123 me-1"></i>Equipment Quantity:
+                                        Equipment Quantity:
                                     </div>
                                     <div class="info-value decrypted-value" id="equipmentQuantity">
                                         @ViewData["EquipmentQuantity"]
@@ -1570,7 +1537,7 @@
                                 </div>
                                 <div class="decrypted-field mb-3">
                                     <div class="info-label">
-                                        <i class="bi bi-cash-stack me-1"></i>Equipment Cost:
+                                        Equipment Cost:
                                     </div>
                                     <div class="info-value decrypted-value" id="equipmentCost">
                                         @ViewData["EquipmentCost"]

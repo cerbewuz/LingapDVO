@@ -583,6 +583,46 @@
                 border-bottom: none;
             }
 
+        /* Type badge styles for Applications History */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .type-hospital {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-medical {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .type-funeral {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        /* Highlighted row on hover */
+        .data-row:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Hidden row for filtering */
+        .data-row.hidden {
+            display: none;
+        }
+
+        /* Pagination container responsive */
+        .pagination-container {
+            flex-wrap: wrap;
+        }
+
         /* Toast notification styles */
         .toast-notification {
             position: fixed;
@@ -1134,43 +1174,203 @@
             <div class="filter-group">
                 <div class="past-data-toggle" id="pastDataToggle">
                     <i class="fas fa-history"></i>
-                    <span>View Past Tracking Data</span>
+                    <span>View Applications History</span>
                 </div>
             </div>
             <div class="date-filter-content" id="dateFilterContent" style="display: none;">
                 <div class="filter-group" id="dateFilterGroup">
-                    <span class="filter-label">Date Range:</span>
+                    <span class="filter-label">Filter:</span>
+                    <select class="filter-select" id="filterType">
+                        <option value="all">All Types</option>
+                        <option value="hospital">Hospital</option>
+                        <option value="medical">Medical/Other</option>
+                        <option value="funeral">Funeral</option>
+                    </select>
+                    <select class="filter-select" id="filterStatus">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="approve">Approve</option>
+                        <option value="unapproved">Unapprove</option>
+                        <option value="retake">Retake</option>
+                        <option value="claimed">Claims</option>
+                    </select>
                     <div class="date-range">
                         <input type="date" class="date-input" id="startDate">
                         <span>to</span>
                         <input type="date" class="date-input" id="endDate">
                     </div>
                     <button class="filter-btn" id="applyFilter">
-                        <i class="fas fa-filter"></i> Apply Filter
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                    <button class="filter-btn" id="clearFilter" style="background: var(--secondary-color);">
+                        <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Past Data Section -->
+        @{
+            // Combine all applications for Applications History (both active and archived)
+            var allApplications = new List<dynamic>();
+            
+            // Add Hospital Assistance
+            foreach (var app in Model.HospitalAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Hospital",
+                    TypeDisplay = "Hospital Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "HospitalAssistanceView"
+                });
+            }
+            foreach (var app in Model.ArchivedHospitalAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Hospital",
+                    TypeDisplay = "Hospital Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "HospitalAssistanceView"
+                });
+            }
+            
+            // Add Other/Medical Assistance
+            foreach (var app in Model.OtherAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Medical",
+                    TypeDisplay = "Medical/Other Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "OtherAssistanceView"
+                });
+            }
+            foreach (var app in Model.ArchivedOtherAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Medical",
+                    TypeDisplay = "Medical/Other Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "OtherAssistanceView"
+                });
+            }
+            
+            // Add Funeral Assistance
+            foreach (var app in Model.FuneralAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Funeral",
+                    TypeDisplay = "Funeral Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "FuneralAssistanceView"
+                });
+            }
+            foreach (var app in Model.ArchivedFuneralAssistance)
+            {
+                allApplications.Add(new {
+                    Id = app.Id,
+                    Type = "Funeral",
+                    TypeDisplay = "Funeral Assistance",
+                    Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
+                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    ClaimStatus = app.Status3,
+                    SubmittedDate = app.CreatedAt,
+                    ProcessedDate = app.ProcessAt,
+                    ResultDate = app.Result,
+                    ClaimedDate = app.ClaimedAt,
+                    ViewAction = "FuneralAssistanceView"
+                });
+            }
+            
+            // Sort by most recent first
+            allApplications = allApplications.OrderByDescending(a => (DateTime)a.SubmittedDate).ToList();
+            
+            // Calculate summary statistics
+            var totalApps = allApplications.Count;
+            var approvedApps = allApplications.Count(a => (string)a.Status == "Approve");
+            var pendingApps = allApplications.Count(a => (string)a.Status == "Pending");
+            var processingApps = allApplications.Count(a => (string)a.Status == "Processing");
+            var unapprovedApps = allApplications.Count(a => (string)a.Status == "Unapproved" || (string)a.Status == "Disapprove");
+            var retakeApps = allApplications.Count(a => (string)a.Status == "Retake");
+            var claimedApps = allApplications.Count(a => !string.IsNullOrEmpty((string)a.ClaimStatus));
+        }
+        
         <div class="past-data-section" id="pastDataSection">
             <div class="past-data-header">
-                <h4>Past Application Data</h4>
-                <div id="dateRangeDisplay">Showing all applications</div>
+                <h4><i class="fas fa-history me-2"></i>Applications History</h4>
+                <div id="dateRangeDisplay">Showing all @totalApps applications</div>
             </div>
 
             <div class="past-data-summary" id="pastDataSummary">
-                <!-- Summary cards will be populated by JavaScript -->
+                <div class="summary-card">
+                    <h5>Total Applications</h5>
+                    <div class="count">@totalApps</div>
+                </div>
+                <div class="summary-card">
+                    <h5>Approve</h5>
+                    <div class="count" style="color: var(--success-color);">@approvedApps</div>
+                </div>
+                <div class="summary-card">
+                    <h5>Pending</h5>
+                    <div class="count" style="color: var(--warning-color);">@pendingApps</div>
+                </div>
+                <div class="summary-card">
+                    <h5>Processing</h5>
+                    <div class="count" style="color: var(--primary-color);">@processingApps</div>
+                </div>
+                <div class="summary-card">
+                    <h5>Unapprove</h5>
+                    <div class="count" style="color: var(--danger-color);">@unapprovedApps</div>
+                </div>
+                <div class="summary-card">
+                    <h5>Claims</h5>
+                    <div class="count" style="color: var(--claimed-color);">@claimedApps</div>
+                </div>
             </div>
 
             <div class="past-data-table">
                 <table class="table" id="pastDataTable">
                     <thead>
                         <tr>
-                            <th>Application Type</th>
-                            <th>Applicant Name</th>
-                            <th>Status</th>
-                            <th>Submitted Date</th>
+                            <th style="cursor: pointer;" onclick="sortTable(0)">Application Type <i class="fas fa-sort"></i></th>
+                            <th style="cursor: pointer;" onclick="sortTable(1)">Applicant Name <i class="fas fa-sort"></i></th>
+                            <th style="cursor: pointer;" onclick="sortTable(2)">Status <i class="fas fa-sort"></i></th>
+                            <th style="cursor: pointer;" onclick="sortTable(3)">Submitted Date <i class="fas fa-sort"></i></th>
                             <th>Processed Date</th>
                             <th>Result Date</th>
                             <th>Claimed Date</th>
@@ -1178,10 +1378,121 @@
                         </tr>
                     </thead>
                     <tbody id="pastDataTableBody">
-                        <!-- Table rows will be populated by JavaScript -->
+                        @if (allApplications.Count == 0)
+                        {
+                            <tr class="no-data-row">
+                                <td colspan="8" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
+                                    <p style="color: var(--secondary-color); margin: 0;">No applications found.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var app in allApplications)
+                            {
+                                var status = (string)app.Status;
+                                var claimStatus = (string)app.ClaimStatus;
+                                var displayStatus = status;
+                                var statusClass = "status-pending";
+                                
+                                // Determine final status (claimed takes precedence)
+                                if (!string.IsNullOrEmpty(claimStatus))
+                                {
+                                    displayStatus = "Claims";
+                                    statusClass = "status-claimed";
+                                }
+                                else if (status == "Approve")
+                                {
+                                    displayStatus = "Approve";
+                                    statusClass = "status-approved";
+                                }
+                                else if (status == "Processing")
+                                {
+                                    displayStatus = "Processing";
+                                    statusClass = "status-processing";
+                                }
+                                else if (status == "Unapproved" || status == "Disapprove")
+                                {
+                                    displayStatus = "Unapprove";
+                                    statusClass = "status-unapproved";
+                                }
+                                else if (status == "Retake")
+                                {
+                                    displayStatus = "Retake";
+                                    statusClass = "status-retake";
+                                }
+                                else
+                                {
+                                    displayStatus = "Pending";
+                                    statusClass = "status-pending";
+                                }
+                                
+                                var submittedDate = (DateTime)app.SubmittedDate;
+                                var processedDate = (DateTime)app.ProcessedDate;
+                                var resultDate = (DateTime)app.ResultDate;
+                                var claimedDate = (DateTime)app.ClaimedDate;
+                                
+                                <tr class="data-row" 
+                                    data-type="@((string)app.Type).ToLower()" 
+                                    data-status="@status.ToLower()"
+                                    data-claimed="@(!string.IsNullOrEmpty(claimStatus) ? "true" : "false")"
+                                    data-date="@submittedDate.ToString("yyyy-MM-dd")">
+                                    <td>
+                                        <span class="type-badge type-@((string)app.Type).ToLower()">
+                                            @if ((string)app.Type == "Hospital")
+                                            {
+                                                <i class="fas fa-hospital me-1"></i>
+                                            }
+                                            else if ((string)app.Type == "Medical")
+                                            {
+                                                <i class="fas fa-microscope me-1"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-monument me-1"></i>
+                                            }
+                                            @app.TypeDisplay
+                                        </span>
+                                    </td>
+                                    <td>@app.Name</td>
+                                    <td><span class="status-badge @statusClass">@displayStatus</span></td>
+                                    <td data-sort="@submittedDate.Ticks">@submittedDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                    <td>@(processedDate > DateTime.MinValue && processedDate.Year > 1 ? processedDate.ToString("dd MMM yyyy") : "-")</td>
+                                    <td>@(resultDate > DateTime.MinValue && resultDate.Year > 1 ? resultDate.ToString("dd MMM yyyy") : "-")</td>
+                                    <td>@(claimedDate > DateTime.MinValue && claimedDate.Year > 1 ? claimedDate.ToString("dd MMM yyyy") : "-")</td>
+                                    <td>
+                                        <a href="@Url.Action((string)app.ViewAction, "Dashboard", new { id = app.Id })" 
+                                           class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination for large datasets -->
+            @if (allApplications.Count > 10)
+            {
+                <div class="pagination-container" style="display: flex; justify-content: center; align-items: center; margin-top: 1rem; gap: 0.5rem;">
+                    <button class="filter-btn" id="prevPage" style="padding: 0.4rem 0.8rem;" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="pageInfo" style="font-size: 0.9rem; color: var(--secondary-color);">Page 1 of 1</span>
+                    <button class="filter-btn" id="nextPage" style="padding: 0.4rem 0.8rem;">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <select class="filter-select" id="rowsPerPage" style="margin-left: 1rem;">
+                        <option value="10">10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                    </select>
+                </div>
+            }
         </div>
 
         <!-- Current Tracking Data -->
@@ -1800,32 +2111,44 @@
         })();
     </script>
     <script>
-        // Past Data Feature - Initialize after DOM is ready
+        // Past Data Feature - Enhanced with server-side rendering
         (function() {
             const pastDataToggle = document.getElementById('pastDataToggle');
             const pastDataSection = document.getElementById('pastDataSection');
             const dateFilterGroup = document.getElementById('dateFilterGroup');
             const applyFilter = document.getElementById('applyFilter');
+            const clearFilter = document.getElementById('clearFilter');
             const startDate = document.getElementById('startDate');
             const endDate = document.getElementById('endDate');
-            const pastDataSummary = document.getElementById('pastDataSummary');
-            const pastDataTableBody = document.getElementById('pastDataTableBody');
+            const filterType = document.getElementById('filterType');
+            const filterStatus = document.getElementById('filterStatus');
             const dateRangeDisplay = document.getElementById('dateRangeDisplay');
             const tabContainer = document.querySelector('.tab-container');
             const tabContent = document.getElementById('trackingTabsContent');
+            const pastDataTableBody = document.getElementById('pastDataTableBody');
 
-            // Verify all required elements exist
-            if (!pastDataToggle || !pastDataSection || !startDate || !endDate) {
+            // Pagination elements
+            const prevPage = document.getElementById('prevPage');
+            const nextPage = document.getElementById('nextPage');
+            const pageInfo = document.getElementById('pageInfo');
+            const rowsPerPage = document.getElementById('rowsPerPage');
+
+            // Pagination state
+            let currentPage = 1;
+            let itemsPerPage = 10;
+
+            // Verify required elements exist
+            if (!pastDataToggle || !pastDataSection) {
                 return;
             }
 
-            // Set default dates (last 30 days)
+            // Set default dates
             const today = new Date();
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(today.getDate() - 30);
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(today.getFullYear() - 1);
 
-            startDate.value = thirtyDaysAgo.toISOString().split('T')[0];
-            endDate.value = today.toISOString().split('T')[0];
+            if (startDate) startDate.value = oneYearAgo.toISOString().split('T')[0];
+            if (endDate) endDate.value = today.toISOString().split('T')[0];
 
             // Toggle past data section
             pastDataToggle.addEventListener('click', function(e) {
@@ -1845,9 +2168,9 @@
                     if (tabContainer) tabContainer.style.display = 'none';
                     if (tabContent) tabContent.style.display = 'none';
 
-                    if (toggleText) toggleText.textContent = 'View Current Tracking Data';
+                    if (toggleText) toggleText.textContent = 'View Current Applications';
 
-                    loadPastData();
+                    applyFilters();
                 } else {
                     pastDataToggle.classList.remove('active');
                     if (dateFilterContent) dateFilterContent.style.display = 'none';
@@ -1857,320 +2180,194 @@
                     if (tabContainer) tabContainer.style.display = 'block';
                     if (tabContent) tabContent.style.display = 'block';
 
-                    if (toggleText) toggleText.textContent = 'View Past Tracking Data';
+                    if (toggleText) toggleText.textContent = 'View Applications History';
                 }
             });
 
-            // Auto-expand Past Data section if URL contains #past-data anchor (from notifications)
+            // Auto-expand Past Data section if URL contains #past-data anchor
             function checkAndExpandPastData() {
                 if (window.location.hash === '#past-data') {
                     if (!pastDataToggle.classList.contains('active')) {
-                        const toggleText = pastDataToggle.querySelector('span');
-                        const dateFilterContent = document.getElementById('dateFilterContent');
-
-                        pastDataToggle.classList.add('active');
-                        if (dateFilterContent) dateFilterContent.style.display = 'block';
-                        if (dateFilterGroup) dateFilterGroup.style.display = 'flex';
-                        pastDataSection.classList.add('active');
-
-                        if (tabContainer) tabContainer.style.display = 'none';
-                        if (tabContent) tabContent.style.display = 'none';
-
-                        if (toggleText) toggleText.textContent = 'View Current Tracking Data';
-
-                        loadPastData();
-
+                        pastDataToggle.click();
                         setTimeout(() => {
                             pastDataSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 300);
-
                         history.replaceState(null, null, ' ');
                     }
                 }
             }
 
-            // Check on page load
             checkAndExpandPastData();
-
             window.addEventListener('hashchange', checkAndExpandPastData);
 
-            // Load past data
-            function loadPastData() {
-                const start = new Date(startDate.value);
-                const end = new Date(endDate.value);
-                end.setHours(23, 59, 59, 999);
+            // Apply filters function
+            function applyFilters() {
+                const rows = pastDataTableBody.querySelectorAll('.data-row');
+                const noDataRow = pastDataTableBody.querySelector('.no-data-row');
+                
+                const typeFilter = filterType ? filterType.value.toLowerCase() : 'all';
+                const statusFilter = filterStatus ? filterStatus.value.toLowerCase() : 'all';
+                const startDateVal = startDate ? new Date(startDate.value) : null;
+                const endDateVal = endDate ? new Date(endDate.value) : null;
+                
+                if (endDateVal) {
+                    endDateVal.setHours(23, 59, 59, 999);
+                }
 
+                let visibleCount = 0;
+                let matchingRows = [];
+
+                rows.forEach(row => {
+                    const rowType = row.dataset.type;
+                    const rowStatus = row.dataset.status;
+                    const rowClaimed = row.dataset.claimed === 'true';
+                    const rowDate = new Date(row.dataset.date);
+
+                    let showRow = true;
+
+                    // Type filter
+                    if (typeFilter !== 'all') {
+                        if (typeFilter === 'hospital' && rowType !== 'hospital') showRow = false;
+                        if (typeFilter === 'medical' && rowType !== 'medical') showRow = false;
+                        if (typeFilter === 'funeral' && rowType !== 'funeral') showRow = false;
+                    }
+
+                    // Status filter
+                    if (statusFilter !== 'all' && showRow) {
+                        if (statusFilter === 'claimed') {
+                            if (!rowClaimed) showRow = false;
+                        } else if (statusFilter === 'approve' || statusFilter === 'approved') {
+                            if (rowStatus !== 'approve' && rowStatus !== 'approved') showRow = false;
+                        } else if (statusFilter === 'unapproved') {
+                            if (rowStatus !== 'unapproved' && rowStatus !== 'disapprove') showRow = false;
+                        } else {
+                            if (rowStatus !== statusFilter) showRow = false;
+                        }
+                    }
+
+                    // Date filter
+                    if (showRow && startDateVal && endDateVal) {
+                        if (rowDate < startDateVal || rowDate > endDateVal) {
+                            showRow = false;
+                        }
+                    }
+
+                    if (showRow) {
+                        matchingRows.push(row);
+                        visibleCount++;
+                    }
+                    
+                    row.classList.add('hidden');
+                });
+
+                // Apply pagination
+                const totalPages = Math.ceil(matchingRows.length / itemsPerPage);
+                if (currentPage > totalPages) currentPage = 1;
+                
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+
+                matchingRows.forEach((row, index) => {
+                    if (index >= startIndex && index < endIndex) {
+                        row.classList.remove('hidden');
+                    }
+                });
+
+                // Update pagination info
+                if (pageInfo) {
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+                }
+                if (prevPage) {
+                    prevPage.disabled = currentPage <= 1;
+                }
+                if (nextPage) {
+                    nextPage.disabled = currentPage >= totalPages;
+                }
+
+                // Update display text
                 if (dateRangeDisplay) {
-                    dateRangeDisplay.textContent = `Showing applications from ${formatDate(start)} to ${formatDate(end)}`;
-                }
-
-                const allApplications = collectAllApplications();
-
-                const filteredApplications = allApplications.filter(app => {
-                    const appDate = new Date(app.submittedDate);
-                    return appDate >= start && appDate <= end;
-                });
-
-                updateSummary(filteredApplications);
-                updateTable(filteredApplications);
-            }
-
-            // Collect all applications from the current page
-            function collectAllApplications() {
-                const applications = [];
-
-                // Add archived applications
-                if (window.archivedApplications && window.archivedApplications.length > 0) {
-                    window.archivedApplications.forEach(app => {
-                        applications.push({
-                            type: app.type,
-                            name: app.name,
-                            status: app.status,
-                            claimStatus: app.claimStatus,
-                            submittedDate: new Date(app.submittedDate),
-                            processedDate: app.processedDate ? new Date(app.processedDate) : null,
-                            resultDate: app.resultDate ? new Date(app.resultDate) : null,
-                            claimedDate: app.claimedDate ? new Date(app.claimedDate) : null,
-                            id: app.id
-                        });
-                    });
-                }
-
-                // Helper function to detect status for each card
-                function detectStatus(card) {
-                    // Check for claimed status first
-                    const claimMarker = card.querySelector('.timeline-item:first-child .timeline-marker.claimed');
-                    if (claimMarker) {
-                        return 'Claimed';
+                    let displayText = `Showing ${visibleCount} application${visibleCount !== 1 ? 's' : ''}`;
+                    if (startDateVal && endDateVal) {
+                        displayText += ` from ${formatDate(startDateVal)} to ${formatDate(endDateVal)}`;
                     }
+                    dateRangeDisplay.textContent = displayText;
+                }
 
-                    // Check for approved status
-                    const approvedMarker = card.querySelector('.timeline-item:nth-child(1) .timeline-marker.approved, .timeline-item:nth-child(2) .timeline-marker.approved');
-                    if (approvedMarker) {
-                        return 'Approve';
+                // Show no data message if no results
+                if (visibleCount === 0) {
+                    // Remove any existing no-results row first
+                    const existingNoResults = pastDataTableBody.querySelector('.no-results-row');
+                    if (existingNoResults) {
+                        existingNoResults.remove();
                     }
-
-                    // Check for unapproved status
-                    const unapprovedMarker = card.querySelector('.timeline-item:nth-child(1) .timeline-marker.unapproved, .timeline-item:nth-child(2) .timeline-marker.unapproved');
-                    if (unapprovedMarker) {
-                        return 'Unapproved';
-                    }
-
-                    // Check for retake status
-                    const retakeMarker = card.querySelector('.timeline-marker.retake');
-                    if (retakeMarker) {
-                        return 'Retake';
-                    }
-
-                    // Check if processing has started
-                    const processingMarker = card.querySelector('.timeline-marker.processing');
-                    if (processingMarker) {
-                        return 'Processing';
-                    }
-
-                    // Default to pending
-                    return 'Pending';
-                }
-
-                // Helper function to detect claim status
-                function detectClaimStatus(card) {
-                    const claimMarker = card.querySelector('.timeline-item:first-child .timeline-marker.claimed');
-                    return claimMarker ? 'Claimed' : null;
-                }
-
-                // Helper function to extract claimed date
-                function extractClaimedDate(card) {
-                    const claimDateElement = card.querySelector('.timeline-item:first-child .timeline-date');
-                    return claimDateElement ? parseDateFromText(claimDateElement.textContent) : null;
-                }
-
-                // Helper function to extract processing date
-                function extractProcessingDate(card) {
-                    const processingDateElement = card.querySelector('.timeline-marker.processing').closest('.timeline-item').querySelector('.timeline-date');
-                    return processingDateElement ? parseDateFromText(processingDateElement.textContent) : null;
-                }
-
-                // Helper function to extract result date
-                function extractResultDate(card) {
-                    const resultMarker = card.querySelector('.timeline-marker.approved, .timeline-marker.unapproved, .timeline-marker.retake');
-                    if (resultMarker) {
-                        const resultDateElement = resultMarker.closest('.timeline-item').querySelector('.timeline-date');
-                        return resultDateElement ? parseDateFromText(resultDateElement.textContent) : null;
-                    }
-                    return null;
-                }
-
-                // Helper function to parse date from text
-                function parseDateFromText(text) {
-                    try {
-                        return new Date(text);
-                    } catch {
-                        return null;
-                    }
-                }
-
-                // Helper function to get application type from icon
-                function getApplicationType(header) {
-                    if (header.innerHTML.includes('fa-hospital')) return 'Hospital';
-                    if (header.innerHTML.includes('fa-microscope')) return 'Medical Procedure';
-                    if (header.innerHTML.includes('fa-monument')) return 'Funeral Assistance';
-                    return 'Application';
-                }
-
-                // Collect applications from each tab
-                ['#hospital', '#medical', '#funeral'].forEach(tabSelector => {
-                    document.querySelectorAll(`${tabSelector} .tracking-card`).forEach(card => {
-                        const header = card.querySelector('.tracking-header h5');
-                        const dateText = card.querySelector('.tracking-date').textContent;
-                        const appType = getApplicationType(header);
-
-                        applications.push({
-                            type: appType,
-                            name: header.textContent.replace('Hospital', '').replace('Microscope', '').replace('Monument', '').trim(),
-                            status: detectStatus(card),
-                            claimStatus: detectClaimStatus(card),
-                            submittedDate: extractDate(dateText),
-                            processedDate: extractProcessingDate(card),
-                            resultDate: extractResultDate(card),
-                            claimedDate: extractClaimedDate(card),
-                            id: extractId(card)
-                        });
-                    });
-                });
-
-                return applications;
-            }
-
-            // Helper functions to extract data from cards
-            function extractDate(dateText) {
-                const match = dateText.match(/Submitted: (.*)/);
-                return match ? new Date(match[1]) : new Date();
-            }
-
-            function extractId(card) {
-                const viewLink = card.querySelector('.btn-view');
-                if (viewLink) {
-                    const href = viewLink.getAttribute('href');
-                    const match = href.match(/\/\d+$/);
-                    return match ? match[0].substring(1) : null;
-                }
-                return null;
-            }
-
-            // Update summary cards
-            function updateSummary(applications) {
-                const total = applications.length;
-                const approved = applications.filter(app => app.status === 'Approve').length;
-                const pending = applications.filter(app => app.status === 'Pending').length;
-                const processing = applications.filter(app => app.status === 'Processing').length;
-                const unapproved = applications.filter(app => app.status === 'Unapproved').length;
-                const claimed = applications.filter(app => app.status === 'Claimed').length;
-
-                if (pastDataSummary) {
-                    pastDataSummary.innerHTML = `
-                        <div class="summary-card">
-                            <h5>Total Applications</h5>
-                            <div class="count">${total}</div>
-                        </div>
-                        <div class="summary-card">
-                            <h5>Approved</h5>
-                            <div class="count" style="color: var(--success-color);">${approved}</div>
-                        </div>
-                        <div class="summary-card">
-                            <h5>Pending</h5>
-                            <div class="count" style="color: var(--warning-color);">${pending}</div>
-                        </div>
-                        <div class="summary-card">
-                            <h5>Processing</h5>
-                            <div class="count" style="color: var(--primary-color);">${processing}</div>
-                        </div>
-                        <div class="summary-card">
-                            <h5>Unapproved</h5>
-                            <div class="count" style="color: var(--danger-color);">${unapproved}</div>
-                        </div>
-                        <div class="summary-card">
-                            <h5>Claimed</h5>
-                            <div class="count" style="color: var(--claimed-color);">${claimed}</div>
-                        </div>
-                    `;
-                }
-            }
-
-            // Update table with applications
-        // Update table with applications
-        function updateTable(applications) {
-            if (!pastDataTableBody) return;
-
-            pastDataTableBody.innerHTML = '';
-
-            if (applications.length === 0) {
-                pastDataTableBody.innerHTML = `
-                    <tr>
+                    
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.className = 'no-results-row';
+                    emptyRow.innerHTML = `
                         <td colspan="8" style="text-align: center; padding: 2rem;">
-                            <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
-                            <p style="color: var(--secondary-color); margin: 0;">No applications found in the selected date range.</p>
+                            <i class="fas fa-search" style="font-size: 2rem; color: var(--secondary-color); margin-bottom: 1rem; display: block;"></i>
+                            <p style="color: var(--secondary-color); margin: 0;">No applications match your filter criteria.</p>
                         </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            applications.forEach(app => {
-                const row = document.createElement('tr');
-
-                // Determine status badge class
-                let statusClass = 'status-pending';
-                let statusDisplay = app.status;
-
-                if (app.status === 'Retake') {
-                    statusClass = 'status-retake';
-                    statusDisplay = 'Retake';
-                } else if (app.status === 'Approve') {
-                    statusClass = 'status-approved';
-                    statusDisplay = 'Approved';
-                } else if (app.status === 'Processing') {
-                    statusClass = 'status-processing';
-                    statusDisplay = 'Processing';
-                } else if (app.status === 'Unapproved' || app.status === 'Disapprove') {
-                    statusClass = 'status-unapproved';
-                    statusDisplay = 'Disapproved';
-                } else if (app.status === 'Claimed') {
-                    statusClass = 'status-claimed';
-                    statusDisplay = 'Claimed';
+                    `;
+                    pastDataTableBody.appendChild(emptyRow);
                 } else {
-                    statusDisplay = 'Pending';
-                }
-
-                // Determine the correct view URL based on application type
-                let viewUrl = '';
-                if (app.id) {
-                    if (app.type.includes('Hospital') || app.type === 'Hospital Assistance') {
-                        viewUrl = `/HospitalAssistanceview/${app.id}`;
-                    } else if (app.type.includes('Medical') || app.type === 'Medical Procedure') {
-                        viewUrl = `/OtherAssistanceView/${app.id}`;
-                    } else if (app.type.includes('Funeral') || app.type === 'Funeral Assistance') {
-                        viewUrl = `/FuneralAssistanceView/${app.id}`;
+                    const existingNoResults = pastDataTableBody.querySelector('.no-results-row');
+                    if (existingNoResults) {
+                        existingNoResults.remove();
                     }
                 }
 
-                row.innerHTML = `
-                    <td>${app.type}</td>
-                    <td>${app.name}</td>
-                    <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
-                    <td>${formatDate(new Date(app.submittedDate))}</td>
-                    <td>${app.processedDate ? formatDate(app.processedDate) : '-'}</td>
-                    <td>${app.resultDate ? formatDate(app.resultDate) : '-'}</td>
-                    <td>${app.claimedDate ? formatDate(app.claimedDate) : '-'}</td>
-                    <td>
-                        ${viewUrl ? `<a href="${viewUrl}" class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
-                            <i class="fas fa-eye"></i> View
-                        </a>` : ''}
-                    </td>
-                `;
+                updateSummaryCards(matchingRows);
+            }
 
-                pastDataTableBody.appendChild(row);
-            });
-        }
+            // Update summary cards based on filtered data
+            function updateSummaryCards(matchingRows) {
+                const summaryContainer = document.getElementById('pastDataSummary');
+                if (!summaryContainer) return;
+
+                let total = matchingRows.length;
+                let approved = 0, pending = 0, processing = 0, unapproved = 0, retake = 0, claimed = 0;
+
+                matchingRows.forEach(row => {
+                    const status = row.dataset.status;
+                    const isClaimed = row.dataset.claimed === 'true';
+
+                    if (isClaimed) claimed++;
+                    if (status === 'approve' || status === 'approved') approved++;
+                    else if (status === 'pending') pending++;
+                    else if (status === 'processing') processing++;
+                    else if (status === 'unapproved' || status === 'disapprove') unapproved++;
+                    else if (status === 'retake') retake++;
+                });
+
+                summaryContainer.innerHTML = `
+                    <div class="summary-card">
+                        <h5>Total Applications</h5>
+                        <div class="count">${total}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h5>Approve</h5>
+                        <div class="count" style="color: var(--success-color);">${approved}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h5>Pending</h5>
+                        <div class="count" style="color: var(--warning-color);">${pending}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h5>Processing</h5>
+                        <div class="count" style="color: var(--primary-color);">${processing}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h5>Unapprove</h5>
+                        <div class="count" style="color: var(--danger-color);">${unapproved}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h5>Claims</h5>
+                        <div class="count" style="color: var(--claimed-color);">${claimed}</div>
+                    </div>
+                `;
+            }
+
             // Format date for display
             function formatDate(date) {
                 return date.toLocaleDateString('en-US', {
@@ -2180,43 +2377,92 @@
                 });
             }
 
-            // Show toast notification
-            function showToastNotification(title, message) {
-                let toast = document.getElementById('processingToast');
-                if (!toast) {
-                    toast = document.createElement('div');
-                    toast.id = 'processingToast';
-                    toast.className = 'toast-notification';
-                    toast.innerHTML = `
-                        <div class="toast-header">
-                            <i class="fas fa-bell text-primary"></i>
-                            <h6 class="toast-title">${title}</h6>
-                        </div>
-                        <p class="toast-message">${message}</p>
-                    `;
-                    document.body.appendChild(toast);
-                } else {
-                    toast.querySelector('.toast-title').textContent = title;
-                    toast.querySelector('.toast-message').textContent = message;
-                }
-
-                toast.classList.add('show');
-
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 5000);
+            // Clear filters
+            function clearFilters() {
+                if (filterType) filterType.value = 'all';
+                if (filterStatus) filterStatus.value = 'all';
+                
+                const today = new Date();
+                const oneYearAgo = new Date();
+                oneYearAgo.setFullYear(today.getFullYear() - 1);
+                
+                if (startDate) startDate.value = oneYearAgo.toISOString().split('T')[0];
+                if (endDate) endDate.value = today.toISOString().split('T')[0];
+                
+                currentPage = 1;
+                applyFilters();
             }
 
             // Event listeners
             if (applyFilter) {
-                applyFilter.addEventListener('click', loadPastData);
+                applyFilter.addEventListener('click', function() {
+                    currentPage = 1;
+                    applyFilters();
+                });
             }
 
-            // Load initial data if past data section is active on page load
-            if (pastDataToggle && pastDataToggle.classList.contains('active')) {
-                loadPastData();
+            if (clearFilter) {
+                clearFilter.addEventListener('click', clearFilters);
+            }
+
+            if (prevPage) {
+                prevPage.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        applyFilters();
+                    }
+                });
+            }
+
+            if (nextPage) {
+                nextPage.addEventListener('click', function() {
+                    currentPage++;
+                    applyFilters();
+                });
+            }
+
+            if (rowsPerPage) {
+                rowsPerPage.addEventListener('change', function() {
+                    itemsPerPage = parseInt(this.value);
+                    currentPage = 1;
+                    applyFilters();
+                });
             }
         })();
+
+        // Table sorting function
+        let sortDirection = {};
+        function sortTable(columnIndex) {
+            const table = document.getElementById('pastDataTable');
+            const tbody = document.getElementById('pastDataTableBody');
+            const rows = Array.from(tbody.querySelectorAll('.data-row'));
+
+            // Toggle sort direction
+            sortDirection[columnIndex] = !sortDirection[columnIndex];
+            const ascending = sortDirection[columnIndex];
+
+            rows.sort((a, b) => {
+                let aValue = a.cells[columnIndex].textContent.trim();
+                let bValue = b.cells[columnIndex].textContent.trim();
+
+                // For date column (index 3), use data-sort attribute
+                if (columnIndex === 3) {
+                    aValue = parseInt(a.cells[columnIndex].dataset.sort) || 0;
+                    bValue = parseInt(b.cells[columnIndex].dataset.sort) || 0;
+                    return ascending ? aValue - bValue : bValue - aValue;
+                }
+
+                // String comparison for other columns
+                if (ascending) {
+                    return aValue.localeCompare(bValue);
+                } else {
+                    return bValue.localeCompare(aValue);
+                }
+            });
+
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
     </script>
 
     <!-- Go Back Button Script -->
