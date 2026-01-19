@@ -2495,6 +2495,7 @@ namespace LingapDVO.Controllers
                 string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
 
                 ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
+                PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
 
@@ -2505,6 +2506,7 @@ namespace LingapDVO.Controllers
             if (hasPendingForm)
             {
                 ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
 
@@ -2523,8 +2525,28 @@ namespace LingapDVO.Controllers
             ModelState.Remove("IdFrontimage");
             ModelState.Remove("IdBackimage");
 
+            // Remove validation for Patient Details fields when patient section is hidden (fields are empty)
+            // These fields are only required when user clicks "Show Patient Details"
+            bool isPatientSectionEmpty = string.IsNullOrEmpty(FuneralAssistanceDto.Lastname) &&
+                                          string.IsNullOrEmpty(FuneralAssistanceDto.Firstname);
+            if (isPatientSectionEmpty)
+            {
+                ModelState.Remove("Lastname");
+                ModelState.Remove("Firstname");
+                ModelState.Remove("Middlename");
+                ModelState.Remove("Suffix");
+                ModelState.Remove("BlkLotStreet");
+                ModelState.Remove("SubVill");
+                ModelState.Remove("Brgy");
+                ModelState.Remove("Sex");
+                ModelState.Remove("PhilHealth");
+                ModelState.Remove("Dateofbirth");
+                ModelState.Remove("Age");
+            }
+
             if (!ModelState.IsValid)
             {
+                PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
 
@@ -2694,15 +2716,18 @@ namespace LingapDVO.Controllers
                     else
                         ModelState.AddModelError("", "A record with one of your inputs already exists.");
 
+                    PopulateViewBagForFuneralAssistance(userId);
                     return View(FuneralAssistanceDto);
                 }
 
                 ModelState.AddModelError("", "A database error occurred while saving your data.");
+                PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
             catch (Exception)
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
         }
@@ -3184,6 +3209,25 @@ namespace LingapDVO.Controllers
             ViewData["CurrentValidFront"] = existing.Validfrontimage;
             ViewData["CurrentValidBack"] = existing.ValidBackimage;
             ViewData["IsRetakeMode"] = existing.Status2 == "Retake";
+        }
+
+        // Helper method to populate ViewBag for Funeral Assistance POST validation failures
+        private void PopulateViewBagForFuneralAssistance(int userId)
+        {
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
+            ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
         }
 
 

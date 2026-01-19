@@ -171,14 +171,23 @@ namespace LingapDVO.Controllers
 
             ViewData["Comments"] = HospitalAssistance.Comments;
 
-            // Additional Information - Encrypted Fields
-            ViewData["HospitalFacilityName"] = HospitalAssistance.HospitalFacilityName;
-            ViewData["HospitalFacilityAddress"] = HospitalAssistance.HospitalFacilityAddress;
-            ViewData["DiagnosisMedicalCondition"] = HospitalAssistance.DiagnosisMedicalCondition;
-            ViewData["HospitalBillCost"] = HospitalAssistance.HospitalBillCost;
-            ViewData["AdmissionDate"] = HospitalAssistance.AdmissionDate;
-            ViewData["DischargeDate"] = HospitalAssistance.DischargeDate;
-            ViewData["WardRoomType"] = HospitalAssistance.WardRoomType;
+            // Additional Information - Encrypted Fields (store both encrypted and decrypted values)
+            ViewData["HospitalFacilityNameEncrypted"] = HospitalAssistance.HospitalFacilityName;
+            ViewData["HospitalFacilityAddressEncrypted"] = HospitalAssistance.HospitalFacilityAddress;
+            ViewData["DiagnosisMedicalConditionEncrypted"] = HospitalAssistance.DiagnosisMedicalCondition;
+            ViewData["HospitalBillCostEncrypted"] = HospitalAssistance.HospitalBillCost;
+            ViewData["AdmissionDateEncrypted"] = HospitalAssistance.AdmissionDate;
+            ViewData["DischargeDateEncrypted"] = HospitalAssistance.DischargeDate;
+            ViewData["WardRoomTypeEncrypted"] = HospitalAssistance.WardRoomType;
+
+            // Decrypted values for display after password verification
+            ViewData["HospitalFacilityName"] = DecryptFieldText(HospitalAssistance.HospitalFacilityName);
+            ViewData["HospitalFacilityAddress"] = DecryptFieldText(HospitalAssistance.HospitalFacilityAddress);
+            ViewData["DiagnosisMedicalCondition"] = DecryptFieldText(HospitalAssistance.DiagnosisMedicalCondition);
+            ViewData["HospitalBillCost"] = DecryptFieldText(HospitalAssistance.HospitalBillCost);
+            ViewData["AdmissionDate"] = DecryptFieldText(HospitalAssistance.AdmissionDate);
+            ViewData["DischargeDate"] = DecryptFieldText(HospitalAssistance.DischargeDate);
+            ViewData["WardRoomType"] = DecryptFieldText(HospitalAssistance.WardRoomType);
 
             return View();
 
@@ -414,26 +423,61 @@ namespace LingapDVO.Controllers
             ViewData["DeathCertificate"] = OtherAssistance.DeathCertificate;
             ViewData["Comments"] = OtherAssistance.Comments;
 
-            // Additional Information - Encrypted Fields (All fields for conditional display)
-            ViewData["MedicineName"] = OtherAssistance.MedicineName;
-            ViewData["MedicineQuantity"] = OtherAssistance.MedicineQuantity;
-            ViewData["MedicineCost"] = OtherAssistance.MedicineCost;
-            ViewData["PrescribingDoctor"] = OtherAssistance.PrescribingDoctor;
-            ViewData["DoctorContactDetail"] = OtherAssistance.DoctorContactDetail;
-            ViewData["LaboratoryCenterName"] = OtherAssistance.LaboratoryCenterName;
-            ViewData["LaboratoryCenterAddress"] = OtherAssistance.LaboratoryCenterAddress;
-            ViewData["TestName"] = OtherAssistance.TestName;
-            ViewData["TestCost"] = OtherAssistance.TestCost;
-            ViewData["TestOtherInfo"] = OtherAssistance.TestOtherInfo;
-            ViewData["TherapyFacilityName"] = OtherAssistance.TherapyFacilityName;
-            ViewData["TherapyFacilityAddress"] = OtherAssistance.TherapyFacilityAddress;
-            ViewData["TherapyFacilityContact"] = OtherAssistance.TherapyFacilityContact;
-            ViewData["TherapyType"] = OtherAssistance.TherapyType;
-            ViewData["EquipmentName"] = OtherAssistance.EquipmentName;
-            ViewData["EquipmentBrand"] = OtherAssistance.EquipmentBrand;
-            ViewData["EquipmentCategory"] = OtherAssistance.EquipmentCategory;
-            ViewData["EquipmentQuantity"] = OtherAssistance.EquipmentQuantity;
-            ViewData["EquipmentCost"] = OtherAssistance.EquipmentCost;
+            // Additional Information - Encrypted Fields (store both encrypted and decrypted values)
+            // Medicine fields
+            ViewData["MedicineNameEncrypted"] = OtherAssistance.MedicineName;
+            ViewData["MedicineQuantityEncrypted"] = OtherAssistance.MedicineQuantity;
+            ViewData["MedicineCostEncrypted"] = OtherAssistance.MedicineCost;
+            ViewData["PrescribingDoctorEncrypted"] = OtherAssistance.PrescribingDoctor;
+            ViewData["DoctorContactDetailEncrypted"] = OtherAssistance.DoctorContactDetail;
+
+            // Laboratory fields
+            ViewData["LaboratoryCenterNameEncrypted"] = OtherAssistance.LaboratoryCenterName;
+            ViewData["LaboratoryCenterAddressEncrypted"] = OtherAssistance.LaboratoryCenterAddress;
+            ViewData["TestNameEncrypted"] = OtherAssistance.TestName;
+            ViewData["TestCostEncrypted"] = OtherAssistance.TestCost;
+            ViewData["TestOtherInfoEncrypted"] = OtherAssistance.TestOtherInfo;
+
+            // Therapy fields
+            ViewData["TherapyFacilityNameEncrypted"] = OtherAssistance.TherapyFacilityName;
+            ViewData["TherapyFacilityAddressEncrypted"] = OtherAssistance.TherapyFacilityAddress;
+            ViewData["TherapyFacilityContactEncrypted"] = OtherAssistance.TherapyFacilityContact;
+            ViewData["TherapyTypeEncrypted"] = OtherAssistance.TherapyType;
+
+            // Equipment fields
+            ViewData["EquipmentNameEncrypted"] = OtherAssistance.EquipmentName;
+            ViewData["EquipmentBrandEncrypted"] = OtherAssistance.EquipmentBrand;
+            ViewData["EquipmentCategoryEncrypted"] = OtherAssistance.EquipmentCategory;
+            ViewData["EquipmentQuantityEncrypted"] = OtherAssistance.EquipmentQuantity;
+            ViewData["EquipmentCostEncrypted"] = OtherAssistance.EquipmentCost;
+
+            // Decrypted values for display after password verification
+            // Medicine fields
+            ViewData["MedicineName"] = DecryptFieldText(OtherAssistance.MedicineName);
+            ViewData["MedicineQuantity"] = DecryptFieldText(OtherAssistance.MedicineQuantity);
+            ViewData["MedicineCost"] = DecryptFieldText(OtherAssistance.MedicineCost);
+            ViewData["PrescribingDoctor"] = DecryptFieldText(OtherAssistance.PrescribingDoctor);
+            ViewData["DoctorContactDetail"] = DecryptFieldText(OtherAssistance.DoctorContactDetail);
+
+            // Laboratory fields
+            ViewData["LaboratoryCenterName"] = DecryptFieldText(OtherAssistance.LaboratoryCenterName);
+            ViewData["LaboratoryCenterAddress"] = DecryptFieldText(OtherAssistance.LaboratoryCenterAddress);
+            ViewData["TestName"] = DecryptFieldText(OtherAssistance.TestName);
+            ViewData["TestCost"] = DecryptFieldText(OtherAssistance.TestCost);
+            ViewData["TestOtherInfo"] = DecryptFieldText(OtherAssistance.TestOtherInfo);
+
+            // Therapy fields
+            ViewData["TherapyFacilityName"] = DecryptFieldText(OtherAssistance.TherapyFacilityName);
+            ViewData["TherapyFacilityAddress"] = DecryptFieldText(OtherAssistance.TherapyFacilityAddress);
+            ViewData["TherapyFacilityContact"] = DecryptFieldText(OtherAssistance.TherapyFacilityContact);
+            ViewData["TherapyType"] = DecryptFieldText(OtherAssistance.TherapyType);
+
+            // Equipment fields
+            ViewData["EquipmentName"] = DecryptFieldText(OtherAssistance.EquipmentName);
+            ViewData["EquipmentBrand"] = DecryptFieldText(OtherAssistance.EquipmentBrand);
+            ViewData["EquipmentCategory"] = DecryptFieldText(OtherAssistance.EquipmentCategory);
+            ViewData["EquipmentQuantity"] = DecryptFieldText(OtherAssistance.EquipmentQuantity);
+            ViewData["EquipmentCost"] = DecryptFieldText(OtherAssistance.EquipmentCost);
 
             return View();
 
@@ -672,17 +716,29 @@ namespace LingapDVO.Controllers
             ViewData["DeathCertificate"] = FuneralAssistance.DeathCertificate;
             ViewData["Comments"] = FuneralAssistance.Comments;
 
-            // Additional Information - Encrypted Fields
-            ViewData["DeceasedPersonName"] = FuneralAssistance.DeceasedPersonName;
-            ViewData["RelationshipToDeceased"] = FuneralAssistance.RelationshipToDeceased;
-            ViewData["DateOfDeath"] = FuneralAssistance.DateOfDeath;
-            ViewData["TimeOfDeath"] = FuneralAssistance.TimeOfDeath;
-            ViewData["CauseOfDeath"] = FuneralAssistance.CauseOfDeath;
-            ViewData["FuneralHomeName"] = FuneralAssistance.FuneralHomeName;
-            ViewData["FuneralHomeAddress"] = FuneralAssistance.FuneralHomeAddress;
-            ViewData["BurialCremationDate"] = FuneralAssistance.BurialCremationDate;
-            ViewData["BurialCremationTime"] = FuneralAssistance.BurialCremationTime;
-            ViewData["BurialCremationType"] = FuneralAssistance.BurialCremationType;
+            // Additional Information - Encrypted Fields (store both encrypted and decrypted values)
+            ViewData["DeceasedPersonNameEncrypted"] = FuneralAssistance.DeceasedPersonName;
+            ViewData["RelationshipToDeceasedEncrypted"] = FuneralAssistance.RelationshipToDeceased;
+            ViewData["DateOfDeathEncrypted"] = FuneralAssistance.DateOfDeath;
+            ViewData["TimeOfDeathEncrypted"] = FuneralAssistance.TimeOfDeath;
+            ViewData["CauseOfDeathEncrypted"] = FuneralAssistance.CauseOfDeath;
+            ViewData["FuneralHomeNameEncrypted"] = FuneralAssistance.FuneralHomeName;
+            ViewData["FuneralHomeAddressEncrypted"] = FuneralAssistance.FuneralHomeAddress;
+            ViewData["BurialCremationDateEncrypted"] = FuneralAssistance.BurialCremationDate;
+            ViewData["BurialCremationTimeEncrypted"] = FuneralAssistance.BurialCremationTime;
+            ViewData["BurialCremationTypeEncrypted"] = FuneralAssistance.BurialCremationType;
+
+            // Decrypted values for display after password verification
+            ViewData["DeceasedPersonName"] = DecryptFieldText(FuneralAssistance.DeceasedPersonName);
+            ViewData["RelationshipToDeceased"] = DecryptFieldText(FuneralAssistance.RelationshipToDeceased);
+            ViewData["DateOfDeath"] = DecryptFieldText(FuneralAssistance.DateOfDeath);
+            ViewData["TimeOfDeath"] = DecryptFieldText(FuneralAssistance.TimeOfDeath);
+            ViewData["CauseOfDeath"] = DecryptFieldText(FuneralAssistance.CauseOfDeath);
+            ViewData["FuneralHomeName"] = DecryptFieldText(FuneralAssistance.FuneralHomeName);
+            ViewData["FuneralHomeAddress"] = DecryptFieldText(FuneralAssistance.FuneralHomeAddress);
+            ViewData["BurialCremationDate"] = DecryptFieldText(FuneralAssistance.BurialCremationDate);
+            ViewData["BurialCremationTime"] = DecryptFieldText(FuneralAssistance.BurialCremationTime);
+            ViewData["BurialCremationType"] = DecryptFieldText(FuneralAssistance.BurialCremationType);
 
             return View();
 
