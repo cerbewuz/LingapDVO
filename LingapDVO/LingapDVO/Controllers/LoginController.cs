@@ -510,9 +510,18 @@ namespace LingapDVO.Controllers
                 }
 
                 // Generate a secure random password for Google users (they don't need to know it)
+                // Hash with SHA-256 first, then encrypt with AES-256
                 var aesHelper = new AesEncryptionHelper(_configuration);
                 string randomPassword = GenerateSecureToken();
-                string encryptedPassword = aesHelper.Encrypt(randomPassword);
+                
+                string hashedPassword;
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(randomPassword));
+                    hashedPassword = Convert.ToBase64String(hashBytes);
+                }
+                
+                string encryptedPassword = aesHelper.Encrypt(hashedPassword);
 
                 // Create username from Google email (before @ symbol)
                 string username = GoogleEmail.Split('@')[0];
@@ -848,11 +857,45 @@ namespace LingapDVO.Controllers
 
                 if (registerAccUser != null)
                 {
-                    // Use AES-256 helper from configuration to decrypt password
-                    var aesHelper = new AesEncryptionHelper(_configuration);
-                    string decryptedPassword = aesHelper.Decrypt(registerAccUser.Password);
+                    // Check if password matches
+                    bool passwordMatches = false;
+                    
+                    try
+                    {
+                        // Use AES-256 helper from configuration to decrypt password
+                        var aesHelper = new AesEncryptionHelper(_configuration);
+                        string decryptedPassword = aesHelper.Decrypt(registerAccUser.Password);
+                        
+                        // First, try SHA-256 hash comparison (new format: SHA-256 + AES-256)
+                        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                        {
+                            byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(loginModel.Password));
+                            string hashedInput = Convert.ToBase64String(hashBytes);
+                            if (decryptedPassword == hashedInput)
+                            {
+                                passwordMatches = true;
+                            }
+                        }
+                        
+                        // Fallback: try direct comparison (old format: plain AES-256 only)
+                        if (!passwordMatches && decryptedPassword == loginModel.Password)
+                        {
+                            passwordMatches = true;
+                        }
+                    }
+                    catch (Exception decryptEx)
+                    {
+                        // If decryption fails, log and try plain text comparison as last resort
+                        Console.WriteLine($"⚠️ Password decryption failed for user {registerAccUser.Username}: {decryptEx.Message}");
+                        
+                        // Last resort: direct comparison with stored password (for legacy/plaintext passwords)
+                        if (registerAccUser.Password == loginModel.Password)
+                        {
+                            passwordMatches = true;
+                        }
+                    }
 
-                    if (decryptedPassword == loginModel.Password)
+                    if (passwordMatches)
                     {
                         // Reset failed attempts on successful login
                         Response.Cookies.Delete("FailedAttempts");
@@ -1729,11 +1772,19 @@ namespace LingapDVO.Controllers
                 }
 
                 // ==========================
-                // 🔑 AES-256 PASSWORD ENCRYPTION
+                // 🔑 SHA-256 HASH + AES-256 PASSWORD ENCRYPTION
                 // ==========================
-                // Use AES-256 helper from configuration to encrypt password
+                // First hash the password with SHA-256, then encrypt with AES-256
                 var aesHelper = new AesEncryptionHelper(_configuration);
-                string encryptedPassword = aesHelper.Encrypt(registerAccDto.Password);
+                
+                string hashedPassword;
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(registerAccDto.Password));
+                    hashedPassword = Convert.ToBase64String(hashBytes);
+                }
+                
+                string encryptedPassword = aesHelper.Encrypt(hashedPassword);
 
                 var registercacc = new UserAccount
                 {
@@ -2076,6 +2127,31 @@ namespace LingapDVO.Controllers
             {
                 ModelState.AddModelError("IDtype", "ID Type is required. Please complete ID verification first.");
                 TempData["ErrorMessage"] = "ID Type is missing. Please complete the ID verification process in Tab 2.";
+            }
+            else
+            {
+                // ═══════════════════════════════════════════════════════════════
+                // CRITICAL: Validate ID Type is one of the accepted types
+                // Based on ID Analyzer v2 API documentType: D (Driver's License), I (Identity Card)
+                // Only accepts: National ID, Driver's License, UMID
+                // ═══════════════════════════════════════════════════════════════
+                var acceptedIdTypes = new[] { "National ID", "Driver's License", "UMID", "Unified Multipurpose ID" };
+                var idTypeNormalized = VerifiedAccountDto.IDtype?.Trim();
+
+                // Check if ID type matches any accepted type (case-insensitive)
+                bool isAcceptedIdType = acceptedIdTypes.Any(accepted =>
+                    string.Equals(accepted, idTypeNormalized, StringComparison.OrdinalIgnoreCase));
+
+                if (!isAcceptedIdType)
+                {
+                    Console.WriteLine($"❌ REJECTED ID TYPE: {VerifiedAccountDto.IDtype}");
+                    ModelState.AddModelError("IDtype", $"The ID type '{VerifiedAccountDto.IDtype}' is not accepted. Only National ID, Driver's License, and UMID are allowed.");
+                    TempData["ErrorMessage"] = "Your ID type is not accepted. Please use a National ID, Driver's License, or UMID.";
+                }
+                else
+                {
+                    Console.WriteLine($"✅ ACCEPTED ID TYPE: {VerifiedAccountDto.IDtype}");
+                }
             }
 
             if (!ModelState.IsValid)

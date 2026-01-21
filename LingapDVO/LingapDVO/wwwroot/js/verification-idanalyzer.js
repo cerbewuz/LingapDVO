@@ -325,11 +325,43 @@ const DAVAO_CITY_BARANGAYS = [
     "Waan", "Wangan", "Wilfredo Aquino", "Wines"
 ];
 
-// ACCEPTED ID TYPES - Only these ID types are allowed
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACCEPTED ID TYPES - Based on ID Analyzer v2 API documentType field
+// ═══════════════════════════════════════════════════════════════════════════════
+// API documentType values: P=Passport, D=Driver's License, I=Identity Card,
+//                          V=Visa, R=Residence Card, B=Business Registration, O=Other
+// ONLY ACCEPTED: D (Driver's License) and I (Identity Card)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Accepted document type codes from ID Analyzer API
+const ACCEPTED_DOCUMENT_TYPE_CODES = {
+    'D': "Driver's License",  // Driver's License
+    'I': 'Identity Card'      // Identity Card (National ID, UMID, etc.)
+};
+
+// Rejected document type codes with user-friendly messages
+const REJECTED_DOCUMENT_TYPE_CODES = {
+    'P': { name: 'Passport', message: 'Passports are not accepted. Please use a National ID, Driver\'s License, or UMID.' },
+    'V': { name: 'Visa', message: 'Visas are not accepted. Please use a National ID, Driver\'s License, or UMID.' },
+    'R': { name: 'Residence Card', message: 'Residence Cards are not accepted. Please use a National ID, Driver\'s License, or UMID.' },
+    'B': { name: 'Business Registration', message: 'Business Registration documents are not accepted. Please use a National ID, Driver\'s License, or UMID.' },
+    'O': { name: 'Other Document', message: 'This document type is not accepted. Please use a National ID, Driver\'s License, or UMID.' }
+};
+
+// Specific ID type keywords for more precise identification within accepted types
 const ACCEPTED_ID_TYPES = {
-    'National ID': ['NATIONAL ID', 'PHIL-SYS', 'PHILSYS', 'PHILIPPINE IDENTIFICATION', 'PHILID'],
-    'Driver\'s License': ['DRIVER LICENSE', 'DRIVER\'S LICENSE', 'DRIVERS LICENSE', 'DL'],
-    'UMID': ['UMID', 'UNIFIED MULTI-PURPOSE ID', 'SSS UMID']
+    'National ID': {
+        documentTypeCode: 'I',  // Identity Card
+        keywords: ['NATIONAL ID', 'PHIL-SYS', 'PHILSYS', 'PHILIPPINE IDENTIFICATION', 'PHILID', 'PHILIPPINE NATIONAL ID', 'PSA ID']
+    },
+    "Driver's License": {
+        documentTypeCode: 'D',  // Driver's License
+        keywords: ['DRIVER LICENSE', 'DRIVER\'S LICENSE', 'DRIVERS LICENSE', 'DL', 'LTO', 'LAND TRANSPORTATION']
+    },
+    'UMID': {
+        documentTypeCode: 'I',  // Identity Card (UMID is classified as Identity Card)
+        keywords: ['UMID', 'UNIFIED MULTI-PURPOSE ID', 'UNIFIED MULTIPURPOSE', 'SSS UMID', 'GSIS UMID', 'PAG-IBIG UMID']
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -438,32 +470,188 @@ function validateDavaoCityAddress(address1, address2) {
     };
 }
 
-// Validate if ID type is accepted
-function validateIdType(documentName) {
-    if (!documentName) {
+// ═══════════════════════════════════════════════════════════════════════════════
+// Validate if ID type is accepted using API documentType and documentName
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRIMARY: Uses documentType code (D, I) from ID Analyzer v2 API
+// IMPORTANT: Driver's License (documentType="D") may NOT return documentName
+//            so we MUST check documentType first for Driver's License detection
+// SECONDARY: Uses documentName for National ID vs UMID distinction (both type 'I')
+// ═══════════════════════════════════════════════════════════════════════════════
+function validateIdType(documentName, documentType) {
+    console.log('🆔 ID Type Validation:');
+    console.log('   documentType (API code):', documentType || 'N/A');
+    console.log('   documentName (API text):', documentName || '(empty - common for Driver\'s License)');
+
+    // Normalize inputs
+    const docTypeCode = (documentType || '').toUpperCase().trim();
+    const docNameUpper = (documentName || '').toUpperCase().trim();
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 1: Check if we have any data to work with
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    if (!docTypeCode && !docNameUpper) {
+        console.log('❌ No document type or name detected');
         return {
             valid: false,
-            message: 'ID type not detected. Please use a clearer photo.'
+            message: 'ID type could not be detected. Please upload a clearer photo of your ID.',
+            documentType: null,
+            documentName: null
         };
     }
 
-    const docNameUpper = documentName.toUpperCase();
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 2: Check if document type code is explicitly rejected
+    // Reject Passport (P), Visa (V), Residence Card (R), Business Reg (B), Other (O)
+    // ═══════════════════════════════════════════════════════════════════════════
 
-    for (const [acceptedType, variants] of Object.entries(ACCEPTED_ID_TYPES)) {
-        for (const variant of variants) {
-            if (docNameUpper.includes(variant)) {
-                return {
-                    valid: true,
-                    message: `ID type accepted: ${acceptedType}`,
-                    idType: acceptedType
-                };
+    if (docTypeCode && REJECTED_DOCUMENT_TYPE_CODES[docTypeCode]) {
+        const rejected = REJECTED_DOCUMENT_TYPE_CODES[docTypeCode];
+        console.log(`❌ Rejected document type: ${rejected.name} (code: ${docTypeCode})`);
+        return {
+            valid: false,
+            message: rejected.message,
+            documentType: docTypeCode,
+            documentTypeName: rejected.name,
+            documentName: documentName
+        };
+    }
+
+    // Check if document type code is unknown (not in accepted or rejected)
+    if (docTypeCode && !ACCEPTED_DOCUMENT_TYPE_CODES[docTypeCode]) {
+        console.log(`❌ Unknown document type code: ${docTypeCode}`);
+        return {
+            valid: false,
+            message: `This document type is not accepted. Please use a National ID, Driver's License, or UMID.`,
+            documentType: docTypeCode,
+            documentName: documentName
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 3: DRIVER'S LICENSE DETECTION (PRIORITY)
+    // Driver's License from API often returns documentType="D" WITHOUT documentName
+    // This MUST be checked FIRST before trying keyword matching
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    let detectedIdType = null;
+    let matchedKeyword = null;
+
+    if (docTypeCode === 'D') {
+        // documentType "D" = Driver's License (regardless of documentName)
+        detectedIdType = "Driver's License";
+        matchedKeyword = 'documentType:D';
+        console.log('✅ DRIVER\'S LICENSE detected from documentType code "D"');
+        console.log('   Note: Driver\'s License API response typically has empty documentName');
+
+        return {
+            valid: true,
+            message: "ID type accepted: Driver's License",
+            idType: "Driver's License",
+            documentType: docTypeCode,
+            documentTypeName: "Driver's License",
+            documentName: documentName || '(auto-detected from documentType)',
+            matchedKeyword: matchedKeyword,
+            detectionMethod: 'documentType code'
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 4: IDENTITY CARD DETECTION (documentType="I")
+    // For Identity Cards, use documentName to distinguish National ID vs UMID
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    if (docTypeCode === 'I') {
+        console.log('📋 Identity Card detected (documentType="I") - checking documentName for specific type...');
+
+        // Check for UMID keywords first (more specific)
+        const umidKeywords = ACCEPTED_ID_TYPES['UMID'].keywords;
+        for (const keyword of umidKeywords) {
+            if (docNameUpper.includes(keyword)) {
+                detectedIdType = 'UMID';
+                matchedKeyword = keyword;
+                console.log(`✅ UMID detected from keyword: "${keyword}"`);
+                break;
             }
+        }
+
+        // Check for National ID keywords
+        if (!detectedIdType) {
+            const nationalIdKeywords = ACCEPTED_ID_TYPES['National ID'].keywords;
+            for (const keyword of nationalIdKeywords) {
+                if (docNameUpper.includes(keyword)) {
+                    detectedIdType = 'National ID';
+                    matchedKeyword = keyword;
+                    console.log(`✅ National ID detected from keyword: "${keyword}"`);
+                    break;
+                }
+            }
+        }
+
+        // Default to National ID if documentType is 'I' but no keywords matched
+        if (!detectedIdType) {
+            detectedIdType = 'National ID';
+            matchedKeyword = 'documentType:I (default)';
+            console.log('✅ Defaulting to National ID (documentType="I" without specific keywords)');
+        }
+
+        return {
+            valid: true,
+            message: `ID type accepted: ${detectedIdType}`,
+            idType: detectedIdType,
+            documentType: docTypeCode,
+            documentTypeName: 'Identity Card',
+            documentName: documentName,
+            matchedKeyword: matchedKeyword,
+            detectionMethod: docNameUpper ? 'documentName keyword' : 'documentType code default'
+        };
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 5: FALLBACK - Try keyword matching without documentType code
+    // This handles cases where documentType might be missing but documentName exists
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    if (docNameUpper) {
+        console.log('📋 No documentType code - attempting keyword-based detection from documentName...');
+
+        // Search all accepted ID types by keywords
+        for (const [idTypeName, idTypeConfig] of Object.entries(ACCEPTED_ID_TYPES)) {
+            for (const keyword of idTypeConfig.keywords) {
+                if (docNameUpper.includes(keyword)) {
+                    detectedIdType = idTypeName;
+                    matchedKeyword = keyword;
+                    console.log(`✅ Matched ID type by keyword: ${idTypeName} (keyword: "${keyword}")`);
+                    break;
+                }
+            }
+            if (detectedIdType) break;
+        }
+
+        if (detectedIdType) {
+            return {
+                valid: true,
+                message: `ID type accepted: ${detectedIdType}`,
+                idType: detectedIdType,
+                documentType: docTypeCode || null,
+                documentTypeName: detectedIdType,
+                documentName: documentName,
+                matchedKeyword: matchedKeyword,
+                detectionMethod: 'documentName keyword (fallback)'
+            };
         }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STEP 6: Failed to detect - return error
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    console.log(`❌ ID type not recognized: documentType="${docTypeCode}", documentName="${documentName}"`);
     return {
         valid: false,
-        message: `ID type "${documentName}" is not accepted. Only National ID, Driver's License, and UMID are accepted.`,
+        message: `ID type "${documentName || 'Unknown'}" is not accepted. Only National ID, Driver's License, and UMID are accepted.`,
+        documentType: docTypeCode,
         documentName: documentName
     };
 }
@@ -1273,23 +1461,55 @@ window.submitVerification = async function() {
 
             const validationErrors = [];
 
-            // VALIDATION 1: Check ID Type - PRIORITIZE MANUAL SELECTION
+            // ═══════════════════════════════════════════════════════════════════════
+            // VALIDATION 1: Check ID Type using documentType code from API
+            // PRIMARY: documentType (D=Driver's License, I=Identity Card)
+            // SECONDARY: documentName for specific ID identification
+            // ONLY ACCEPTS: D (Driver's License), I (National ID, UMID)
+            // ═══════════════════════════════════════════════════════════════════════
+            const apiDocumentType = result.data?.documentType || '';  // API code: D, I, P, V, R, B, O
+            const apiDocumentName = result.data?.documentName || '';  // API text: e.g., "PHILIPPINE NATIONAL ID"
+
+            console.log('📋 ID Type Detection from API:');
+            console.log('   documentType (code):', apiDocumentType);
+            console.log('   documentName (text):', apiDocumentName);
+
             // Check if user has manually selected ID type from dropdown
             const manuallySelectedIdType = document.getElementById('idtype-display')?.value;
             let idTypeValidation;
 
             if (manuallySelectedIdType && manuallySelectedIdType !== '') {
-                // User has manually selected ID type - use that instead of API detection
-                console.log('✅ ID Type manually selected by user:', manuallySelectedIdType);
-                idTypeValidation = {
-                    valid: true,
-                    idType: manuallySelectedIdType,
-                    message: `ID Type manually selected: ${manuallySelectedIdType}`
-                };
+                // User has manually selected ID type - still validate against API documentType code
+                console.log('📋 User manually selected:', manuallySelectedIdType);
+
+                // Verify the manual selection matches the API documentType code
+                const manualTypeConfig = ACCEPTED_ID_TYPES[manuallySelectedIdType];
+                if (manualTypeConfig && apiDocumentType) {
+                    if (manualTypeConfig.documentTypeCode === apiDocumentType.toUpperCase()) {
+                        console.log('✅ Manual selection matches API documentType');
+                        idTypeValidation = {
+                            valid: true,
+                            idType: manuallySelectedIdType,
+                            documentType: apiDocumentType,
+                            message: `ID Type verified: ${manuallySelectedIdType}`
+                        };
+                    } else {
+                        // Manual selection doesn't match API - use API detection
+                        console.log('⚠️ Manual selection does not match API documentType - using API detection');
+                        idTypeValidation = validateIdType(apiDocumentName, apiDocumentType);
+                    }
+                } else {
+                    // No config or no API type - just use manual selection
+                    idTypeValidation = {
+                        valid: true,
+                        idType: manuallySelectedIdType,
+                        message: `ID Type manually selected: ${manuallySelectedIdType}`
+                    };
+                }
             } else {
-                // No manual selection - validate using API's documentName
+                // No manual selection - validate using API's documentType and documentName
                 console.log('📋 No manual ID Type selection - Using API detection');
-                idTypeValidation = validateIdType(result.data?.documentName);
+                idTypeValidation = validateIdType(apiDocumentName, apiDocumentType);
             }
 
             if (!idTypeValidation.valid) {
@@ -1373,102 +1593,34 @@ window.submitVerification = async function() {
             console.log('✅ All validations passed! Verification ACCEPTED');
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // AUTO-DETECT ID TYPE from API response
-            // Maps API document type/name to dropdown display values
+            // AUTO-POPULATE ID TYPE from validation result
+            // Uses the idTypeValidation result from earlier (which uses documentType code)
             // ═══════════════════════════════════════════════════════════════════════════
             const idTypeField = document.getElementById('idtype-display');
             const idTypeHidden = document.getElementById('document-type'); // Hidden form field for submission
             const idTypeVerifiedBadge = document.getElementById('idtype-verified-badge');
             const idTypeHelpText = document.getElementById('idtype-help-text');
 
-            // Auto-detect ID type from API response
-            const apiDocName = (result.data?.documentName || '').toUpperCase();
-            const apiDocType = (result.data?.documentType || '').toUpperCase();
-            let detectedDisplayIdType = null;
+            // Use the validated ID type from earlier
+            let detectedDisplayIdType = idTypeValidation.idType || null;
 
-            console.log('🔍 Auto-detecting ID Type from API:', { apiDocName, apiDocType });
-
-            // Detection logic based on API document name and type
-            // Maps to dropdown option values: "National ID", "Driver's License", "Unified Multipurpose ID"
-            // Note: SSS ID is a separate ID type from UMID - UMID is the Unified Multi-Purpose ID card
-
-            // ACCEPTED ID TYPES - Only these three provide complete address and information for eligibility
-            const ACCEPTED_ID_KEYWORDS = {
-                'National ID': ['NATIONAL', 'PHILSYS', 'PHIL-SYS', 'PHILIPPINE IDENTIFICATION', 'PSN', 'PHILID'],
-                "Driver's License": ['DRIVER', 'LICENSE', 'LTO'],
-                'Unified Multipurpose ID': ['UMID', 'UNIFIED MULTI', 'MULTI-PURPOSE', 'MULTIPURPOSE']
-            };
-
-            // UNSUPPORTED ID TYPES - These do not provide complete address information
-            const UNSUPPORTED_ID_KEYWORDS = [
-                'SSS', 'SOCIAL SECURITY', 'PHILHEALTH', 'PHIL HEALTH', 'HEALTH INSURANCE',
-                'SENIOR CITIZEN', 'SENIOR', 'PWD', 'PERSON WITH DISABILITY', 'DISABILITY',
-                'POSTAL', 'POST OFFICE', 'VOTER', 'VOTERS', 'COMELEC',
-                'PASSPORT', 'PRC', 'PROFESSIONAL', 'TIN', 'BIR',
-                'BARANGAY', 'BRGY', 'CEDULA', 'POLICE', 'NBI', 'CLEARANCE',
-                'STUDENT', 'SCHOOL', 'EMPLOYEE', 'COMPANY', 'OFFICE'
-            ];
-
-            // Check for accepted ID types first
-            for (const [idType, keywords] of Object.entries(ACCEPTED_ID_KEYWORDS)) {
-                if (keywords.some(keyword => apiDocName.includes(keyword))) {
-                    detectedDisplayIdType = idType;
-                    break;
-                }
-            }
-
-            // Special case: documentType 'I' without specific name defaults to National ID
-            if (!detectedDisplayIdType && apiDocType === 'I') {
-                detectedDisplayIdType = 'National ID';
-            }
-            // Special case: documentType 'D' defaults to Driver's License
-            if (!detectedDisplayIdType && apiDocType === 'D') {
-                detectedDisplayIdType = "Driver's License";
-            }
-
-            // Check if unsupported ID type was uploaded
-            const isUnsupportedId = UNSUPPORTED_ID_KEYWORDS.some(keyword => apiDocName.includes(keyword));
-
-            if (isUnsupportedId && !detectedDisplayIdType) {
-                console.log('❌ Unsupported ID type detected:', apiDocName);
-                VerificationState.verificationInProgress = false;
-
-                // Show error modal explaining why only specific IDs are accepted
-                showFailureAnimation(
-                    'Unsupported ID Type',
-                    `<div class="text-left">
-                        <p class="mb-3">The ID you uploaded (<strong>${result.data?.documentName || 'Unknown'}</strong>) is not accepted for Lingap assistance verification.</p>
-
-                        <p class="mb-2 font-semibold">Only the following IDs are accepted:</p>
-                        <ul class="list-disc list-inside mb-3 text-sm">
-                            <li><strong>Philippine National ID (PhilSys)</strong></li>
-                            <li><strong>Driver's License (LTO)</strong></li>
-                            <li><strong>UMID (Unified Multi-Purpose ID)</strong></li>
-                        </ul>
-
-                        <p class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            <strong>Why only these IDs?</strong><br>
-                            These government-issued IDs contain your <strong>complete residential address</strong> and other essential information that the Lingap system needs to verify your eligibility for assistance. Other IDs may not include the required address details.
-                        </p>
-                    </div>`
-                );
-
-                if (verifyButton) {
-                    verifyButton.disabled = false;
-                    verifyButton.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Try Different ID';
-                }
-                return;
-            }
+            console.log('🔍 Using validated ID Type for field population:', {
+                idType: detectedDisplayIdType,
+                documentType: idTypeValidation.documentType,
+                documentName: idTypeValidation.documentName || '(empty - normal for Driver\'s License)',
+                detectionMethod: idTypeValidation.detectionMethod || 'unknown',
+                matchedKeyword: idTypeValidation.matchedKeyword || 'N/A'
+            });
 
             // Auto-populate ID type field (read-only input, not dropdown)
             if (detectedDisplayIdType && idTypeField) {
                 idTypeField.value = detectedDisplayIdType;
-                console.log('✅ ID Type auto-detected:', detectedDisplayIdType);
+                console.log('✅ ID Type field populated:', detectedDisplayIdType);
 
                 // Sync to hidden fields for form submission
                 if (idTypeHidden) {
                     idTypeHidden.value = detectedDisplayIdType;
+                    console.log('✅ Hidden ID Type field synced:', idTypeHidden.value);
                 }
                 const idTypeHiddenAlt = document.getElementById('idtype-hidden');
                 if (idTypeHiddenAlt) {
@@ -1479,22 +1631,49 @@ window.submitVerification = async function() {
                 const idTypeContainer = document.getElementById('idtype-container');
                 if (idTypeContainer) {
                     idTypeContainer.classList.remove('hidden');
+                    console.log('✅ ID Type container shown');
                 }
 
                 // Update help text to show auto-detection
                 if (idTypeHelpText) {
-                    idTypeHelpText.textContent = 'ID type automatically detected from your document';
+                    const detectionNote = idTypeValidation.detectionMethod === 'documentType code'
+                        ? 'ID type detected from document type code'
+                        : 'ID type automatically detected from your document';
+                    idTypeHelpText.textContent = detectionNote;
                 }
+
+                // Show verified badge if available
+                if (idTypeVerifiedBadge) {
+                    idTypeVerifiedBadge.classList.remove('hidden');
+                }
+
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('✅ ID TYPE DETECTION COMPLETE');
+                console.log('   Detected Type:', detectedDisplayIdType);
+                console.log('   API documentType:', apiDocumentType || '(empty)');
+                console.log('   API documentName:', apiDocumentName || '(empty - normal for Driver\'s License)');
+                console.log('═══════════════════════════════════════════════════════');
             } else {
-                // Could not auto-detect - likely an unsupported or unrecognized ID
-                console.log('⚠️ Could not auto-detect ID type from:', apiDocName);
+                // Could not auto-detect - this should rarely happen with updated detection logic
+                // Since Driver's License now detected from documentType="D" even without documentName
+                console.log('⚠️ Could not auto-detect ID type:');
+                console.log('   documentType:', apiDocumentType || '(empty)');
+                console.log('   documentName:', apiDocumentName || '(empty)');
+                console.log('   idTypeValidation:', idTypeValidation);
+
                 VerificationState.verificationInProgress = false;
 
                 // Show error modal explaining accepted IDs
+                const detectedInfo = apiDocumentType ? `Document Type Code: "${apiDocumentType}"` :
+                                    apiDocumentName ? `Document Name: "${apiDocumentName}"` :
+                                    'No document information detected';
+
                 showFailureAnimation(
                     'Unable to Verify ID Type',
                     `<div class="text-left">
                         <p class="mb-3">We could not identify the type of ID you uploaded. The Lingap system only accepts specific government-issued IDs for verification.</p>
+
+                        <p class="mb-2 text-sm text-gray-500">(${detectedInfo})</p>
 
                         <p class="mb-2 font-semibold">Please upload one of these accepted IDs:</p>
                         <ul class="list-disc list-inside mb-3 text-sm">

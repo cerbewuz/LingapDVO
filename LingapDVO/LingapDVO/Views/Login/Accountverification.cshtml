@@ -977,8 +977,10 @@
                                 </button>
                                 <button type="submit"
                                         id="verify-account-btn"
-                                        class="w-full sm:w-auto submitbtn-color text-white py-3 px-6 sm:px-8 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none"
-                                        style="border: none;">
+                                        disabled
+                                        class="w-full sm:w-auto bg-gray-400 text-white py-3 px-6 sm:px-8 rounded-xl font-semibold text-base sm:text-lg shadow-lg transition-all duration-300 border-0 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                        style="border: none;"
+                                        title="Please complete all verification requirements before submitting">
                                         Submit
                                 </button>
                             </div>
@@ -1134,6 +1136,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert2 for better alert dialogs -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // User's name will be read from Tab 1 form fields (Personal Info) for name matching validation
@@ -1566,18 +1571,47 @@
                 const termsCheckbox = document.getElementById('terms');
                 const termsAccepted = termsCheckbox && termsCheckbox.checked;
                 updateCheckItem('check-terms', termsAccepted);
-                
+
+                // Check 6: Verification Decision is "accept" (CRITICAL - blocks submission if rejected)
+                const verificationDecision = document.getElementById('verification-decision')?.value || '';
+                const isVerificationAccepted = verificationDecision.toLowerCase() === 'accept';
+                updateCheckItem('check-verification-decision', isVerificationAccepted);
+
+                // If verification was rejected, mark allRequirementsMet as false
+                if (verificationDecision && verificationDecision.toLowerCase() === 'reject') {
+                    allRequirementsMet = false;
+                    console.log('❌ Verification was REJECTED - blocking submission');
+                }
+
+                // If verification is under review, also block (unless we want to allow review status)
+                if (verificationDecision && verificationDecision.toLowerCase() === 'review') {
+                    allRequirementsMet = false;
+                    console.log('⏳ Verification is under REVIEW - blocking submission');
+                }
+
+                // Check 7: Verification Complete (this implicitly includes face match since API validates it)
+                let verificationComplete = false;
+                if (typeof VerificationState !== 'undefined') {
+                    verificationComplete = VerificationState.verificationComplete === true;
+                }
+                // Face match is validated by the API as part of the verification process
+                // If verificationComplete is true, face match was accepted
+                updateCheckItem('check-face-match', verificationComplete);
+                updateCheckItem('check-verification-complete', verificationComplete);
+
                 // Enable/disable submit button based on all requirements
                 if (verifyBtn) {
                     if (allRequirementsMet) {
                         verifyBtn.disabled = false;
-                        verifyBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                        verifyBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed', 'bg-gray-400');
+                        verifyBtn.classList.add('submitbtn-color');
                     } else {
                         verifyBtn.disabled = true;
-                        verifyBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                        verifyBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed', 'bg-gray-400');
+                        verifyBtn.classList.remove('submitbtn-color');
                     }
                 }
-                
+
                 return allRequirementsMet;
             };
             
@@ -1616,6 +1650,66 @@
 
             // Set up interval to periodically check (catches updates from modal flows)
             setInterval(window.updateVerificationChecklist, 1000);
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // SUBMIT BUTTON - Disable by default and add click handler for extra validation
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const submitBtn = document.getElementById('verify-account-btn');
+            if (submitBtn) {
+                // Disable by default - will be enabled when all validations pass
+                submitBtn.disabled = true;
+                submitBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed', 'bg-gray-400');
+                submitBtn.classList.remove('submitbtn-color');
+
+                // Add click event handler for extra validation layer
+                submitBtn.addEventListener('click', function(e) {
+                    // Check verification decision
+                    const verificationDecision = document.getElementById('verification-decision')?.value || '';
+                    if (!verificationDecision || verificationDecision.toLowerCase() !== 'accept') {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        let errorMsg = 'ID verification has not been completed or was not accepted.';
+                        if (verificationDecision.toLowerCase() === 'reject') {
+                            errorMsg = 'Your ID verification was REJECTED. Please upload a valid ID and complete the verification again.';
+                        } else if (verificationDecision.toLowerCase() === 'review') {
+                            errorMsg = 'Your ID verification is still under REVIEW. Please wait for the process to complete.';
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Verification Required',
+                            text: errorMsg,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#dc2626'
+                        });
+                        return false;
+                    }
+
+                    // Check face match
+                    if (typeof VerificationState !== 'undefined') {
+                        // If verification is complete, the face match was already validated by the API
+                        // Only block if verification is not complete
+                        if (!VerificationState.verificationComplete) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Verification Incomplete',
+                                text: 'Please complete all verification steps before submitting.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#f59e0b'
+                            });
+                            return false;
+                        }
+                    }
+
+                    console.log('✅ Submit button click validation passed');
+                    return true;
+                });
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -2074,6 +2168,36 @@
             // after the user uploads their ID documents. It will be filled automatically.
 
             // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 6: Validate Verification Decision (Must be "accept")
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            const verificationDecision = document.getElementById('verification-decision')?.value || '';
+            if (!verificationDecision) {
+                errors.push('ID verification has not been completed. Please complete the ID verification process first.');
+            } else if (verificationDecision.toLowerCase() !== 'accept') {
+                if (verificationDecision.toLowerCase() === 'reject') {
+                    errors.push('Your ID verification was rejected. Please upload a valid ID document and try again.');
+                } else if (verificationDecision.toLowerCase() === 'review') {
+                    errors.push('Your ID verification is under review. Please wait for the verification to complete or try again with a clearer ID photo.');
+                } else {
+                    errors.push('ID verification failed. Please complete the verification process with a valid ID.');
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 7: Validate Verification Completion
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            if (typeof VerificationState !== 'undefined') {
+                // If verification is complete, the API already validated everything including face match
+                if (!VerificationState.verificationComplete) {
+                    errors.push('ID and face verification has not been completed successfully. Please complete all verification steps.');
+                }
+            } else {
+                errors.push('Verification system not initialized. Please refresh the page and try again.');
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
             // Display Validation Results
             // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2223,10 +2347,10 @@
     </script>
 
     <!-- Go Back Button Behavior -->
-    <script src="~/js/go-back-button.js"></script>
+    <script src="~/js/go-back-button.js?v=@DateTime.Now.Ticks"></script>
 
     <!-- Visual Progress Loader for ID Scanning -->
-    <script src="~/js/visual-progress-loader.js"></script>
+    <script src="~/js/visual-progress-loader.js?v=@DateTime.Now.Ticks"></script>
 
     <!-- ID Analyzer v2 API - ID Scanning and Verification -->
     <script src="~/js/verification-idanalyzer.js?v=@DateTime.Now.Ticks"></script>

@@ -171,7 +171,16 @@ namespace LingapDVO.Controllers
 
              // Get UserId from session
              var userIdString = HttpContext.Session.GetString("UserId");
-             if (int.TryParse(userIdString, out int userId))
+             int userId = 0;
+             int.TryParse(userIdString, out userId);
+             
+             // Get username from database FIRST (before other data)
+             var userAccount = context.UserAccount.FirstOrDefault(u => u.Id == userId);
+             ViewBag.Username = userAccount?.Username ?? HttpContext.Session.GetString("Username") ?? "";
+             ViewBag.Email = userAccount?.Email ?? HttpContext.Session.GetString("Email") ?? "";
+             ViewBag.Profilepicture = userAccount?.Profilepicture ?? "";
+             
+             if (userId > 0)
              {
                  // Fetch data from VerifyAccount table
                  var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
@@ -213,20 +222,7 @@ namespace LingapDVO.Controllers
              }
 
              ViewBag.Id = userIdString;
-             ViewBag.Username = HttpContext.Session.GetString("Username");
-             ViewBag.Email = HttpContext.Session.GetString("Email");
              ViewBag.SecurityQuestions = HttpContext.Session.GetString("SecurityQuestions");
-
-             // Get profile picture from database
-             if (int.TryParse(userIdString, out int userIdForPicture))
-             {
-                 var user = context.UserAccount.FirstOrDefault(u => u.Id == userIdForPicture);
-                 ViewBag.Profilepicture = user?.Profilepicture ?? "";
-             }
-             else
-             {
-                 ViewBag.Profilepicture = HttpContext.Session.GetString("Profilepicture");
-             }
 
              ViewBag.GenderList = new SelectList(new List<string> { "Male", "Female" }, ViewBag.Gender);
              ViewBag.SecurityQuestionslist = new SelectList(
@@ -385,6 +381,199 @@ namespace LingapDVO.Controllers
             {
                 Console.WriteLine($"? Error removing profile picture: {ex.Message}");
                 return Json(new { success = false, message = "An error occurred while removing the profile picture" });
+            }
+        }
+
+        /// <summary>
+        /// Update Username - Allows user to change their username
+        /// </summary>
+        [HttpPost]
+        public IActionResult UpdateUsername([FromBody] UpdateUsernameRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                {
+                    return Json(new { success = false, message = "User not logged in" });
+                }
+
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "Invalid user ID" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request?.Username))
+                {
+                    return Json(new { success = false, message = "Username cannot be empty" });
+                }
+
+                var newUsername = request.Username.Trim();
+
+                // Validate username length
+                if (newUsername.Length < 3 || newUsername.Length > 50)
+                {
+                    return Json(new { success = false, message = "Username must be between 3 and 50 characters" });
+                }
+
+                // Check if username already exists (excluding current user)
+                var existingUser = context.UserAccount.FirstOrDefault(u => u.Username == newUsername && u.Id != userId);
+                if (existingUser != null)
+                {
+                    return Json(new { success = false, message = "Username is already taken" });
+                }
+
+                // Get user and update username
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                user.Username = newUsername;
+                context.SaveChanges();
+
+                // Update session
+                HttpContext.Session.SetString("Username", newUsername);
+
+                Console.WriteLine($"✓ Username updated for user {userId}: {newUsername}");
+
+                return Json(new { success = true, message = "Username updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Error updating username: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while updating the username" });
+            }
+        }
+
+        /// <summary>
+        /// Change Password - Allows user to change their password
+        /// </summary>
+        [HttpPost]
+        public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                {
+                    return Json(new { success = false, message = "User not logged in" });
+                }
+
+                var userIdString = HttpContext.Session.GetString("UserId");
+                if (!int.TryParse(userIdString, out int userId))
+                {
+                    return Json(new { success = false, message = "Invalid user ID" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request?.CurrentPassword))
+                {
+                    return Json(new { success = false, message = "Current password is required" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request?.NewPassword))
+                {
+                    return Json(new { success = false, message = "New password is required" });
+                }
+
+                // Get user from database
+                var user = context.UserAccount.FirstOrDefault(u => u.Id == userId);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                // Verify current password using AES decryption
+                bool currentPasswordValid = false;
+                try
+                {
+                    string decryptedStoredPassword = _aesEncryptionService.Decrypt(user.Password);
+                    
+                    // First, try SHA-256 hash comparison (new format)
+                    using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                    {
+                        byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(request.CurrentPassword));
+                        string hashedInput = Convert.ToBase64String(hashBytes);
+                        if (decryptedStoredPassword == hashedInput)
+                        {
+                            currentPasswordValid = true;
+                        }
+                    }
+                    
+                    // Fallback: try direct comparison (old format: plain AES-256 only)
+                    if (!currentPasswordValid && decryptedStoredPassword == request.CurrentPassword)
+                    {
+                        currentPasswordValid = true;
+                    }
+                }
+                catch
+                {
+                    // Fallback: check against session password if decryption fails
+                    var sessionPassword = HttpContext.Session.GetString("UserPassword");
+                    if (sessionPassword == request.CurrentPassword)
+                    {
+                        currentPasswordValid = true;
+                    }
+                }
+                
+                if (!currentPasswordValid)
+                {
+                    return Json(new { success = false, message = "Current password is incorrect" });
+                }
+
+                // Validate new password requirements
+                var newPassword = request.NewPassword;
+                if (newPassword.Length < 8)
+                {
+                    return Json(new { success = false, message = "Password must be at least 8 characters long" });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(newPassword, @"[A-Z]"))
+                {
+                    return Json(new { success = false, message = "Password must contain at least one uppercase letter" });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(newPassword, @"[a-z]"))
+                {
+                    return Json(new { success = false, message = "Password must contain at least one lowercase letter" });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(newPassword, @"[0-9]"))
+                {
+                    return Json(new { success = false, message = "Password must contain at least one number" });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(newPassword, @"[!@#$%^&*(),.?"":{}|<>]"))
+                {
+                    return Json(new { success = false, message = "Password must contain at least one special character" });
+                }
+
+                // Hash the password with SHA-256 first, then encrypt with AES-256
+                string hashedPassword;
+                using (var sha256 = System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(newPassword));
+                    hashedPassword = Convert.ToBase64String(hashBytes);
+                }
+                
+                // Encrypt the hashed password with AES-256
+                string encryptedPassword = _aesEncryptionService.Encrypt(hashedPassword);
+                
+                // Update password in database
+                user.Password = encryptedPassword;
+                context.SaveChanges();
+
+                // Update session password (store original for session use)
+                HttpContext.Session.SetString("UserPassword", newPassword);
+
+                Console.WriteLine($"✓ Password changed for user {userId} (SHA-256 + AES-256)");
+
+                return Json(new { success = true, message = "Password changed successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Error changing password: {ex.Message}");
+                return Json(new { success = false, message = "An error occurred while changing the password" });
             }
         }
 
