@@ -47,15 +47,19 @@
             color: #22c55e !important;
         }
 
-        /* Responsive Camera Guide Styles */
-        /* Selfie Camera SVG Guide - Works on all devices including Android */
+        /* ═══════════════════════════════════════════════════════════════════════════
+           CIRCULAR SELFIE PREVIEW STYLES
+           ═══════════════════════════════════════════════════════════════════════════ */
+
+        /* Selfie Camera SVG Guide - Works on all devices */
         .selfie-oval-svg {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+            border-radius: 50% !important;
         }
 
-        /* Selfie Camera Video */
+        /* Selfie Camera Video - CIRCULAR */
         #selfie-modal-video {
             visibility: visible !important;
             opacity: 1 !important;
@@ -103,40 +107,364 @@
             visibility: hidden !important;
         }
 
-        /* Responsive selfie camera container */
+        /* CIRCULAR selfie camera container - responsive - MUST match .selfie-start-container */
         .selfie-camera-container {
-            max-width: 280px;
+            max-width: 260px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         @@media (min-width: 400px) {
             .selfie-camera-container {
-                max-width: 300px;
+                max-width: 280px;
             }
         }
 
         @@media (min-width: 640px) {
             .selfie-camera-container {
+                max-width: 300px;
+            }
+        }
+
+        @@media (min-width: 768px) {
+            .selfie-camera-container {
                 max-width: 320px;
             }
         }
 
-        /* Mirror effect for selfie camera */
-        .mirror-video {
-            transform: scaleX(-1);
-            -webkit-transform: scaleX(-1);
+        /* CIRCULAR video wrapper */
+        .selfie-video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* 1:1 aspect ratio for circle */
+            background: #000;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 4px solid #4ade80;
         }
 
-        /* SVG oval guide - ensure visibility on all devices */
+        /* Video element styling for circular container */
+        .selfie-video-wrapper video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            height: 140%;
+            transform: translate(-50%, -50%) scaleX(-1);
+            object-fit: cover;
+        }
+
+        /* Countdown overlay - CIRCULAR, inside the wrapper */
+        #selfie-countdown-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 25;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #selfie-countdown-overlay.hidden {
+            display: none !important;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════════
+           CIRCULAR START VIEW - Matches camera view and preview view
+           ═══════════════════════════════════════════════════════════════════════════ */
+
+        .selfie-start-container {
+            width: 100%;
+            max-width: 260px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .selfie-start-circle {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* 1:1 aspect ratio */
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 50%;
+            border: 4px solid #d1d5db;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .selfie-start-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .selfie-start-guide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        @@media (min-width: 400px) {
+            .selfie-start-container {
+                max-width: 280px;
+            }
+        }
+
+        @@media (min-width: 640px) {
+            .selfie-start-container {
+                max-width: 300px;
+            }
+        }
+
+        @@media (min-width: 768px) {
+            .selfie-start-container {
+                max-width: 320px;
+            }
+        }
+
+        /* Mobile sizing - MUST match .selfie-camera-container mobile rules */
+        @@media (max-width: 639px) {
+            .selfie-start-container {
+                max-width: 240px !important;
+            }
+            .selfie-start-circle {
+                border-width: 3px;
+            }
+            .selfie-camera-container {
+                max-width: 240px !important;
+            }
+            .selfie-video-wrapper {
+                border-width: 3px !important;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .selfie-start-container {
+                max-width: 200px !important;
+            }
+            .selfie-start-circle {
+                border-width: 3px;
+            }
+            .selfie-camera-container {
+                max-width: 200px !important;
+            }
+            .selfie-video-wrapper {
+                border-width: 3px !important;
+            }
+        }
+
+        /* SVG guide - ensure visibility and circular clipping */
         .selfie-oval-svg {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+            border-radius: 50% !important;
         }
 
         /* Hide guide text after a few seconds via JS */
         #selfie-guide-text.fade-out {
             opacity: 0;
             transition: opacity 0.5s ease-out;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════════
+           CIRCULAR PREVIEW VIEW - Matches start view and camera view sizing
+           ═══════════════════════════════════════════════════════════════════════════ */
+
+        .selfie-preview-container {
+            width: 100%;
+            max-width: 260px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .selfie-preview-circle {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+
+        @@media (min-width: 400px) {
+            .selfie-preview-container {
+                max-width: 280px;
+            }
+        }
+
+        @@media (min-width: 640px) {
+            .selfie-preview-container {
+                max-width: 300px;
+            }
+        }
+
+        @@media (min-width: 768px) {
+            .selfie-preview-container {
+                max-width: 320px;
+            }
+        }
+
+        @@media (max-width: 639px) {
+            .selfie-preview-container {
+                max-width: 240px !important;
+            }
+            .selfie-preview-circle {
+                border-width: 3px !important;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .selfie-preview-container {
+                max-width: 200px !important;
+            }
+            .selfie-preview-circle {
+                border-width: 3px !important;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════════
+           ID UPLOAD BOX STYLES - Consistent with Selfie Preview
+           ═══════════════════════════════════════════════════════════════════════════ */
+
+        .id-upload-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .id-upload-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 63%;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 3px dashed #d1d5db;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .id-upload-box:hover {
+            border-color: #4ade80;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+
+        .id-upload-box.has-preview {
+            border-style: solid;
+            border-color: #4ade80;
+            background: #000;
+        }
+
+        .id-upload-inner,
+        .id-preview-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .id-preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 13px;
+        }
+
+        .id-preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+            padding: 1.5rem 1rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: 0 0 13px 13px;
+        }
+
+        .id-change-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .id-change-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .id-guide-svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 85%;
+            height: 85%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        @@media (min-width: 640px) {
+            .id-upload-container {
+                max-width: 420px;
+            }
+            .id-upload-box {
+                border-radius: 20px;
+            }
+            .id-preview-image {
+                border-radius: 17px;
+            }
+            .id-preview-overlay {
+                border-radius: 0 0 17px 17px;
+            }
+        }
+
+        @@media (max-width: 639px) {
+            .id-upload-container {
+                max-width: 320px;
+            }
+            .id-upload-box {
+                border-radius: 12px;
+                border-width: 2px;
+            }
+            .id-preview-image {
+                border-radius: 10px;
+            }
+            .id-preview-overlay {
+                border-radius: 0 0 10px 10px;
+                padding: 1rem 0.75rem 0.75rem;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .id-upload-container {
+                max-width: 280px;
+            }
         }
 
         /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -218,6 +546,29 @@
             #connector-1-2, #connector-2-3 {
                 width: 1.5rem !important;
             }
+        }
+
+        /* Tab indicator colors - Default #1616BB background with white text */
+        #tab-indicator-1, #tab-indicator-2, #tab-indicator-3 {
+            background-color: #1616BB !important;
+            color: white !important;
+            transition: background-color 0.3s ease !important;
+        }
+
+        /* Completed tab indicators - Transition to #16BB37 (green) */
+        #tab-indicator-1.completed, #tab-indicator-2.completed, #tab-indicator-3.completed {
+            background-color: #16BB37 !important;
+            color: white !important;
+        }
+
+        /* Connector lines - black */
+        #connector-1-2, #connector-2-3 {
+            background-color: black !important;
+        }
+
+        /* Tab labels - black text */
+        #tab-label-1, #tab-label-2, #tab-label-3 {
+            color: black !important;
         }
 
         /* Prevent horizontal scroll on body */
@@ -330,32 +681,32 @@
                             <div class="flex items-center gap-2 sm:gap-4 md:gap-6">
                                 <!-- Tab 1 Indicator -->
                                 <div class="flex flex-col items-center">
-                                    <div id="tab-indicator-1" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
+                                    <div id="tab-indicator-1" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
                                         1
                                     </div>
-                                    <span id="tab-label-1" class="text-xs sm:text-sm md:text-base font-semibold text-blue-500 text-center">Personal<br class="sm:hidden"> Info</span>
+                                    <span id="tab-label-1" class="text-xs sm:text-sm md:text-base font-semibold text-center">Personal<br class="sm:hidden"> Info</span>
                                 </div>
 
                                 <!-- Connector Line 1-2 -->
-                                <div id="connector-1-2" class="w-8 sm:w-12 md:w-16 lg:w-20 h-0.5 sm:h-1 bg-gray-300 transition-all duration-300"></div>
+                                <div id="connector-1-2" class="w-8 sm:w-12 md:w-16 lg:w-20 h-0.5 sm:h-1 transition-all duration-300"></div>
 
                                 <!-- Tab 2 Indicator -->
                                 <div class="flex flex-col items-center">
-                                    <div id="tab-indicator-2" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
+                                    <div id="tab-indicator-2" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
                                         2
                                     </div>
-                                    <span id="tab-label-2" class="text-xs sm:text-sm md:text-base font-medium text-gray-500 text-center">ID<br class="sm:hidden"> Verification</span>
+                                    <span id="tab-label-2" class="text-xs sm:text-sm md:text-base font-semibold text-center">ID<br class="sm:hidden"> Verification</span>
                                 </div>
 
                                 <!-- Connector Line 2-3 -->
-                                <div id="connector-2-3" class="w-8 sm:w-12 md:w-16 lg:w-20 h-0.5 sm:h-1 bg-gray-300 transition-all duration-300"></div>
+                                <div id="connector-2-3" class="w-8 sm:w-12 md:w-16 lg:w-20 h-0.5 sm:h-1 transition-all duration-300"></div>
 
                                 <!-- Tab 3 Indicator -->
                                 <div class="flex flex-col items-center">
-                                    <div id="tab-indicator-3" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
+                                    <div id="tab-indicator-3" class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 transition-all duration-300 shadow-md">
                                         3
                                     </div>
-                                    <span id="tab-label-3" class="text-xs sm:text-sm md:text-base font-medium text-gray-500 text-center">Review &<br class="sm:hidden"> Submit</span>
+                                    <span id="tab-label-3" class="text-xs sm:text-sm md:text-base font-semibold text-center text-black">Review &<br class="sm:hidden"> Submit</span>
                                 </div>
                             </div>
                         </div>
@@ -718,11 +1069,11 @@
                             </div>
 
                             <!-- Upload Button Container - Will be hidden after selfie capture -->
-                            <div id="verification-buttons-container" class="mt-6">
+                            <div id="verification-buttons-container" class="mt-6 flex justify-center">
                                 <button type="button"
                                         id="start-verification-btn"
                                         onclick="IDUploadModal.startFlow()"
-                                        class="w-full py-4 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-3">
+                                        class="py-3 px-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2">                             
                                     <span>Start Verification</span>
                                 </button>
 
@@ -730,7 +1081,7 @@
                                 <button type="button"
                                         id="retry-verification-btn"
                                         onclick="IDUploadModal.retryVerification()"
-                                        class="hidden w-full py-4 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 items-center justify-center gap-3">
+                                        class="hidden py-3 px-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 items-center justify-center gap-2">
                                     <i class="fas fa-redo-alt"></i>
                                     <span>Re-upload ID Documents</span>
                                 </button>
@@ -975,12 +1326,13 @@
                                 <button type="button" onclick="WizardNav.goToTab(2)" class="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                                     Previous
                                 </button>
-                                <button type="submit"
+                                <button type="button"
                                         id="verify-account-btn"
-                                        disabled
-                                        class="w-full sm:w-auto bg-gray-400 text-white py-3 px-6 sm:px-8 rounded-xl font-semibold text-base sm:text-lg shadow-lg transition-all duration-300 border-0 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                        style="border: none;"
-                                        title="Please complete all verification requirements before submitting">
+                                        onclick="showSubmitConfirmModal()"
+                                        class="w-full sm:w-auto text-white py-3 px-6 sm:px-8 rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0 outline-none"
+                                        style="background-color: #16BB37; border: none;"
+                                        onmouseover="this.style.backgroundColor='#14a832'"
+                                        onmouseout="this.style.backgroundColor='#16BB37'">
                                         Submit
                                 </button>
                             </div>
@@ -1652,64 +2004,11 @@
             setInterval(window.updateVerificationChecklist, 1000);
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // SUBMIT BUTTON - Disable by default and add click handler for extra validation
+            // SUBMIT BUTTON - Validation is now handled by the confirmation modal
             // ═══════════════════════════════════════════════════════════════════════════
-
-            const submitBtn = document.getElementById('verify-account-btn');
-            if (submitBtn) {
-                // Disable by default - will be enabled when all validations pass
-                submitBtn.disabled = true;
-                submitBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed', 'bg-gray-400');
-                submitBtn.classList.remove('submitbtn-color');
-
-                // Add click event handler for extra validation layer
-                submitBtn.addEventListener('click', function(e) {
-                    // Check verification decision
-                    const verificationDecision = document.getElementById('verification-decision')?.value || '';
-                    if (!verificationDecision || verificationDecision.toLowerCase() !== 'accept') {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        let errorMsg = 'ID verification has not been completed or was not accepted.';
-                        if (verificationDecision.toLowerCase() === 'reject') {
-                            errorMsg = 'Your ID verification was REJECTED. Please upload a valid ID and complete the verification again.';
-                        } else if (verificationDecision.toLowerCase() === 'review') {
-                            errorMsg = 'Your ID verification is still under REVIEW. Please wait for the process to complete.';
-                        }
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Verification Required',
-                            text: errorMsg,
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#dc2626'
-                        });
-                        return false;
-                    }
-
-                    // Check face match
-                    if (typeof VerificationState !== 'undefined') {
-                        // If verification is complete, the face match was already validated by the API
-                        // Only block if verification is not complete
-                        if (!VerificationState.verificationComplete) {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Verification Incomplete',
-                                text: 'Please complete all verification steps before submitting.',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#f59e0b'
-                            });
-                            return false;
-                        }
-                    }
-
-                    console.log('✅ Submit button click validation passed');
-                    return true;
-                });
-            }
+            // Note: The submit button is always enabled. When clicked, it shows a confirmation
+            // modal. The actual form validation happens when the user clicks "Proceed" in the modal.
+            // ═══════════════════════════════════════════════════════════════════════════
         });
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -1718,6 +2017,12 @@
 
         const WizardNav = {
             currentTab: 1,
+
+            // Initialize tab indicators on page load
+            init: function() {
+                console.log('🚀 Initializing WizardNav tab indicators...');
+                this.updateIndicators(this.currentTab);
+            },
 
             // Navigate to a specific tab
             goToTab: function(tabNumber) {
@@ -1753,56 +2058,34 @@
                 console.log(`✅ Now on Tab ${tabNumber}`);
             },
 
-            // Update tab indicator styles
+            // Update tab indicator styles - set colors directly for reliability
             updateIndicators: function(activeTab) {
+                console.log(`📊 Updating indicators for activeTab: ${activeTab}`);
                 for (let i = 1; i <= 3; i++) {
                     const indicator = document.getElementById(`tab-indicator-${i}`);
-                    const label = document.getElementById(`tab-label-${i}`);
+                    if (!indicator) {
+                        console.error(`Tab indicator ${i} not found!`);
+                        continue;
+                    }
+
+                    // Remove any Tailwind classes that might override our styles
+                    indicator.classList.remove('bg-gray-300', 'text-gray-500', 'bg-green-500', 'bg-blue-500', 'bg-blue-800');
 
                     if (i < activeTab) {
-                        // Completed tab - green with checkmark
-                        indicator.classList.remove('bg-gray-300', 'text-gray-500', 'bg-blue-500');
-                        indicator.classList.add('bg-green-500', 'text-white');
+                        // Completed tab - green background (#16BB37) with checkmark
+                        indicator.classList.add('completed');
+                        indicator.style.setProperty('background-color', '#16BB37', 'important');
+                        indicator.style.setProperty('color', 'white', 'important');
                         indicator.innerHTML = '<i class="fas fa-check text-sm sm:text-base md:text-lg"></i>';
-                        label.classList.remove('text-gray-500', 'font-medium', 'text-blue-500');
-                        label.classList.add('text-green-500', 'font-semibold');
-                    } else if (i === activeTab) {
-                        // Active tab - blue with number
-                        indicator.classList.remove('bg-gray-300', 'text-gray-500', 'bg-green-500');
-                        indicator.classList.add('bg-blue-500', 'text-white');
-                        indicator.innerHTML = i.toString();
-                        label.classList.remove('text-gray-500', 'font-medium', 'text-green-500');
-                        label.classList.add('text-blue-500', 'font-semibold');
+                        console.log(`✅ Tab ${i} marked as COMPLETED (green)`);
                     } else {
-                        // Future tab - gray with number
-                        indicator.classList.remove('bg-blue-500', 'text-white', 'bg-green-500');
-                        indicator.classList.add('bg-gray-300', 'text-gray-500');
+                        // Current or future tab - blue background (#1616BB) with number
+                        indicator.classList.remove('completed');
+                        indicator.style.setProperty('background-color', '#1616BB', 'important');
+                        indicator.style.setProperty('color', 'white', 'important');
                         indicator.innerHTML = i.toString();
-                        label.classList.remove('text-blue-500', 'font-semibold', 'text-green-500');
-                        label.classList.add('text-gray-500', 'font-medium');
+                        console.log(`🔵 Tab ${i} marked as CURRENT/FUTURE (blue)`);
                     }
-                }
-
-                // Update connector lines
-                const connector1_2 = document.getElementById('connector-1-2');
-                const connector2_3 = document.getElementById('connector-2-3');
-
-                // Connector 1-2: Green if Tab 1 is completed (activeTab >= 2)
-                if (activeTab >= 2) {
-                    connector1_2.classList.remove('bg-gray-300');
-                    connector1_2.classList.add('bg-green-500');
-                } else {
-                    connector1_2.classList.remove('bg-green-500');
-                    connector1_2.classList.add('bg-gray-300');
-                }
-
-                // Connector 2-3: Green if Tab 2 is completed (activeTab >= 3)
-                if (activeTab >= 3) {
-                    connector2_3.classList.remove('bg-gray-300');
-                    connector2_3.classList.add('bg-green-500');
-                } else {
-                    connector2_3.classList.remove('bg-green-500');
-                    connector2_3.classList.add('bg-gray-300');
                 }
             },
 
@@ -1985,22 +2268,10 @@
                 `;
             },
 
-            // Enable/disable submit button based on validation
+            // Submit button is always enabled - validation handled by confirmation modal
             updateSubmitButton: function(isValid) {
-                const submitButton = document.getElementById('verify-account-btn');
-                if (!submitButton) return;
-
-                if (isValid) {
-                    submitButton.disabled = false;
-                    submitButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                    submitButton.classList.add('submitbtn-color', 'hover:shadow-xl', 'transform', 'hover:scale-105');
-                    submitButton.title = '';
-                } else {
-                    submitButton.disabled = true;
-                    submitButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                    submitButton.classList.remove('submitbtn-color', 'hover:shadow-xl', 'transform', 'hover:scale-105');
-                    submitButton.title = 'Please resolve validation errors before submitting';
-                }
+                // No longer disable/enable the button - the confirmation modal handles validation
+                // Button stays green (#16BB37) and clickable at all times
             }
         };
 
@@ -2008,6 +2279,39 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🧙‍♂️ Wizard navigation initialized');
             WizardNav.goToTab(1); // Start on Tab 1
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // SUBMIT CONFIRMATION MODAL - Shows confirmation before form submission
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        function showSubmitConfirmModal() {
+            const modal = new bootstrap.Modal(document.getElementById('submitConfirmModal'));
+            modal.show();
+        }
+
+        // Initialize the Proceed button event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+            if (confirmSubmitBtn) {
+                confirmSubmitBtn.addEventListener('click', function() {
+                    // Hide the modal
+                    const modalEl = document.getElementById('submitConfirmModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+
+                    // Submit the form
+                    const form = document.getElementById('registrationForm');
+                    if (form) {
+                        // Validate before submitting
+                        if (validateFinalSubmission()) {
+                            form.submit();
+                        }
+                    }
+                });
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -2486,10 +2790,10 @@
                 <!-- Action Buttons -->
                 <div class="face-modal-actions">
                     <button type="button" id="captureFaceBtn" class="face-btn face-btn-capture hidden">
-                        <i class="fas fa-camera"></i> Capture Photo
+                        Capture Photo
                     </button>
                     <button type="button" id="retryFaceBtn" class="face-btn face-btn-retry hidden">
-                        <i class="fas fa-redo"></i> Try Again
+                        Try Again
                     </button>
                 </div>
             </div>
@@ -2836,29 +3140,40 @@
                         </div>
                     </div>
                     
-                    <!-- Upload Area -->
-                    <div class="upload-area-modal rounded-xl p-6 sm:p-10 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 transition-all duration-300 w-full" 
-                         id="modal-upload-area-front"
-                         onclick="document.getElementById('modal-file-input-front').click()">
-                        <div id="front-upload-content">
-                            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5" style="background-color: #C4FCFF;">
-                                <i class="fas fa-cloud-upload-alt text-3xl sm:text-4xl text-black"></i>
+                    <!-- Upload Area - Consistent ID Card Design -->
+                    <div class="id-upload-container mx-auto">
+                        <div class="id-upload-box" id="modal-upload-area-front" onclick="document.getElementById('modal-file-input-front').click()">
+                            <!-- Upload State -->
+                            <div id="front-upload-content" class="id-upload-inner">
+                                <div class="id-upload-icon">
+                                    <i class="fas fa-id-card text-3xl sm:text-4xl text-gray-400"></i>
+                                </div>
+                                <div class="id-upload-text">
+                                    <div class="font-semibold text-gray-700 mb-1 text-sm sm:text-base">Upload Front of ID</div>
+                                    <div class="text-gray-500 text-xs sm:text-sm">Click or drag & drop</div>
+                                </div>
+                                <!-- ID Card guide outline -->
+                                <svg class="id-guide-svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+                                    <rect x="5" y="5" width="150" height="90" rx="8" ry="8" fill="none" stroke="rgba(74, 222, 128, 0.4)" stroke-width="2" stroke-dasharray="8,4"/>
+                                </svg>
                             </div>
-                            <div class="font-semibold text-black mb-2 text-lg sm:text-xl">Upload Front of ID</div>
-                            <div class="text-black/60 text-sm sm:text-base mb-4 sm:mb-5">Click to select or drag & drop your file</div>
-                            <div class="text-xs sm:text-sm text-black/50">JPG, JPEG, or PNG • Max 5MB</div>
-                        </div>
-                        <div id="front-preview-content" class="hidden">
-                            <img id="modal-preview-front" class="max-w-full max-h-56 sm:max-h-72 mx-auto rounded-lg shadow-md" alt="Front ID Preview">
-                            <div class="mt-4 sm:mt-5 text-green-600 font-medium text-sm sm:text-base">
-                                <i class="fas fa-check-circle mr-1"></i> Front ID uploaded
+                            <!-- Preview State -->
+                            <div id="front-preview-content" class="hidden id-preview-inner">
+                                <img id="modal-preview-front" class="id-preview-image" alt="Front ID Preview">
+                                <div class="id-preview-overlay">
+                                    <div class="id-preview-status">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                        <span class="text-white text-xs sm:text-sm font-medium">Front ID Uploaded</span>
+                                    </div>
+                                    <button type="button" class="id-change-btn" onclick="IDUploadModal.clearFrontUpload(event)">
+                                        <i class="fas fa-sync-alt mr-1"></i> Change Image
+                                    </button>
+                                </div>
                             </div>
-                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.clearFrontUpload(event)">
-                                Choose different image
-                            </button>
                         </div>
                         <input type="file" id="modal-file-input-front" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="IDUploadModal.handleFrontUpload(event)">
                         <canvas id="front-modal-canvas" class="hidden"></canvas>
+                        <div class="text-xs text-gray-500 text-center mt-3">JPG, JPEG, or PNG • Max 5MB</div>
                     </div>
                     
                     <!-- Tips -->
@@ -2925,29 +3240,40 @@
                         </div>
                     </div>
                    
-                    <!-- Upload Area -->
-                    <div class="upload-area-modal rounded-xl p-6 sm:p-10 text-center cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 transition-all duration-300 w-full" 
-                         id="modal-upload-area-back"
-                         onclick="document.getElementById('modal-file-input-back').click()">
-                        <div id="back-upload-content">
-                            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5" style="background-color: #A3FFF9;">
-                                <i class="fas fa-cloud-upload-alt text-3xl sm:text-4xl text-black"></i>
+                    <!-- Upload Area - Consistent ID Card Design -->
+                    <div class="id-upload-container mx-auto">
+                        <div class="id-upload-box" id="modal-upload-area-back" onclick="document.getElementById('modal-file-input-back').click()">
+                            <!-- Upload State -->
+                            <div id="back-upload-content" class="id-upload-inner">
+                                <div class="id-upload-icon">
+                                    <i class="fas fa-id-card text-3xl sm:text-4xl text-gray-400"></i>
+                                </div>
+                                <div class="id-upload-text">
+                                    <div class="font-semibold text-gray-700 mb-1 text-sm sm:text-base">Upload Back of ID</div>
+                                    <div class="text-gray-500 text-xs sm:text-sm">Click or drag & drop</div>
+                                </div>
+                                <!-- ID Card guide outline -->
+                                <svg class="id-guide-svg" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet">
+                                    <rect x="5" y="5" width="150" height="90" rx="8" ry="8" fill="none" stroke="rgba(74, 222, 128, 0.4)" stroke-width="2" stroke-dasharray="8,4"/>
+                                </svg>
                             </div>
-                            <div class="font-semibold text-black mb-2 text-lg sm:text-xl">Upload Back of ID</div>
-                            <div class="text-black/60 text-sm sm:text-base mb-4 sm:mb-5">Click to select or drag & drop your file</div>
-                            <div class="text-xs sm:text-sm text-black/50">JPG, JPEG, or PNG • Max 5MB</div>
-                        </div>
-                        <div id="back-preview-content" class="hidden">
-                            <img id="modal-preview-back" class="max-w-full max-h-56 sm:max-h-72 mx-auto rounded-lg shadow-md" alt="Back ID Preview">
-                            <div class="mt-4 sm:mt-5 text-green-600 font-medium text-sm sm:text-base">
-                                <i class="fas fa-check-circle mr-1"></i> Back ID uploaded
+                            <!-- Preview State -->
+                            <div id="back-preview-content" class="hidden id-preview-inner">
+                                <img id="modal-preview-back" class="id-preview-image" alt="Back ID Preview">
+                                <div class="id-preview-overlay">
+                                    <div class="id-preview-status">
+                                        <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                        <span class="text-white text-xs sm:text-sm font-medium">Back ID Uploaded</span>
+                                    </div>
+                                    <button type="button" class="id-change-btn" onclick="IDUploadModal.clearBackUpload(event)">
+                                        <i class="fas fa-sync-alt mr-1"></i> Change Image
+                                    </button>
+                                </div>
                             </div>
-                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.clearBackUpload(event)">
-                                Choose different image
-                            </button>
                         </div>
                         <input type="file" id="modal-file-input-back" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="IDUploadModal.handleBackUpload(event)">
                         <canvas id="back-modal-canvas" class="hidden"></canvas>
+                        <div class="text-xs text-gray-500 text-center mt-3">JPG, JPEG, or PNG • Max 5MB</div>
                     </div>
                 </div>
                 <!-- Footer -->
@@ -3004,77 +3330,86 @@
                         </div>
                     </div>
                     
-                    <!-- Selfie Area -->
+                    <!-- Selfie Area - CIRCULAR DESIGN -->
                     <div class="selfie-capture-modal-area rounded-xl p-4 sm:p-6 text-center bg-gray-100 w-full" style="min-height: 300px;">
-                        <!-- Camera View (initially hidden) -->
+                        <!-- Camera View (initially hidden) - CIRCULAR -->
                         <div id="selfie-camera-view" class="hidden" style="width: 100%; position: relative;">
-                            <div class="selfie-camera-container relative mx-auto" style="max-width: 320px; width: 100%;">
-                                <!-- Video element with fixed aspect ratio container -->
-                                <div class="selfie-video-wrapper" style="position: relative; width: 100%; padding-bottom: 133.33%; background: #000; border-radius: 16px; overflow: hidden;">
-                                    <video id="selfie-modal-video" class="mirror-video" autoplay playsinline muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"></video>
+                            <div class="selfie-camera-container relative mx-auto">
+                                <!-- CIRCULAR Video wrapper - contains all elements -->
+                                <div class="selfie-video-wrapper">
+                                    <video id="selfie-modal-video" class="mirror-video" autoplay playsinline muted></video>
                                     <canvas id="selfie-modal-canvas" style="display: none;"></canvas>
-                                    
-                                    <!-- SVG Mask Overlay for Face Oval Guide - Works reliably on all devices -->
-                                    <svg id="selfie-face-guide-svg" class="selfie-oval-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none;">
+
+                                    <!-- SVG Face Guide for CIRCULAR container -->
+                                    <svg id="selfie-face-guide-svg" class="selfie-oval-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; border-radius: 50%;">
                                         <defs>
                                             <mask id="face-oval-mask">
                                                 <rect width="100%" height="100%" fill="white"/>
-                                                <ellipse cx="50%" cy="48%" rx="32%" ry="38%" fill="black"/>
+                                                <!-- Oval cutout centered in the circle -->
+                                                <ellipse cx="50%" cy="50%" rx="38%" ry="45%" fill="black"/>
                                             </mask>
                                         </defs>
-                                        <!-- Dark overlay with oval cutout -->
-                                        <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask="url(#face-oval-mask)"/>
-                                        <!-- Oval border guide -->
-                                        <ellipse cx="50%" cy="48%" rx="32%" ry="38%" fill="none" stroke="#4ade80" stroke-width="3"/>
-                                        <!-- Corner markers for alignment -->
-                                        <circle cx="50%" cy="10%" r="4" fill="#4ade80"/>
-                                        <circle cx="50%" cy="86%" r="4" fill="#4ade80"/>
-                                        <circle cx="18%" cy="48%" r="4" fill="#4ade80"/>
-                                        <circle cx="82%" cy="48%" r="4" fill="#4ade80"/>
+                                        <!-- Subtle dark overlay with oval cutout -->
+                                        <rect width="100%" height="100%" fill="rgba(0,0,0,0.35)" mask="url(#face-oval-mask)"/>
+                                        <!-- Oval border guide - dashed for visibility -->
+                                        <ellipse cx="50%" cy="50%" rx="38%" ry="45%" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-dasharray="8,4"/>
                                     </svg>
-                                    
+
                                     <!-- Center instruction text overlay -->
                                     <div id="selfie-guide-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 15; pointer-events: none;">
                                         <div class="text-white text-xs font-bold bg-black/70 px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
                                             <i class="fas fa-user-circle mr-1"></i> Center Face
                                         </div>
                                     </div>
+
+                                    <!-- Countdown Overlay - INSIDE the circular wrapper -->
+                                    <div id="selfie-countdown-overlay" class="hidden">
+                                        <span id="selfie-countdown-number" class="text-5xl sm:text-6xl font-bold text-white">3</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mt-3 text-black text-sm font-semibold text-center">
-                                <i class="fas fa-user-circle mr-2 text-green-500"></i> Position your face within the oval
+                            <div class="mt-4 text-black text-sm font-semibold text-center">
+                                <i class="fas fa-user-circle mr-2 text-green-500"></i> Position your face within the frame
                             </div>
-                            <div class="mt-1 text-xs text-gray-600 text-center">
-                                <i class="fas fa-lightbulb mr-1"></i> Good lighting, no glasses/hats
+                            <!-- Capture Button - Moved here for better visibility -->
+                            <div class="mt-4 flex justify-center">
+                                <button type="button" id="capture-selfie-btn-inline" class="text-black px-8 py-3 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-200" style="background-color: #A3FFF9;" onclick="IDUploadModal.captureSelfie()">
+                                    Take Photo
+                                </button>
                             </div>
                         </div>
-                        
-                        <!-- Start Camera Button (initially shown) -->
-                        <div id="selfie-start-view">
-                            <div class="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 md:mb-5" style="background-color: #A3FFF9;">
-                                <i class="fas fa-video text-3xl sm:text-4xl md:text-5xl text-black"></i>
+
+                        <!-- Start Camera Button (initially shown) - CIRCULAR design matching camera view -->
+                        <div id="selfie-start-view" class="flex flex-col items-center">
+                            <!-- Circular container matching the camera view size -->
+                            <div class="selfie-start-container mx-auto mb-4">
+                                <div class="selfie-start-circle">
+                                    <div class="selfie-start-inner">
+                                        <i class="fas fa-user-circle text-5xl sm:text-6xl md:text-7xl text-gray-400"></i>
+                                        <div class="mt-2 text-gray-500 text-xs sm:text-sm font-medium">Your selfie will appear here</div>
+                                    </div>
+                                    <!-- Dashed oval guide preview -->
+                                    <svg class="selfie-start-guide" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                                        <ellipse cx="50" cy="50" rx="38" ry="45" fill="none" stroke="rgba(74, 222, 128, 0.5)" stroke-width="2" stroke-dasharray="6,3"/>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="font-semibold text-black mb-2 text-base sm:text-lg md:text-xl">Take a Selfie</div>
-                            <div class="text-black/60 text-xs sm:text-sm md:text-base mb-4 sm:mb-5">Click below to start your camera</div>
                             <button type="button" id="start-selfie-camera-btn" class="w-full sm:w-auto text-black px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" style="background-color: #A3FFF9;" onclick="IDUploadModal.startSelfieCamera()">
-                                <i class="fas fa-camera mr-2"></i> Start Camera
+                                Start Camera
                             </button>
                         </div>
-                        
-                        <!-- Selfie Preview (after capture) -->
+
+                        <!-- Selfie Preview (after capture) - CIRCULAR - Uses same container sizing as start/camera views -->
                         <div id="selfie-preview-view" class="hidden flex flex-col items-center justify-center w-full py-6">
-                            <img id="modal-preview-selfie" class="w-36 h-36 sm:w-48 sm:h-48 rounded-full mx-auto object-cover border-4 border-green-500 shadow-lg" alt="Selfie Preview">
+                            <div class="selfie-preview-container mx-auto mb-4">
+                                <img id="modal-preview-selfie" class="selfie-preview-circle rounded-full mx-auto object-cover border-4 border-green-500 shadow-xl" alt="Selfie Preview">
+                            </div>
                             <div class="mt-4 sm:mt-5 text-green-600 font-medium text-base sm:text-lg">
                                 <i class="fas fa-check-circle mr-1"></i> Selfie captured successfully!
                             </div>
-                            <button type="button" class="mt-2 text-black hover:text-black/70 text-sm underline" onclick="IDUploadModal.retakeSelfie()">
-                                Retake selfie
+                            <button type="button" class="mt-4 px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium text-sm rounded-xl shadow-sm transition-all duration-200 flex items-center gap-2" onclick="IDUploadModal.retakeSelfie()">
+                                <i class="fas fa-redo"></i> Retake Selfie
                             </button>
-                        </div>
-                        
-                        <!-- Countdown Overlay -->
-                        <div id="selfie-countdown-overlay" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-                            <span id="selfie-countdown-number" class="text-6xl sm:text-8xl font-bold text-white">3</span>
                         </div>
                     </div>
                     
@@ -3092,9 +3427,6 @@
                 <div class="modal-footer bg-gray-50 py-3 sm:py-4 px-4 sm:px-6 border-t-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button type="button" class="w-full sm:w-auto order-3 sm:order-1 text-black hover:text-black/70 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base transition-colors" onclick="IDUploadModal.goBackToBack()">
                         Back
-                    </button>
-                    <button type="button" id="capture-selfie-btn" class="w-full sm:w-auto order-2 sm:order-2 text-black px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200 hidden" style="background-color: #A3FFF9;" onclick="IDUploadModal.captureSelfie()">
-                        <i class="fas fa-camera mr-2"></i> Capture
                     </button>
                     <button type="button" id="finish-upload-btn" class="w-full sm:w-auto order-1 sm:order-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 sm:px-8 py-2 sm:py-2.5 rounded-xl font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all duration-200" disabled onclick="IDUploadModal.finishAndVerify()">
                         Submit
@@ -3257,7 +3589,7 @@
                                 <i class="fas fa-video text-3xl text-amber-500"></i>
                             </div>
                             <button type="button" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-md" onclick="RetryVerification.startSelfieCamera()">
-                                <i class="fas fa-camera mr-2"></i> Start Camera
+                                Start Camera
                             </button>
                         </div>
                         
@@ -3311,6 +3643,44 @@
                 <div class="modal-footer bg-gray-50 py-4 px-6 border-t-0 justify-center">
                     <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-2.5 rounded-xl font-medium transition-colors" data-bs-dismiss="modal">
                         I Understand
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-labelledby="submitConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="modal-header py-4 px-6 border-b border-gray-200 bg-blue-50">
+                    <div class="flex items-center gap-3">
+                        <h5 class="modal-title font-bold text-lg text-black" id="submitConfirmModalLabel">Ready to Submit?</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- Body -->
+                <div class="modal-body p-6">
+                    <div class="text-center mb-4">
+                        <h4 class="text-gray-600">
+                            Please confirm that you have reviewed all your information and uploaded documents before submitting your account verification.
+                        </h4>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <p class="text-sm text-gray-600 text-center">
+                            <i class="fas fa-info-circle mr-1" style="color: #1616BB;"></i>
+                            Once submitted, your information will be processed for verification.
+                        </p>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="modal-footer bg-gray-50 py-4 px-6 border-t border-gray-200 flex justify-end gap-3">
+                    <button type="button" class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-colors" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirm-submit-btn" class="px-6 py-2.5 text-white rounded-xl font-medium transition-colors hover:opacity-90" style="background-color: #16BB37;">
+                        Submit
                     </button>
                 </div>
             </div>
@@ -3886,6 +4256,38 @@
             this.modals.front = new bootstrap.Modal(document.getElementById('frontIdModal'));
             this.modals.back = new bootstrap.Modal(document.getElementById('backIdModal'));
             this.modals.selfie = new bootstrap.Modal(document.getElementById('selfieModal'));
+
+            // Add event listener for selfie modal shown - ensures proper state management
+            const selfieModalEl = document.getElementById('selfieModal');
+            if (selfieModalEl && !selfieModalEl.dataset.listenerAdded) {
+                selfieModalEl.addEventListener('shown.bs.modal', () => {
+                    // If selfie was already captured, show the preview
+                    if (this.selfieImage) {
+                        const startView = document.getElementById('selfie-start-view');
+                        const cameraView = document.getElementById('selfie-camera-view');
+                        const previewView = document.getElementById('selfie-preview-view');
+                        const previewImg = document.getElementById('modal-preview-selfie');
+
+                        if (startView) {
+                            startView.classList.add('hidden');
+                            startView.style.display = 'none';
+                        }
+                        if (cameraView) {
+                            cameraView.classList.add('hidden');
+                            cameraView.style.display = 'none';
+                        }
+                        if (previewView) {
+                            previewView.classList.remove('hidden');
+                            previewView.style.display = 'flex';
+                        }
+                        if (previewImg) {
+                            previewImg.src = this.selfieImage;
+                        }
+                        document.getElementById('finish-upload-btn').disabled = false;
+                    }
+                });
+                selfieModalEl.dataset.listenerAdded = 'true';
+            }
         },
         
         // Start the upload flow
@@ -4022,6 +4424,12 @@
             document.getElementById('front-preview-content').classList.add('hidden');
             document.getElementById('back-upload-content').classList.remove('hidden');
             document.getElementById('back-preview-content').classList.add('hidden');
+
+            // Remove preview state class from upload boxes
+            const frontUploadBox = document.getElementById('modal-upload-area-front');
+            const backUploadBox = document.getElementById('modal-upload-area-back');
+            if (frontUploadBox) frontUploadBox.classList.remove('has-preview');
+            if (backUploadBox) backUploadBox.classList.remove('has-preview');
             
             // CRITICAL: Reset selfie views with proper display styles
             const startView = document.getElementById('selfie-start-view');
@@ -4050,11 +4458,16 @@
             document.getElementById('back-next-btn').disabled = true;
             document.getElementById('finish-upload-btn').disabled = true;
 
-            // CRITICAL FIX: Reset capture button - both hidden AND disabled states
+            // CRITICAL FIX: Reset both capture buttons - hidden AND disabled states
             const captureSelfieBtn = document.getElementById('capture-selfie-btn');
+            const captureBtnInline = document.getElementById('capture-selfie-btn-inline');
             if (captureSelfieBtn) {
                 captureSelfieBtn.classList.add('hidden');
                 captureSelfieBtn.disabled = false;  // Reset disabled state for retry
+            }
+            if (captureBtnInline) {
+                captureBtnInline.classList.add('hidden');
+                captureBtnInline.disabled = false;  // Reset disabled state for retry
             }
 
             // Reset file inputs to allow re-selection of the same file
@@ -4068,23 +4481,27 @@
         handleFrontUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             if (!this.validateFile(file)) return;
-            
+
             // Store reference to file for use in reader callback
             const uploadedFile = file;
             this.frontIdFile = file;  // Store raw file object
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.frontIdImage = e.target.result;
-                
+
                 // Update preview
                 document.getElementById('modal-preview-front').src = e.target.result;
                 document.getElementById('front-upload-content').classList.add('hidden');
                 document.getElementById('front-preview-content').classList.remove('hidden');
                 document.getElementById('front-next-btn').disabled = false;
-                
+
+                // Add preview state class to upload box
+                const uploadBox = document.getElementById('modal-upload-area-front');
+                if (uploadBox) uploadBox.classList.add('has-preview');
+
                 // Also update the main form's file input
                 const mainInput = document.getElementById('file-input-front');
                 if (mainInput) {
@@ -4092,7 +4509,7 @@
                     dt.items.add(uploadedFile);
                     mainInput.files = dt.files;
                 }
-                
+
                 // Store in VerificationState - PASS BOTH base64 (preview) AND File object (API submission)
                 // CRITICAL: File object is sent to API without any modification to preserve EXIF metadata
                 if (typeof VerificationState !== 'undefined') {
@@ -4102,7 +4519,7 @@
             };
             reader.readAsDataURL(file);
         },
-        
+
         // Clear front upload
         clearFrontUpload(event) {
             event.stopPropagation();
@@ -4112,6 +4529,10 @@
             document.getElementById('front-upload-content').classList.remove('hidden');
             document.getElementById('front-preview-content').classList.add('hidden');
             document.getElementById('front-next-btn').disabled = true;
+
+            // Remove preview state class from upload box
+            const uploadBox = document.getElementById('modal-upload-area-front');
+            if (uploadBox) uploadBox.classList.remove('has-preview');
         },
         
         // Go to back ID modal
@@ -4134,25 +4555,29 @@
         handleBackUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             if (!this.validateFile(file)) return;
-            
+
             // Store reference to file for use in reader callback
             const uploadedFile = file;
             this.backIdFile = file;  // Store raw file object
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.backIdImage = e.target.result;
-                
+
                 // Update preview
                 document.getElementById('modal-preview-back').src = e.target.result;
                 document.getElementById('back-upload-content').classList.add('hidden');
                 document.getElementById('back-preview-content').classList.remove('hidden');
-                
+
                 // Enable Next button since back ID is now uploaded
                 document.getElementById('back-next-btn').disabled = false;
-                
+
+                // Add preview state class to upload box
+                const uploadBox = document.getElementById('modal-upload-area-back');
+                if (uploadBox) uploadBox.classList.add('has-preview');
+
                 // Also update the main form's file input
                 const mainInput = document.getElementById('file-input-back');
                 if (mainInput) {
@@ -4160,7 +4585,7 @@
                     dt.items.add(uploadedFile);
                     mainInput.files = dt.files;
                 }
-                
+
                 // Store in VerificationState - PASS BOTH base64 (preview) AND File object (API submission)
                 // CRITICAL: File object is sent to API without any modification to preserve EXIF metadata
                 if (typeof VerificationState !== 'undefined') {
@@ -4170,7 +4595,7 @@
             };
             reader.readAsDataURL(file);
         },
-        
+
         // Clear back upload
         clearBackUpload(event) {
             event.stopPropagation();
@@ -4181,6 +4606,10 @@
             document.getElementById('back-preview-content').classList.add('hidden');
             // Disable Next button since back ID is cleared
             document.getElementById('back-next-btn').disabled = true;
+
+            // Remove preview state class from upload box
+            const uploadBox = document.getElementById('modal-upload-area-back');
+            if (uploadBox) uploadBox.classList.remove('has-preview');
         },
         
         // Skip back ID - REMOVED: Back ID is now required
@@ -4203,6 +4632,69 @@
         // Go back to back modal
         goBackToBack() {
             this.stopCamera();
+
+            const startView = document.getElementById('selfie-start-view');
+            const cameraView = document.getElementById('selfie-camera-view');
+            const previewView = document.getElementById('selfie-preview-view');
+            const countdownOverlay = document.getElementById('selfie-countdown-overlay');
+            const captureBtn = document.getElementById('capture-selfie-btn');
+            const guideText = document.getElementById('selfie-guide-text');
+
+            // Hide camera view always
+            if (cameraView) {
+                cameraView.classList.add('hidden');
+                cameraView.style.display = 'none';
+            }
+
+            // Hide countdown overlay
+            if (countdownOverlay) {
+                countdownOverlay.classList.add('hidden');
+            }
+
+            // Hide and reset capture button
+            if (captureBtn) {
+                captureBtn.classList.add('hidden');
+                captureBtn.disabled = false;
+            }
+
+            // Reset guide text fade
+            if (guideText) {
+                guideText.classList.remove('fade-out');
+            }
+
+            // Clear any active countdown
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+            }
+
+            // If selfie was captured, show preview; otherwise show start view
+            if (this.selfieImage) {
+                // Show preview with captured selfie
+                if (startView) {
+                    startView.classList.add('hidden');
+                    startView.style.display = 'none';
+                }
+                if (previewView) {
+                    const previewImg = document.getElementById('modal-preview-selfie');
+                    if (previewImg) {
+                        previewImg.src = this.selfieImage;
+                    }
+                    previewView.classList.remove('hidden');
+                    previewView.style.display = 'flex';
+                }
+            } else {
+                // Show start view (initial state)
+                if (startView) {
+                    startView.classList.remove('hidden');
+                    startView.style.display = '';
+                }
+                if (previewView) {
+                    previewView.classList.add('hidden');
+                    previewView.style.display = 'none';
+                }
+            }
+
             this.modals.selfie.hide();
             setTimeout(() => {
                 this.modals.back.show();
@@ -4250,7 +4742,11 @@
                 cameraView.classList.remove('hidden');
                 cameraView.style.display = 'block';
                 
-                document.getElementById('capture-selfie-btn').classList.remove('hidden');
+                // Show both capture buttons (inline and footer) for redundancy
+                const captureBtn = document.getElementById('capture-selfie-btn');
+                const captureBtnInline = document.getElementById('capture-selfie-btn-inline');
+                if (captureBtn) captureBtn.classList.remove('hidden');
+                if (captureBtnInline) captureBtnInline.classList.remove('hidden');
 
                 // Fade out the guide text after 3 seconds
                 setTimeout(() => {
@@ -4276,7 +4772,11 @@
             countdownOverlay.classList.remove('hidden');
             countdownNumber.textContent = count;
             
-            document.getElementById('capture-selfie-btn').disabled = true;
+            // Disable both capture buttons during countdown
+            const captureBtn = document.getElementById('capture-selfie-btn');
+            const captureBtnInline = document.getElementById('capture-selfie-btn-inline');
+            if (captureBtn) captureBtn.disabled = true;
+            if (captureBtnInline) captureBtnInline.disabled = true;
             
             this.countdownInterval = setInterval(() => {
                 count--;
@@ -4407,7 +4907,12 @@
             previewView.classList.remove('hidden');
             previewView.style.display = 'flex';
             
-            document.getElementById('capture-selfie-btn').classList.add('hidden');
+            // Hide both capture buttons
+            const captureBtn = document.getElementById('capture-selfie-btn');
+            const captureBtnInline = document.getElementById('capture-selfie-btn-inline');
+            if (captureBtn) captureBtn.classList.add('hidden');
+            if (captureBtnInline) captureBtnInline.classList.add('hidden');
+            
             document.getElementById('finish-upload-btn').disabled = false;
             
             // Store in VerificationState
@@ -4427,7 +4932,12 @@
             previewView.style.display = 'none';
             
             document.getElementById('finish-upload-btn').disabled = true;
-            document.getElementById('capture-selfie-btn').disabled = false;
+            
+            // Re-enable both capture buttons
+            const captureBtn = document.getElementById('capture-selfie-btn');
+            const captureBtnInline = document.getElementById('capture-selfie-btn-inline');
+            if (captureBtn) captureBtn.disabled = false;
+            if (captureBtnInline) captureBtnInline.disabled = false;
 
             // Directly start camera instead of showing start view
             this.startSelfieCamera();
@@ -4736,25 +5246,44 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        /* Countdown overlay */
+        /* Countdown overlay - CIRCULAR, positioned inside video wrapper */
         #selfie-countdown-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 10;
+            width: 100%;
+            height: 100%;
+            z-index: 25;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
+        #selfie-countdown-overlay.hidden {
+            display: none !important;
+        }
+
         /* Selfie capture area positioning */
         .selfie-capture-modal-area {
             position: relative;
             min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         @@media (min-width: 640px) {
             .selfie-capture-modal-area {
-                min-height: 350px;
+                min-height: 380px;
+            }
+        }
+
+        @@media (min-width: 768px) {
+            .selfie-capture-modal-area {
+                min-height: 420px;
             }
         }
         

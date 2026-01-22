@@ -312,23 +312,23 @@
 
         let alertsHTML = '';
 
-        // Add high priority alert
+        // Add high delay alert
         if (highPriorityCount > 0) {
             alertsHTML += `
-                <a href="/Adminuser/Priorities?filter=high" class="priority-alert high">
+                <a href="/Adminuser/Delay?filter=high" class="priority-alert high">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    <span>High Priority</span>
+                    <span>High Delay</span>
                     <span class="priority-count">${highPriorityCount}</span>
                 </a>
             `;
         }
 
-        // Add medium priority alert
+        // Add medium delay alert
         if (mediumPriorityCount > 0) {
             alertsHTML += `
-                <a href="/Adminuser/Priorities?filter=medium" class="priority-alert medium">
+                <a href="/Adminuser/Delay?filter=medium" class="priority-alert medium">
                     <i class="bi bi-exclamation-circle-fill"></i>
-                    <span>Medium Priority</span>
+                    <span>Medium Delay</span>
                     <span class="priority-count">${mediumPriorityCount}</span>
                 </a>
             `;
@@ -338,9 +338,9 @@
     }
 
     /**
-     * Calculate priority level for an application
+     * Calculate delay level for an application
      * @param {Date} createdAt - Application creation date
-     * @returns {String} Priority level: 'high', 'medium', or 'normal'
+     * @returns {String} Delay level: 'high', 'medium', or 'normal'
      */
     function calculatePriority(createdAt) {
         const now = new Date();

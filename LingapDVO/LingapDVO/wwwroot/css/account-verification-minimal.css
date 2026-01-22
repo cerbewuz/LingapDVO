@@ -813,37 +813,502 @@ label {
     pointer-events: none;
 }
 
-/* Selfie camera container responsive */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CIRCULAR SELFIE PREVIEW - RESPONSIVE DESIGN
+   Both start view and camera view use identical sizing for consistency
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Selfie camera container - centered circular container */
 .selfie-camera-container {
-    max-width: 280px;
+    max-width: 260px;
+    width: 100%;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 @media (min-width: 400px) {
     .selfie-camera-container {
-        max-width: 300px;
+        max-width: 280px;
     }
 }
 
 @media (min-width: 640px) {
     .selfie-camera-container {
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 768px) {
+    .selfie-camera-container {
         max-width: 320px;
     }
 }
 
-/* Selfie video wrapper */
+/* Selfie video wrapper - CIRCULAR design */
 .selfie-video-wrapper {
     position: relative;
     width: 100%;
-    padding-bottom: 133.33%; /* 3:4 aspect ratio */
+    padding-bottom: 100%; /* 1:1 aspect ratio for circle */
     background: #000;
-    border-radius: 16px;
+    border-radius: 50%; /* Perfect circle */
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 4px solid #4ade80; /* Green border matching the guide color */
 }
 
-/* Countdown overlay animation */
+/* Video element inside circular wrapper */
+.selfie-video-wrapper video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 140%; /* Slightly larger to fill the circle and allow cropping */
+    height: 140%;
+    transform: translate(-50%, -50%) scaleX(-1); /* Center and mirror */
+    object-fit: cover;
+}
+
+/* Override mirror-video class when inside circular wrapper */
+.selfie-video-wrapper .mirror-video {
+    transform: translate(-50%, -50%) scaleX(-1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CIRCULAR START VIEW - Initial state before camera starts
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.selfie-start-container {
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.selfie-start-circle {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* 1:1 aspect ratio for circle */
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 50%;
+    border: 4px solid #d1d5db;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.selfie-start-circle:hover {
+    border-color: #4ade80;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(74, 222, 128, 0.2);
+}
+
+.selfie-start-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+}
+
+.selfie-start-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Start view responsive sizing - MUST match camera view exactly for consistency */
+@media (min-width: 400px) {
+    .selfie-start-container {
+        max-width: 280px;
+    }
+}
+
+@media (min-width: 640px) {
+    .selfie-start-container {
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 768px) {
+    .selfie-start-container {
+        max-width: 320px;
+    }
+}
+
+/* Mobile sizing - must match .selfie-camera-container mobile rules */
+@media (max-width: 639px) {
+    .selfie-start-container {
+        max-width: 240px !important;
+    }
+
+    .selfie-start-inner i {
+        font-size: 3rem !important;
+    }
+
+    .selfie-start-inner div {
+        font-size: 0.7rem !important;
+    }
+    
+    .selfie-start-circle {
+        border-width: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .selfie-start-container {
+        max-width: 200px !important;
+    }
+
+    .selfie-start-circle {
+        border-width: 3px;
+    }
+}
+
+@media (max-width: 896px) and (orientation: landscape) {
+    .selfie-start-container {
+        max-width: 180px;
+    }
+    .selfie-preview-container {
+        max-width: 180px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CIRCULAR PREVIEW VIEW - Matches start view and camera view sizing
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.selfie-preview-container {
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.selfie-preview-circle {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 400px) {
+    .selfie-preview-container {
+        max-width: 280px;
+    }
+}
+
+@media (min-width: 640px) {
+    .selfie-preview-container {
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 768px) {
+    .selfie-preview-container {
+        max-width: 320px;
+    }
+}
+
+@media (max-width: 639px) {
+    .selfie-preview-container {
+        max-width: 240px !important;
+    }
+    .selfie-preview-circle {
+        border-width: 3px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .selfie-preview-container {
+        max-width: 200px !important;
+    }
+    .selfie-preview-circle {
+        border-width: 3px !important;
+    }
+}
+
+@media (max-width: 896px) and (orientation: landscape) {
+    .selfie-preview-container {
+        max-width: 180px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CONSISTENT ID UPLOAD BOX DESIGN - Front & Back ID
+   Matches the visual weight and style of the circular selfie preview
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Container for ID upload - maintains consistent width */
+.id-upload-container {
+    width: 100%;
+    max-width: 380px;
+}
+
+/* ID Upload Box - Credit card aspect ratio (1.586:1) */
+.id-upload-box {
+    position: relative;
+    width: 100%;
+    padding-bottom: 63%; /* Approximately 1.586:1 aspect ratio like credit cards */
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    border: 3px dashed #d1d5db;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.id-upload-box:hover {
+    border-color: #4ade80;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 4px rgba(74, 222, 128, 0.15);
+}
+
+/* Upload State Inner */
+.id-upload-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+}
+
+.id-upload-icon {
+    margin-bottom: 0.75rem;
+}
+
+.id-upload-text {
+    z-index: 5;
+}
+
+/* ID Card guide SVG */
+.id-guide-svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    height: 85%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* Preview State Inner */
+.id-preview-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Preview Image - Fills the container */
+.id-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 13px;
+}
+
+/* Preview Overlay - Status and Change button inside */
+.id-preview-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+    padding: 1.5rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0 0 13px 13px;
+}
+
+.id-preview-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.id-change-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.id-change-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* When preview is shown, change border style */
+.id-upload-box.has-preview {
+    border-style: solid;
+    border-color: #4ade80;
+    background: #000;
+}
+
+/* Responsive ID Upload Sizes */
+@media (min-width: 400px) {
+    .id-upload-container {
+        max-width: 400px;
+    }
+}
+
+@media (min-width: 640px) {
+    .id-upload-container {
+        max-width: 420px;
+    }
+
+    .id-upload-box {
+        border-radius: 20px;
+    }
+
+    .id-preview-image {
+        border-radius: 17px;
+    }
+
+    .id-preview-overlay {
+        border-radius: 0 0 17px 17px;
+        padding: 2rem 1.25rem 1.25rem;
+    }
+
+    .id-change-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .id-upload-container {
+        max-width: 440px;
+    }
+}
+
+@media (max-width: 639px) {
+    .id-upload-container {
+        max-width: 320px;
+    }
+
+    .id-upload-box {
+        border-radius: 12px;
+        border-width: 2px;
+    }
+
+    .id-preview-image {
+        border-radius: 10px;
+    }
+
+    .id-preview-overlay {
+        border-radius: 0 0 10px 10px;
+        padding: 1.25rem 0.75rem 0.75rem;
+    }
+
+    .id-upload-icon i {
+        font-size: 1.75rem !important;
+    }
+
+    .id-upload-text div:first-child {
+        font-size: 0.875rem !important;
+    }
+
+    .id-upload-text div:last-child {
+        font-size: 0.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .id-upload-container {
+        max-width: 280px;
+    }
+
+    .id-upload-icon i {
+        font-size: 1.5rem !important;
+    }
+
+    .id-preview-overlay {
+        padding: 1rem 0.5rem 0.5rem;
+        gap: 0.375rem;
+    }
+
+    .id-change-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+
+    .id-preview-status span {
+        font-size: 0.7rem !important;
+    }
+}
+
+@media (max-width: 896px) and (orientation: landscape) {
+    .id-upload-container {
+        max-width: 300px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CIRCULAR COUNTDOWN OVERLAY - Contained within the circle
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Countdown overlay - CIRCULAR, contained within the video wrapper */
 #selfie-countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     animation: fadeIn 0.2s ease-out;
+}
+
+/* Hidden state - must override display */
+#selfie-countdown-overlay.hidden {
+    display: none !important;
+}
+
+/* Specific positioning for circular selfie countdown */
+.selfie-video-wrapper #selfie-countdown-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    z-index: 25 !important;
 }
 
 #selfie-countdown-number {
@@ -859,6 +1324,40 @@ label {
         transform: scale(1.1);
         opacity: 0.8;
     }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CIRCULAR FACE GUIDE - Oval guide inside circular preview
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* SVG face guide for circular container */
+.selfie-video-wrapper .selfie-oval-svg {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 20 !important;
+    pointer-events: none !important;
+    border-radius: 50% !important; /* Clip SVG to circle */
+}
+
+/* Guide text for circular selfie */
+.selfie-video-wrapper #selfie-guide-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 30 !important;
+    pointer-events: none !important;
+}
+
+/* Face guide text styling inside circle */
+.selfie-video-wrapper #selfie-guide-text .text-white {
+    font-size: 0.7rem !important;
+    padding: 0.375rem 0.625rem !important;
+    border-radius: 0.5rem !important;
+    white-space: nowrap !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -879,12 +1378,15 @@ label {
     overflow: hidden;
 }
 
-#selfie-camera-view .relative {
+/* Selfie camera view - CIRCULAR container */
+#selfie-camera-view .relative,
+#selfie-camera-view {
     width: 100%;
-    max-width: 400px;
+    max-width: 100%;
     margin: 0 auto;
-    border-radius: 0.5rem;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Video elements base styles */
@@ -896,10 +1398,16 @@ label {
     background: #000;
 }
 
+/* Selfie modal video - CIRCULAR styling */
 #selfie-modal-video {
-    width: 100%;
-    object-fit: cover;
-    background: #000;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 140% !important; /* Larger to fill circle and allow cropping */
+    height: 140% !important;
+    transform: translate(-50%, -50%) scaleX(-1) !important; /* Center and mirror */
+    object-fit: cover !important;
+    background: #000 !important;
 }
 
 /* Desktop and Tablet (min-width: 640px) */
@@ -915,9 +1423,9 @@ label {
         max-height: 320px;
     }
 
-    #selfie-modal-video {
-        min-height: 360px;
-        max-height: 420px;
+    /* Selfie video - no min/max height needed for circular */
+    .selfie-video-wrapper {
+        max-width: 320px;
     }
 
     /* ID Guide rectangle - desktop size */
@@ -947,9 +1455,14 @@ label {
         max-height: 280px;
     }
 
-    #selfie-modal-video {
-        min-height: 300px;
-        max-height: 360px;
+    /* Circular selfie - responsive sizing for mobile */
+    .selfie-camera-container {
+        max-width: 240px !important;
+    }
+
+    .selfie-video-wrapper {
+        max-width: 240px;
+        border-width: 3px !important;
     }
 
     /* ID Guide rectangle - mobile size */
@@ -990,9 +1503,20 @@ label {
         max-height: 240px;
     }
 
-    #selfie-modal-video {
-        min-height: 260px;
-        max-height: 320px;
+    /* Circular selfie - smaller for extra small screens */
+    .selfie-camera-container {
+        max-width: 200px !important;
+    }
+
+    .selfie-video-wrapper {
+        max-width: 200px;
+        border-width: 3px !important;
+    }
+
+    /* Guide text smaller on extra small screens */
+    .selfie-video-wrapper #selfie-guide-text .text-white {
+        font-size: 0.6rem !important;
+        padding: 0.25rem 0.5rem !important;
     }
 
     /* ID Guide rectangle - extra small */
@@ -1049,17 +1573,15 @@ label {
 #modal-preview-selfie {
     object-fit: cover;
     border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    aspect-ratio: 1 / 1;
 }
 
 @media (min-width: 640px) {
     #modal-preview-front,
     #modal-preview-back {
         max-height: 280px;
-    }
-
-    #modal-preview-selfie {
-        width: 12rem;
-        height: 12rem;
     }
 }
 
@@ -1068,22 +1590,12 @@ label {
     #modal-preview-back {
         max-height: 200px;
     }
-
-    #modal-preview-selfie {
-        width: 9rem;
-        height: 9rem;
-    }
 }
 
 @media (max-width: 480px) {
     #modal-preview-front,
     #modal-preview-back {
         max-height: 160px;
-    }
-
-    #modal-preview-selfie {
-        width: 7rem;
-        height: 7rem;
     }
 }
 
@@ -1435,9 +1947,9 @@ label {
         max-height: 12rem !important;
     }
 
-    #modal-preview-selfie {
-        width: 8rem !important;
-        height: 8rem !important;
+    /* Selfie preview uses container-based sizing for consistency */
+    .selfie-preview-container {
+        max-width: 200px !important;
     }
 }
 
@@ -1501,21 +2013,23 @@ label {
 
     /* Smaller videos in landscape */
     #front-modal-video,
-    #back-modal-video,
-    #selfie-modal-video {
+    #back-modal-video {
         max-height: 180px !important;
+    }
+
+    /* Circular selfie - smaller in landscape */
+    .selfie-camera-container {
+        max-width: 180px !important;
+    }
+
+    .selfie-video-wrapper {
+        max-width: 180px;
     }
 
     /* Compact progress indicator */
     .modal-body .mb-4,
     .modal-body .mb-6 {
         margin-bottom: 0.75rem !important;
-    }
-
-    /* Smaller oval in landscape */
-    .selfie-capture-modal-area .rounded-full {
-        width: 7rem !important;
-        height: 9rem !important;
     }
 
     /* Reduce icon sizes */
@@ -1529,6 +2043,11 @@ label {
     .selfie-capture-modal-area .w-32 {
         width: 3.5rem !important;
         height: 3.5rem !important;
+    }
+
+    /* Preview selfie smaller in landscape - now uses container sizing */
+    .selfie-preview-container {
+        max-width: 180px !important;
     }
 }
 
@@ -1782,6 +2301,41 @@ video {
     -ms-transform: translateZ(0);
     -o-transform: translateZ(0);
     transform: translateZ(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TAB INDICATOR PERMANENT STYLES
+   These styles ensure consistent appearance regardless of tab state
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tab indicators 1, 2, 3: Default #1616BB background with white text */
+#tab-indicator-1,
+#tab-indicator-2,
+#tab-indicator-3 {
+    background-color: #1616BB !important;
+    color: white !important;
+    transition: background-color 0.3s ease !important;
+}
+
+/* Completed tab indicators: Transition to #16BB37 (green) */
+#tab-indicator-1.completed,
+#tab-indicator-2.completed,
+#tab-indicator-3.completed {
+    background-color: #16BB37 !important;
+    color: white !important;
+}
+
+/* Connector lines: Always black */
+#connector-1-2,
+#connector-2-3 {
+    background-color: black !important;
+}
+
+/* Tab labels: Always black text */
+#tab-label-1,
+#tab-label-2,
+#tab-label-3 {
+    color: black !important;
 }
 
 /* Print Styles */

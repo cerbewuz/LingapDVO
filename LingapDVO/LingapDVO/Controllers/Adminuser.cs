@@ -7098,8 +7098,8 @@ namespace LingapDVO.Controllers
             }
         }
 
-        // Priorities page with priority system
-        public async Task<IActionResult> Priorities()
+        // Delay page with delay tracking system (renamed from Priorities)
+        public async Task<IActionResult> Delay()
         {
             // Prevent caching
             Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
@@ -7125,13 +7125,13 @@ namespace LingapDVO.Controllers
                 .OrderByDescending(f => f.CreatedAt)
                 .ToList();
 
-            // Get priority counts
-            var (highPriority, mediumPriority, totalPriority) = await _priorityService.GetPriorityCountsAsync();
+            // Get delay counts (using priority service internally)
+            var (highDelay, mediumDelay, totalDelay) = await _priorityService.GetPriorityCountsAsync();
 
             // Pass counts to view via ViewBag
-            ViewBag.HighPriorityCount = highPriority;
-            ViewBag.MediumPriorityCount = mediumPriority;
-            ViewBag.TotalPriorityCount = totalPriority;
+            ViewBag.HighDelayCount = highDelay;
+            ViewBag.MediumDelayCount = mediumDelay;
+            ViewBag.TotalDelayCount = totalDelay;
 
             // Create and populate the view model
             var viewModel = new CombinedFormsViewModel

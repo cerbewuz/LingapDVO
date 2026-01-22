@@ -1,4 +1,4 @@
-// Real-time Priority System with Animated Counters
+// Real-time Delay System with Animated Counters
 (function () {
     'use strict';
 
@@ -6,8 +6,8 @@
     let currentHighCount = 0;
     let currentMediumCount = 0;
 
-    // Initialize SignalR connection for priority updates
-    function initializePriorityConnection() {
+    // Initialize SignalR connection for delay updates
+    function initializeDelayConnection() {
         if (typeof signalR === 'undefined') {
                         return;
         }
@@ -18,24 +18,24 @@
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        // Handle priority count updates (real-time animated counters)
+        // Handle delay count updates (real-time animated counters)
         connection.on("ReceivePriorityCountUpdate", function (data) {
                         // Animate counter increments
-            animateCounter('high-priority-count', currentHighCount, data.highPriority);
-            animateCounter('medium-priority-count', currentMediumCount, data.mediumPriority);
+            animateCounter('high-delay-count', currentHighCount, data.highPriority);
+            animateCounter('medium-delay-count', currentMediumCount, data.mediumPriority);
 
             // Update current counts
             currentHighCount = data.highPriority;
             currentMediumCount = data.mediumPriority;
 
             // Show visual notification
-            showPriorityUpdateNotification(data);
+            showDelayUpdateNotification(data);
         });
 
-        // Handle new priority application notification
+        // Handle new delayed application notification
         connection.on("ReceiveNewPriorityApplication", function (data) {
                         // Show toast notification
-            showNewPriorityToast(data);
+            showNewDelayToast(data);
 
             // Play notification sound
             playNotificationSound();
@@ -43,20 +43,20 @@
             // Increment appropriate counter with animation
             if (data.priority === 'high') {
                 currentHighCount++;
-                animateCounter('high-priority-count', currentHighCount - 1, currentHighCount);
-                pulseElement('high-priority-count');
+                animateCounter('high-delay-count', currentHighCount - 1, currentHighCount);
+                pulseElement('high-delay-count');
             } else if (data.priority === 'medium') {
                 currentMediumCount++;
-                animateCounter('medium-priority-count', currentMediumCount - 1, currentMediumCount);
-                pulseElement('medium-priority-count');
+                animateCounter('medium-delay-count', currentMediumCount - 1, currentMediumCount);
+                pulseElement('medium-delay-count');
             }
 
             // ⚡ PERFORMANCE: Update DOM instead of full page reload
-            // If renderPriorities function exists, call it to refresh the list
+            // If renderDelayedApplications function exists, call it to refresh the list
             // Otherwise, the counter animation is sufficient for real-time feedback
             setTimeout(() => {
-                if (typeof renderPriorities === 'function') {
-                    renderPriorities(); // Call function to update DOM dynamically
+                if (typeof renderDelayedApplications === 'function') {
+                    renderDelayedApplications(); // Call function to update DOM dynamically
                 }
                 // Note: Removed window.location.reload() - was wasting bandwidth and creating poor UX
             }, 1500);
@@ -99,8 +99,8 @@
                                 updateConnectionStatus('connected');
 
                 // Initialize current counts from DOM
-                const highEl = document.getElementById('high-priority-count');
-                const mediumEl = document.getElementById('medium-priority-count');
+                const highEl = document.getElementById('high-delay-count');
+                const mediumEl = document.getElementById('medium-delay-count');
 
                 if (highEl) currentHighCount = parseInt(highEl.textContent) || 0;
                 if (mediumEl) currentMediumCount = parseInt(mediumEl.textContent) || 0;
@@ -156,35 +156,36 @@
         }, 500);
     }
 
-    // Show priority update notification
-    function showPriorityUpdateNotification(data) {
+    // Show delay update notification
+    function showDelayUpdateNotification(data) {
         const totalChange = (data.highPriority - currentHighCount) + (data.mediumPriority - currentMediumCount);
 
         if (totalChange > 0) {
             showToast(
-                'Priority Update',
-                `${totalChange} new priority application(s) require attention`,
+                'Delay Update',
+                `${totalChange} new delayed application(s) require attention`,
                 'warning'
             );
         }
     }
 
-    // Show new priority toast notification
-    function showNewPriorityToast(data) {
-        const priorityIcon = data.priority === 'high'
+    // Show new delay toast notification
+    function showNewDelayToast(data) {
+        const delayIcon = data.priority === 'high'
             ? '<i class="bi bi-exclamation-triangle-fill"></i>'
             : '<i class="bi bi-exclamation-circle-fill"></i>';
 
-        const priorityColor = data.priority === 'high' ? '#e74c3c' : '#f39c12';
+        const delayColor = data.priority === 'high' ? '#e74c3c' : '#f39c12';
+        const delayLabel = data.priority === 'high' ? 'High' : 'Medium';
 
         const toastHtml = `
-            <div class="toast priority-toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true"
-                 style="border-left: 4px solid ${priorityColor};">
+            <div class="toast delay-toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true"
+                 style="border-left: 4px solid ${delayColor};">
                 <div class="d-flex">
                     <div class="toast-body">
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <span style="color: ${priorityColor}; font-size: 1.2rem;">${priorityIcon}</span>
-                            <strong>${data.priority.charAt(0).toUpperCase() + data.priority.slice(1)} Priority Application</strong>
+                            <span style="color: ${delayColor}; font-size: 1.2rem;">${delayIcon}</span>
+                            <strong>${delayLabel} Delay Application</strong>
                         </div>
                         <div><strong>${data.applicationType}</strong></div>
                         <div class="text-muted small">${data.applicantName}</div>
@@ -301,10 +302,10 @@
 
     // Add CSS animations
     function addAnimationStyles() {
-        if (document.getElementById('priority-animations')) return;
+        if (document.getElementById('delay-animations')) return;
 
         const style = document.createElement('style');
-        style.id = 'priority-animations';
+        style.id = 'delay-animations';
         style.textContent = `
             @keyframes pulse {
                 0%, 100% { opacity: 1; }
@@ -314,7 +315,7 @@
                 from { transform: rotate(0deg); }
                 to { transform: rotate(360deg); }
             }
-            .priority-toast {
+            .delay-toast {
                 min-width: 300px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             }
@@ -326,15 +327,15 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             addAnimationStyles();
-            initializePriorityConnection();
+            initializeDelayConnection();
         });
     } else {
         addAnimationStyles();
-        initializePriorityConnection();
+        initializeDelayConnection();
     }
 
     // Expose for external use
-    window.prioritySystem = {
+    window.delaySystem = {
         connection: connection,
         animateCounter: animateCounter,
         showToast: showToast
