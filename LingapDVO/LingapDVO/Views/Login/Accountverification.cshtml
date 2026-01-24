@@ -515,11 +515,6 @@
             .modal-body {
                 padding: 1rem !important;
             }
-
-            /* Compact validation messages */
-            #validation-results-container .rounded-xl {
-                padding: 0.75rem !important;
-            }
         }
 
         /* Extra small screens (below 400px) */
@@ -1195,11 +1190,6 @@
                                 </div>
 
                                 <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Please review all your information before submitting. You can go back to make changes if needed.</p>
-
-                                <!-- Validation Results Section -->
-                                <div id="validation-results-container" class="mb-6">
-                                    <!-- Validation results will be dynamically populated here by JavaScript -->
-                                </div>
 
                                 <!-- Personal Information Review -->
                                 <div class="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6">
@@ -2124,11 +2114,6 @@
                 // Uploaded Images
                 this.populateImages();
 
-                // Run validations and display results
-                const validationResults = runTab3Validations();
-                this.displayValidationResults(validationResults);
-                this.updateSubmitButton(validationResults.overallPass);
-
                 console.log('✅ Review page populated');
             },
 
@@ -2198,80 +2183,6 @@
                     if (reviewSelfieImg) reviewSelfieImg.classList.add('hidden');
                     if (reviewSelfiePlaceholder) reviewSelfiePlaceholder.classList.remove('hidden');
                 }
-            },
-
-            // Display validation results with visual indicators
-            displayValidationResults: function(results) {
-                const container = document.getElementById('validation-results-container');
-                if (!container) return;
-
-                if (!results.hasData) {
-                    container.innerHTML = `
-                        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3 sm:p-4">
-                            <div class="flex items-center gap-2 sm:gap-3">
-                                <i class="fas fa-exclamation-triangle text-red-500 text-base sm:text-xl"></i>
-                                <div>
-                                    <p class="font-semibold text-red-800 text-sm sm:text-base">Verification Required</p>
-                                    <p class="text-xs sm:text-sm text-red-600">Please complete ID verification in Tab 2 before proceeding.</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                const { nameValidation, barangayValidation, davaoCityValidation } = results.validations;
-
-                container.innerHTML = `
-                    <div class="space-y-2 sm:space-y-3">
-                        ${this.renderValidationItem('Name Verification', nameValidation)}
-                        ${this.renderValidationItem('Barangay Verification', barangayValidation)}
-                        ${this.renderValidationItem('Davao City Residency', davaoCityValidation)}
-                    </div>
-                `;
-            },
-
-            // Render individual validation item
-            renderValidationItem: function(title, validation) {
-                const isValid = validation.valid;
-                const isWarning = validation.warning || false;
-
-                const bgColor = isValid ? (isWarning ? 'bg-yellow-50' : 'bg-green-50') : 'bg-red-50';
-                const borderColor = isValid ? (isWarning ? 'border-yellow-200' : 'border-green-200') : 'border-red-200';
-                const iconColor = isValid ? (isWarning ? 'text-yellow-500' : 'text-green-500') : 'text-red-500';
-                const textColor = isValid ? (isWarning ? 'text-yellow-800' : 'text-green-800') : 'text-red-800';
-                const icon = isValid ? (isWarning ? 'fa-exclamation-circle' : 'fa-check-circle') : 'fa-times-circle';
-
-                let detailsHtml = '';
-                if (validation.errors && validation.errors.length > 0) {
-                    detailsHtml = `
-                        <ul class="mt-1 sm:mt-2 text-xs sm:text-sm ${textColor} space-y-1">
-                            ${validation.errors.map(err => `<li class="flex items-start gap-1.5 sm:gap-2">
-                                <i class="fas fa-circle text-[6px] sm:text-xs mt-1.5 sm:mt-1"></i>
-                                <span>${err}</span>
-                            </li>`).join('')}
-                        </ul>
-                    `;
-                }
-
-                return `
-                    <div class="${bgColor} border-2 ${borderColor} rounded-xl p-3 sm:p-4">
-                        <div class="flex items-start gap-2 sm:gap-3">
-                            <i class="fas ${icon} ${iconColor} text-base sm:text-xl mt-0.5"></i>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold ${textColor} text-sm sm:text-base">${title}</p>
-                                <p class="text-xs sm:text-sm ${textColor} mt-0.5 sm:mt-1 break-words">${validation.message}</p>
-                                ${detailsHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            },
-
-            // Submit button is always enabled - validation handled by confirmation modal
-            updateSubmitButton: function(isValid) {
-                // No longer disable/enable the button - the confirmation modal handles validation
-                // Button stays green (#16BB37) and clickable at all times
             }
         };
 
@@ -2320,6 +2231,18 @@
 
         function validateFinalSubmission() {
             console.log('🔍 Starting final form validation...');
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // PRELIMINARY CHECK: Verify validation functions are available
+            // ═══════════════════════════════════════════════════════════════════════════
+            console.log('📋 Checking validation functions availability:');
+            console.log('   - validateNameMatch:', typeof window.validateNameMatch);
+            console.log('   - validateGenderMatch:', typeof window.validateGenderMatch);
+            console.log('   - validateBirthdateMatch:', typeof window.validateBirthdateMatch);
+            console.log('   - validateSuffixMatch:', typeof window.validateSuffixMatch);
+            console.log('   - validateDavaoCityAddress:', typeof window.validateDavaoCityAddress);
+            console.log('   - validateBarangayMatch:', typeof window.validateBarangayMatch);
+            console.log('   - window.apiExtractedData:', window.apiExtractedData);
 
             // ═══════════════════════════════════════════════════════════════════════════
             // SYNC ID TYPE AND ID NUMBER FROM TAB 2 TO HIDDEN FORM FIELDS
@@ -2414,21 +2337,6 @@
             }
 
             // ═══════════════════════════════════════════════════════════════════════════
-            // STEP 2.6: Validate Gender (compare with API-extracted gender if available)
-            // ═══════════════════════════════════════════════════════════════════════════
-
-            const genderField = document.getElementById('gender');
-            const userGender = genderField?.value || '';
-            const apiGender = window.apiExtractedGender || '';
-
-            if (userGender && apiGender && window.validateGenderMatch) {
-                const genderValidation = window.validateGenderMatch(userGender, apiGender);
-                if (!genderValidation.isValid) {
-                    errors.push(genderValidation.message);
-                }
-            }
-
-            // ═══════════════════════════════════════════════════════════════════════════
             // STEP 3: Validate Terms and Conditions
             // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2499,6 +2407,167 @@
                 }
             } else {
                 errors.push('Verification system not initialized. Please refresh the page and try again.');
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════════
+            // STEP 8: Validate User Data Against API-Extracted ID Data
+            // These validations compare user-entered information with data extracted from ID
+            // ═══════════════════════════════════════════════════════════════════════════
+
+            // Only run these validations if we have API extracted data
+            if (window.apiExtractedData) {
+                console.log('🔍 Running API data validations...');
+                console.log('📦 API Extracted Data:', window.apiExtractedData);
+                const apiData = window.apiExtractedData;
+
+                // Get user input values
+                const userFirstName = (document.getElementById('firstname')?.value || '').trim();
+                const userMiddleName = (document.getElementById('middlename')?.value || '').trim();
+                const userLastName = (document.getElementById('lastname')?.value || '').trim();
+                const userBarangay = (document.getElementById('barangay')?.value || '').trim();
+                const userGender = (document.getElementById('gender')?.value || '').trim();
+                const userBirthdate = (document.getElementById('birthdate')?.value || '').trim();
+                const userSuffix = (document.getElementById('suffix')?.value || '').trim();
+
+                // Get API data values
+                const apiFirstName = apiData.firstName || '';
+                const apiMiddleName = apiData.middleName || '';
+                const apiLastName = apiData.lastName || '';
+                const apiAddress1 = apiData.address1 || '';
+                const apiGender = apiData.sex || '';
+                const apiBirthdate = apiData.dateOfBirth || '';
+                const apiSuffix = apiData.suffix || '';
+
+                console.log('👤 User Input:', { userFirstName, userMiddleName, userLastName, userBarangay, userGender, userBirthdate, userSuffix });
+                console.log('🆔 API Data:', { apiFirstName, apiMiddleName, apiLastName, apiAddress1, apiGender, apiBirthdate, apiSuffix });
+
+                // 8.1: Name Matching Validation (MANDATORY - always run if API returned name data)
+                if (apiFirstName || apiLastName) {
+                    console.log('🔍 Running Name Validation...');
+                    if (typeof window.validateNameMatch === 'function') {
+                        const nameValidation = window.validateNameMatch(
+                            { firstName: apiFirstName, middleName: apiMiddleName, lastName: apiLastName },
+                            { firstName: userFirstName, middleName: userMiddleName, lastName: userLastName }
+                        );
+                        console.log('📋 Name Validation Result:', nameValidation);
+                        if (!nameValidation.valid) {
+                            if (nameValidation.errors && nameValidation.errors.length > 0) {
+                                nameValidation.errors.forEach(err => errors.push(err));
+                            } else {
+                                errors.push(nameValidation.message || 'Name does not match the ID document');
+                            }
+                        } else {
+                            console.log('✅ Name validation passed:', nameValidation.message);
+                        }
+                    } else {
+                        console.error('❌ window.validateNameMatch function not found!');
+                        errors.push('Validation system error: Name validation function not available');
+                    }
+                } else {
+                    console.warn('⚠️ Name validation skipped - API did not return name data');
+                }
+
+                // 8.2: Davao City Residency Validation (MANDATORY - always run if API returned address)
+                if (apiAddress1) {
+                    console.log('🔍 Running Davao City Validation...');
+                    if (typeof window.validateDavaoCityAddress === 'function') {
+                        const davaoCityValidation = window.validateDavaoCityAddress(apiAddress1, null);
+                        console.log('📋 Davao City Validation Result:', davaoCityValidation);
+                        if (!davaoCityValidation.valid && !davaoCityValidation.warning) {
+                            errors.push(davaoCityValidation.message || 'Your ID must show a Davao City address');
+                        } else {
+                            console.log('✅ Davao City validation passed:', davaoCityValidation.message);
+                        }
+                    } else {
+                        console.error('❌ window.validateDavaoCityAddress function not found!');
+                        errors.push('Validation system error: Davao City validation function not available');
+                    }
+                } else {
+                    console.warn('⚠️ Davao City validation skipped - API did not return address data');
+                }
+
+                // 8.3: Barangay Matching Validation (MANDATORY - always run if API returned address and user selected barangay)
+                if (apiAddress1 && userBarangay) {
+                    console.log('🔍 Running Barangay Validation...');
+                    if (typeof window.validateBarangayMatch === 'function') {
+                        const barangayValidation = window.validateBarangayMatch(apiAddress1, userBarangay);
+                        console.log('📋 Barangay Validation Result:', barangayValidation);
+                        if (!barangayValidation.valid && !barangayValidation.warning) {
+                            errors.push(barangayValidation.message || 'Barangay does not match the address on your ID');
+                        } else if (barangayValidation.warning) {
+                            console.log('⚠️ Barangay validation warning:', barangayValidation.message);
+                        } else {
+                            console.log('✅ Barangay validation passed:', barangayValidation.message);
+                        }
+                    } else {
+                        console.error('❌ window.validateBarangayMatch function not found!');
+                        errors.push('Validation system error: Barangay validation function not available');
+                    }
+                } else if (!userBarangay) {
+                    errors.push('Barangay is required');
+                } else {
+                    console.warn('⚠️ Barangay validation skipped - API did not return address data');
+                }
+
+                // 8.4: Gender Matching Validation (MANDATORY - always run if API returned gender)
+                if (apiGender) {
+                    console.log('🔍 Running Gender Validation...');
+                    if (typeof window.validateGenderMatch === 'function') {
+                        const genderValidation = window.validateGenderMatch(userGender, apiGender);
+                        console.log('📋 Gender Validation Result:', genderValidation);
+                        if (!genderValidation.valid && !genderValidation.skipped) {
+                            errors.push(genderValidation.message || 'Gender does not match the ID document');
+                        } else if (!genderValidation.skipped) {
+                            console.log('✅ Gender validation passed:', genderValidation.message);
+                        }
+                    } else {
+                        console.error('❌ window.validateGenderMatch function not found!');
+                        errors.push('Validation system error: Gender validation function not available');
+                    }
+                } else {
+                    console.warn('⚠️ Gender validation skipped - API did not return gender data');
+                }
+
+                // 8.5: Birthdate Matching Validation (MANDATORY - always run if API returned birthdate)
+                if (apiBirthdate) {
+                    console.log('🔍 Running Birthdate Validation...');
+                    if (typeof window.validateBirthdateMatch === 'function') {
+                        const birthdateValidation = window.validateBirthdateMatch(userBirthdate, apiBirthdate);
+                        console.log('📋 Birthdate Validation Result:', birthdateValidation);
+                        if (!birthdateValidation.valid && !birthdateValidation.skipped) {
+                            errors.push(birthdateValidation.message || 'Date of birth does not match the ID document');
+                        } else if (!birthdateValidation.skipped) {
+                            console.log('✅ Birthdate validation passed:', birthdateValidation.message);
+                        }
+                    } else {
+                        console.error('❌ window.validateBirthdateMatch function not found!');
+                        errors.push('Validation system error: Birthdate validation function not available');
+                    }
+                } else {
+                    console.warn('⚠️ Birthdate validation skipped - API did not return birthdate data');
+                }
+
+                // 8.6: Suffix Matching Validation (WARNING ONLY - not blocking)
+                if (apiSuffix || userSuffix) {
+                    console.log('🔍 Running Suffix Validation...');
+                    if (typeof window.validateSuffixMatch === 'function') {
+                        const suffixValidation = window.validateSuffixMatch(userSuffix, apiSuffix);
+                        console.log('📋 Suffix Validation Result:', suffixValidation);
+                        if (suffixValidation.warning) {
+                            console.log('⚠️ Suffix warning:', suffixValidation.message);
+                        } else if (!suffixValidation.skipped) {
+                            console.log('✅ Suffix validation passed:', suffixValidation.message);
+                        }
+                    } else {
+                        console.error('❌ validateSuffixMatch function not found!');
+                    }
+                }
+
+                console.log('✅ API data validations completed');
+                console.log('📊 Total errors after API validation:', errors.length);
+            } else {
+                console.warn('⚠️ No API extracted data available for validation');
+                errors.push('ID data could not be verified. Please complete the ID verification process first.');
             }
 
             // ═══════════════════════════════════════════════════════════════════════════

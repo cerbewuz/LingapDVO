@@ -1134,6 +1134,26 @@ function validateBarangayMatch(address1, userSelectedBarangay) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// EXPOSE VALIDATION FUNCTIONS TO GLOBAL SCOPE
+// These functions need to be accessible from validateFinalSubmission() in cshtml
+// ═══════════════════════════════════════════════════════════════════════════════
+window.validateNameMatch = validateNameMatch;
+window.validateGenderMatch = validateGenderMatch;
+window.validateBirthdateMatch = validateBirthdateMatch;
+window.validateSuffixMatch = validateSuffixMatch;
+window.validateDavaoCityAddress = validateDavaoCityAddress;
+window.validateBarangayMatch = validateBarangayMatch;
+
+console.log('✅ Validation functions exposed to global scope:', {
+    validateNameMatch: typeof window.validateNameMatch,
+    validateGenderMatch: typeof window.validateGenderMatch,
+    validateBirthdateMatch: typeof window.validateBirthdateMatch,
+    validateSuffixMatch: typeof window.validateSuffixMatch,
+    validateDavaoCityAddress: typeof window.validateDavaoCityAddress,
+    validateBarangayMatch: typeof window.validateBarangayMatch
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TAB 3 REVIEW PAGE VALIDATION ORCHESTRATOR
 // ═══════════════════════════════════════════════════════════════════════════════
 // This function runs all three validation checks when user enters Tab 3
@@ -1518,63 +1538,24 @@ window.submitVerification = async function() {
                 console.log('✅ ID Type Validation:', idTypeValidation.message);
             }
 
-            // VALIDATION 2: Check Davao City Address (ONLY Address1, NOT Address2)
-            const addressValidation = validateDavaoCityAddress(
-                result.data?.address1,
-                null  // Explicitly pass null for address2 to ensure it's not used
-            );
-            if (!addressValidation.valid) {
-                validationErrors.push(addressValidation.message);
-            } else {
-                console.log('✅ Address Validation:', addressValidation.message);
-            }
-
-            // VALIDATION 3: Check Name Matching (firstName, middleName, lastName)
-            const registeredNames = {
-                firstName: document.getElementById('firstname')?.value || '',
-                middleName: document.getElementById('middlename')?.value || '',
-                lastName: document.getElementById('lastname')?.value || ''
+            // ═══════════════════════════════════════════════════════════════════════
+            // STORE API DATA FOR FINAL SUBMISSION VALIDATION
+            // Other validations (name, barangay, Davao City, gender, DOB, civil status)
+            // will be performed when user clicks Submit in the Confirm Submission modal
+            // ═══════════════════════════════════════════════════════════════════════
+            window.apiExtractedData = {
+                address1: result.data?.address1 || '',
+                address2: result.data?.address2 || '',
+                city: result.data?.city || '',
+                firstName: result.data?.firstName || '',
+                middleName: result.data?.middleName || '',
+                lastName: result.data?.lastName || '',
+                sex: result.data?.sex || '',
+                dateOfBirth: result.data?.dateOfBirth || '',
+                suffix: result.data?.suffix || '',
+                civilStatus: result.data?.civilStatus || ''
             };
-
-            const nameValidation = validateNameMatch(result.data, registeredNames);
-            if (!nameValidation.valid) {
-                validationErrors.push(...nameValidation.errors);
-            } else {
-                console.log('✅ Name Validation:', nameValidation.message);
-            }
-
-            // VALIDATION 4: Check Gender Matching
-            const userGender = document.getElementById('gender')?.value || '';
-            const apiGender = result.data?.sex || '';
-            const genderValidation = validateGenderMatch(userGender, apiGender);
-            if (!genderValidation.valid) {
-                validationErrors.push(genderValidation.message);
-            } else if (!genderValidation.skipped) {
-                console.log('✅ Gender Validation:', genderValidation.message);
-            }
-
-            // VALIDATION 5: Check Birthdate Matching
-            const userBirthdate = document.getElementById('birthdate')?.value || '';
-            const apiBirthdate = result.data?.dateOfBirth || '';
-            const birthdateValidation = validateBirthdateMatch(userBirthdate, apiBirthdate);
-            if (!birthdateValidation.valid) {
-                validationErrors.push(birthdateValidation.message);
-            } else if (!birthdateValidation.skipped) {
-                console.log('✅ Birthdate Validation:', birthdateValidation.message);
-            }
-
-            // VALIDATION 6: Check Suffix Matching (warning only, not blocking)
-            const userSuffix = document.getElementById('suffix')?.value || '';
-            const apiSuffix = result.data?.suffix || '';
-            const suffixValidation = validateSuffixMatch(userSuffix, apiSuffix);
-            if (!suffixValidation.valid) {
-                validationErrors.push(suffixValidation.message);
-            } else if (suffixValidation.warning) {
-                console.log('⚠️ Suffix Warning:', suffixValidation.message);
-                // Show warning but don't block
-            } else if (!suffixValidation.skipped) {
-                console.log('✅ Suffix Validation:', suffixValidation.message);
-            }
+            console.log('📦 Stored API data for final submission validation:', window.apiExtractedData);
 
             // If any validation failed, show error and stop
             if (validationErrors.length > 0) {
