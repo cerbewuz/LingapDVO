@@ -18,6 +18,9 @@ const zoomOutBtn = document.getElementById("zoomOutBtn");
 const resetZoomBtn = document.getElementById("resetZoomBtn");
 const zoomIndicator = document.getElementById("zoomIndicator");
 
+// Only initialize image gallery if modal elements exist
+if (modal && modalImage) {
+
 // Reset zoom when changing images
 function resetZoom() {
     currentZoom = 1;
@@ -30,7 +33,7 @@ function resetZoom() {
 // Update image transform
 function updateImageTransform() {
     modalImage.style.transform = `scale(${currentZoom}) translate(${translateX}px, ${translateY}px)`;
-    zoomIndicator.textContent = Math.round(currentZoom * 100) + '%';
+    if (zoomIndicator) zoomIndicator.textContent = Math.round(currentZoom * 100) + '%';
 }
 
 // Show image
@@ -84,45 +87,59 @@ document.querySelectorAll(".update-image").forEach((img, index) => {
 
 // Close modal
 function closeModal() {
-    modal.style.display = "none";
+    if (modal) modal.style.display = "none";
     resetZoom();
 }
 
-modalClose.addEventListener("click", closeModal);
+if (modalClose) {
+    modalClose.addEventListener("click", closeModal);
+}
 
 // Click outside to close
-modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        closeModal();
-    }
-});
+if (modal) {
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
 
 // Arrow button handlers
-prevBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    previousImage();
-});
+if (prevBtn) {
+    prevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        previousImage();
+    });
+}
 
-nextBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    nextImage();
-});
+if (nextBtn) {
+    nextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        nextImage();
+    });
+}
 
 // Zoom button handlers
-zoomInBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    zoomIn();
-});
+if (zoomInBtn) {
+    zoomInBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        zoomIn();
+    });
+}
 
-zoomOutBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    zoomOut();
-});
+if (zoomOutBtn) {
+    zoomOutBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        zoomOut();
+    });
+}
 
-resetZoomBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    resetZoom();
-});
+if (resetZoomBtn) {
+    resetZoomBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        resetZoom();
+    });
+}
 
 // Keyboard navigation
 document.addEventListener("keydown", (e) => {
@@ -286,6 +303,8 @@ modal.addEventListener("touchend", (e) => {
     }
 });
 
+} // End of image gallery modal check
+
 // DOM Content Loaded event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Remove loading screen immediately - no artificial delay
@@ -356,43 +375,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalClose = document.getElementById('modalClose');
     const gridItems = document.querySelectorAll('.grid-item');
 
-    // Open modal when grid item is clicked
-    gridItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const img = this.querySelector('img');
-            const badge = this.querySelector('.grid-badge');
+    // Only initialize if modal elements exist
+    if (imageModal && modalImage && modalClose) {
+        // Open modal when grid item is clicked
+        gridItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const img = this.querySelector('img');
+                const badge = this.querySelector('.grid-badge');
 
-            modalImage.src = img.src;
-            modalImage.alt = img.alt;
-            modalCaption.textContent = badge ? badge.textContent : img.alt;
+                modalImage.src = img.src;
+                modalImage.alt = img.alt;
+                if (modalCaption) modalCaption.textContent = badge ? badge.textContent : img.alt;
 
-            imageModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+                imageModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
         });
-    });
 
-    // Close modal when close button is clicked
-    modalClose.addEventListener('click', function(e) {
-        e.stopPropagation();
-        imageModal.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-
-    // Close modal when clicking outside the image
-    imageModal.addEventListener('click', function(e) {
-        if (e.target === imageModal) {
+        // Close modal when close button is clicked
+        modalClose.addEventListener('click', function(e) {
+            e.stopPropagation();
             imageModal.classList.remove('active');
             document.body.style.overflow = '';
-        }
-    });
+        });
 
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && imageModal.classList.contains('active')) {
-            imageModal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
+        // Close modal when clicking outside the image
+        imageModal.addEventListener('click', function(e) {
+            if (e.target === imageModal) {
+                imageModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+                imageModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    } // End of imageModal null check
 
     // Process Section Scroll Animation
     const processTimeline = document.querySelector('.process-timeline');

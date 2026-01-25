@@ -671,12 +671,12 @@
                     <h1>Application Dashboard</h1>
                 </div>
                 <div class="priority-alerts">
-                    <a href="/Adminuser/Priorities?filter=high" class="priority-alert-box high">
+                    <a href="/DelayedApplications?filter=high" class="priority-alert-box high">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
                         <span>High Priority</span>
                     </a>
-                    <a href="/Adminuser/Priorities?filter=medium" class="priority-alert-box medium">
+                    <a href="/DelayedApplications?filter=medium" class="priority-alert-box medium">
                         <i class="bi bi-exclamation-circle-fill"></i>
                         <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
                         <span>Medium Priority</span>
@@ -1446,65 +1446,65 @@
                 if (app.type === "Hospital Assistance") {
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/HospitalAssistanceClaimStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceClaim/${app.formId}`;
                     }
                     // Check status2 for retake (second priority)
                     else if (app.status2 && app.status2.toLowerCase() === 'retake') {
-                        editUrl = `/HospitalAssistanceRetakeStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceRetake/${app.formId}`;
                     }
                     // Then check status2 for approved/disapproved/resubmitted
                     else if (app.status2 === "approve") {
-                        editUrl = `/HospitalAssistanceApproveStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        editUrl = `/HospitalAssistanceDisapproveStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceDisapprove/${app.formId}`;
                     } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
-                        editUrl = `/HospitalAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceProcessing/${app.formId}`;
                     }
                     // Then check original status
                     else if (app.status === "processing") {
-                        editUrl = `/HospitalAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistanceProcessing/${app.formId}`;
                     } else {
-                        editUrl = `/HospitalAssistancePendingStatus/${app.formId}`;
+                        editUrl = `/HospitalAssistancePending/${app.formId}`;
                     }
 
                 } else if (app.type === "Other Assistance") {
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/OtherAssistanceClaimStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceClaim/${app.formId}`;
                     }
                     else if (app.status2 && app.status2.toLowerCase() === 'retake') {
-                        editUrl = `/OtherAssistanceRetakeStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceRetake/${app.formId}`;
                     }
                     else if (app.status2 === "approve") {
-                        editUrl = `/OtherAssistanceApproveStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        editUrl = `/OtherAssistanceDisapproveStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceDisapprove/${app.formId}`;
                     } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
-                        editUrl = `/OtherAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceProcessing/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/OtherAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/OtherAssistanceProcessing/${app.formId}`;
                     } else {
-                        editUrl = `/OtherAssistancePendingStatus/${app.formId}`;
+                        editUrl = `/OtherAssistancePending/${app.formId}`;
                     }
 
                 } else if (app.type === "Funeral Assistance") {
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
-                        editUrl = `/FuneralAssistanceClaimStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceClaim/${app.formId}`;
                     }
                     else if (app.status2 && app.status2.toLowerCase() === 'retake') {
-                        editUrl = `/FuneralAssistanceRetakeStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceRetake/${app.formId}`;
                     }
                     else if (app.status2 === "approve") {
-                        editUrl = `/FuneralAssistanceApproveStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        editUrl = `/FuneralAssistanceDisapproveStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceDisapprove/${app.formId}`;
                     } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
-                        editUrl = `/FuneralAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceProcessing/${app.formId}`;
                     } else if (app.status === "processing") {
-                        editUrl = `/FuneralAssistanceProcessingStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistanceProcessing/${app.formId}`;
                     } else {
-                        editUrl = `/FuneralAssistancePendingStatus/${app.formId}`;
+                        editUrl = `/FuneralAssistancePending/${app.formId}`;
                     }
                 }
 

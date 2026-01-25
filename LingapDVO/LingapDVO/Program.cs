@@ -367,7 +367,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "route-delay",
-    pattern: "DelayedApplication",
+    pattern: "DelayedApplications",
     defaults: new { controller = "Adminuser", action = "Delay" });
 
 // Admin Hospital Status Routes

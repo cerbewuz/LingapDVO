@@ -350,16 +350,28 @@ namespace LingapDVO.Controllers
         }
 
         /// <summary>
-        /// Standard ID Scan - Scans ID document, extracts data, and matches face
+        /// Standard ID Scan - Document validation and face verification ONLY
+        ///
+        /// DATA EXTRACTION FLOW:
+        /// 1. ID Analyzer (this endpoint): Document type, ID number, face verification
+        /// 2. OCR.space (/api/IdAnalyzer/ocr): Personal data (names, DOB, gender, address, civil status)
+        ///
+        /// ID ANALYZER PROVIDES:
+        /// - Document type/name validation (only National ID, Driver's License, UMID accepted)
+        /// - Document number extraction
+        /// - Face verification (comparing selfie with ID photo)
+        ///
+        /// OCR.SPACE PROVIDES (via /api/IdAnalyzer/ocr):
+        /// - First name, middle name, last name, suffix
+        /// - Date of birth, gender, civil status
+        /// - Address
         ///
         /// PRIVACY FLOW:
         /// 1. Receive ID images and selfie from frontend as Base64
-        /// 2. Send to ID Analyzer API for verification and face matching
+        /// 2. Send to ID Analyzer API for document validation and face matching
         /// 3. ONLY if decision = "accept" → Save ID images ONLY (encrypted with AES-256)
         /// 4. Selfie/face image is NEVER saved - only used for API verification
         ///
-        /// This ensures verified ID documents are stored securely while
-        /// protecting user privacy by not retaining biometric face data.
         /// API Reference: https://developer.idanalyzer.com/reference/post-scan
         /// </summary>
         [HttpPost("scan")]
@@ -430,6 +442,9 @@ namespace LingapDVO.Controllers
                 var decision = (result.Decision ?? "").ToLower();
                 _logger.LogInformation("✅ API Decision: {Decision}", result.Decision ?? "UNKNOWN");
 
+                // Variable to hold OCR.space extracted data (only populated on "accept")
+                object? ocrExtractedData = null;
+
                 if (decision == "accept" && result.Success)
                 {
                     _logger.LogInformation("💾 Decision is 'accept' - Saving ID images to disk...");
@@ -476,6 +491,115 @@ namespace LingapDVO.Controllers
                         _logger.LogError(ex, "❌ Error saving ID images to disk");
                         // Continue execution - file save error should not fail the entire verification
                     }
+
+                    // ═══════════════════════════════════════════════════════════════
+                    // STEP 3.5: Extract personal data using OCR.space
+                    // Only triggered when ID Analyzer returns "accept" decision
+                    // OCR.space is the PRIMARY source for personal data extraction
+                    // ═══════════════════════════════════════════════════════════════
+                    _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                    _logger.LogInformation("📤 Decision is 'accept' - Calling OCR.space for personal data extraction...");
+                    _logger.LogInformation("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+                    try
+                    {
+                        // Call OCR.space to extract text from front and back ID images
+                        var ocrResult = await _ocrSpaceService.ExtractTextFromImagesAsync(documentBase64, backBase64);
+
+                        if (ocrResult.Success)
+                        {
+                            _logger.LogInformation("✅ OCR.space extraction successful");
+                            _logger.LogInformation("   Front text length: {Length} chars", ocrResult.FrontText?.Length ?? 0);
+                            _logger.LogInformation("   Back text length: {Length} chars", ocrResult.BackText?.Length ?? 0);
+
+                            // Detect ID type from document info or OCR text
+                            var idType = result.DocumentName ?? result.DocumentType ?? "";
+                            var detectedIdType = _ocrSpaceService.DetectIdTypeFromText(ocrResult.ExtractedText ?? "");
+                            if (string.IsNullOrEmpty(idType) && !string.IsNullOrEmpty(detectedIdType))
+                            {
+                                idType = detectedIdType;
+                            }
+
+                            // Parse the OCR text to extract structured personal data
+                            var extractedData = _ocrSpaceService.ParsePhilippineIdText(ocrResult.ExtractedText ?? "", idType);
+
+                            _logger.LogInformation("📋 OCR.space EXTRACTED DATA:");
+                            _logger.LogInformation("   - First Name: {FirstName}", extractedData.FirstName ?? "N/A");
+                            _logger.LogInformation("   - Last Name: {LastName}", extractedData.LastName ?? "N/A");
+                            _logger.LogInformation("   - Middle Name: {MiddleName}", extractedData.MiddleName ?? "N/A");
+                            _logger.LogInformation("   - Suffix: {Suffix}", extractedData.Suffix ?? "N/A");
+                            _logger.LogInformation("   - DOB: {DOB}", extractedData.DateOfBirth ?? "N/A");
+                            _logger.LogInformation("   - Gender: {Gender}", extractedData.Gender ?? "N/A");
+                            _logger.LogInformation("   - Civil Status: {CivilStatus}", extractedData.CivilStatus ?? "N/A");
+                            _logger.LogInformation("   - Address: {Address}", extractedData.Address ?? "N/A");
+
+                            // Store OCR extracted data for response
+                            ocrExtractedData = new
+                            {
+                                firstName = extractedData.FirstName,
+                                lastName = extractedData.LastName,
+                                middleName = extractedData.MiddleName,
+                                suffix = extractedData.Suffix,
+                                dateOfBirth = extractedData.DateOfBirth,
+                                sex = extractedData.Gender,
+                                civilStatus = extractedData.CivilStatus,
+                                address1 = extractedData.Address,
+                                // Include document info from ID Analyzer (authoritative source)
+                                documentNumber = result.DocumentNumber,
+                                documentType = result.DocumentType,
+                                documentName = result.DocumentName,
+                                // Include raw OCR text for frontend parsing if needed
+                                rawText = new
+                                {
+                                    front = ocrResult.FrontText,
+                                    back = ocrResult.BackText,
+                                    combined = ocrResult.ExtractedText
+                                }
+                            };
+                        }
+                        else
+                        {
+                            _logger.LogWarning("⚠️ OCR.space extraction failed: {Error}", ocrResult.ErrorMessage);
+                            // Fall back to ID Analyzer data if OCR.space fails
+                            ocrExtractedData = new
+                            {
+                                firstName = result.FirstName,
+                                lastName = result.LastName,
+                                middleName = result.MiddleName,
+                                suffix = result.Suffix,
+                                dateOfBirth = result.DateOfBirth,
+                                sex = result.Sex,
+                                civilStatus = result.CivilStatus,
+                                address1 = result.Address,
+                                address2 = result.Address2,
+                                documentNumber = result.DocumentNumber,
+                                documentType = result.DocumentType,
+                                documentName = result.DocumentName,
+                                fallbackSource = "ID Analyzer (OCR.space failed)"
+                            };
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "❌ Error calling OCR.space for data extraction");
+                        // Fall back to ID Analyzer data if OCR.space throws exception
+                        ocrExtractedData = new
+                        {
+                            firstName = result.FirstName,
+                            lastName = result.LastName,
+                            middleName = result.MiddleName,
+                            suffix = result.Suffix,
+                            dateOfBirth = result.DateOfBirth,
+                            sex = result.Sex,
+                            civilStatus = result.CivilStatus,
+                            address1 = result.Address,
+                            address2 = result.Address2,
+                            documentNumber = result.DocumentNumber,
+                            documentType = result.DocumentType,
+                            documentName = result.DocumentName,
+                            fallbackSource = "ID Analyzer (OCR.space error)"
+                        };
+                    }
                 }
                 else
                 {
@@ -494,6 +618,11 @@ namespace LingapDVO.Controllers
                     });
                 }
 
+                // ═══════════════════════════════════════════════════════════════
+                // RESPONSE: Combined ID Analyzer + OCR.space data
+                // - ID Analyzer: Document validation, face verification, decision
+                // - OCR.space: Personal data extraction (only on "accept" decision)
+                // ═══════════════════════════════════════════════════════════════
                 return Ok(new
                 {
                     success = true,
@@ -504,28 +633,11 @@ namespace LingapDVO.Controllers
                     rejectScore = result.RejectScore,
                     warnings = result.Warnings,
                     missingFields = result.MissingFields,
-                    data = new
+
+                    // Document validation data (ID Analyzer is authoritative for these)
+                    document = new
                     {
-                        // Personal Info (CRITICAL for name validation)
-                        firstName = result.FirstName,
-                        middleName = result.MiddleName,
-                        lastName = result.LastName,
-                        suffix = result.Suffix,
-                        fullName = result.FullName,
-                        sex = result.Sex,
-                        civilStatus = result.CivilStatus,  // From back ID (National ID only)
-                        dateOfBirth = result.DateOfBirth,
-                        age = result.Age,
-                        dobDay = result.DobDay,
-                        dobMonth = result.DobMonth,
-                        dobYear = result.DobYear,
-
-                        // Nationality
-                        nationality = result.Nationality,
-                        nationalityIso2 = result.NationalityIso2,
-                        nationalityIso3 = result.NationalityIso3,
-
-                        // Document Info
+                        // Document Type Validation (CRITICAL - only National ID, Driver's License, UMID accepted)
                         documentNumber = result.DocumentNumber,
                         documentType = result.DocumentType,
                         documentName = result.DocumentName,
@@ -534,36 +646,23 @@ namespace LingapDVO.Controllers
                         expiryDate = result.ExpiryDate,
                         internalId = result.InternalId,
                         backSideId = result.BackSideId,
-                        reverseId = result.ReverseId,
+                        reverseId = result.ReverseId
+                    },
 
-                        // Address (CRITICAL for Davao City validation)
-                        address1 = result.Address,
-                        address2 = result.Address2,
-                        address = fullAddress,
-                        city = result.City,
-                        state = result.State,
-                        postalCode = result.PostalCode,
-                        country = result.Country,
-                        countryIso2 = result.CountryIso2,
-                        countryIso3 = result.CountryIso3,
+                    // Personal data extracted by OCR.space (only populated on "accept" decision)
+                    // This is the PRIMARY source for form population and validation
+                    data = ocrExtractedData,
 
-                        // Verification
+                    // Face verification results (ID Analyzer handles biometric matching)
+                    faceVerification = new
+                    {
                         verificationPassed = result.VerificationPassed,
                         faceMatch = result.FaceMatch,
                         faceSimilarity = result.FaceSimilarity,
                         faceConfidence = result.FaceConfidence,
                         faceSimilarityPercentage = result.SimilarityPercentage
                     },
-                    validation = new
-                    {
-                        // Davao City Residence Validation
-                        isDavaoCityResident = result.IsDavaoCityResident,
-                        residenceValidationMessage = result.ResidenceValidationMessage,
 
-                        // Name Validation
-                        nameMatchesRegistration = result.NameMatchesRegistration,
-                        nameValidationMessage = result.NameValidationMessage
-                    },
                     outputImage = new
                     {
                         front = result.FrontImageHash,
@@ -573,7 +672,11 @@ namespace LingapDVO.Controllers
                     {
                         createdAt = result.CreatedAt,
                         updatedAt = result.UpdatedAt
-                    }
+                    },
+
+                    message = decision == "accept" 
+                        ? "Document validated and personal data extracted successfully via OCR.space."
+                        : "Document validation complete."
                 });
             }
             catch (Exception ex)
@@ -685,10 +788,21 @@ namespace LingapDVO.Controllers
         }
 
         /// <summary>
-        /// OCR.space API endpoint for extracting text from ID images
-        /// Called ONLY after ID Analyzer returns "accept" decision
-        /// This provides EXCLUSIVE OCR for data extraction using OCR.space
-        /// IMPORTANT: Only National ID, Driver's License, and UMID are accepted
+        /// OCR.space API endpoint - PRIMARY source for personal data extraction
+        ///
+        /// This endpoint extracts personal information from ID images:
+        /// - First name, middle name, last name, suffix
+        /// - Date of birth
+        /// - Gender
+        /// - Civil status (if available on ID)
+        /// - Address
+        ///
+        /// IMPORTANT: Only National ID, Driver's License, and UMID are accepted.
+        /// ID type validation is performed before extraction.
+        ///
+        /// USAGE FLOW:
+        /// 1. First call /api/IdAnalyzer/scan for document type validation and face verification
+        /// 2. If scan returns "accept", call this endpoint for personal data extraction
         /// </summary>
         [HttpPost("ocr")]
         public async Task<IActionResult> ExtractTextWithOcr([FromBody] OcrSpaceRequest request)
@@ -769,7 +883,7 @@ namespace LingapDVO.Controllers
                 var extractedData = _ocrSpaceService.ParsePhilippineIdText(ocrResult.ExtractedText ?? "", idType);
 
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
-                _logger.LogInformation("📋 EXTRACTED DATA (OCR.space EXCLUSIVE SOURCE):");
+                _logger.LogInformation("📋 EXTRACTED DATA (OCR.space PRIMARY SOURCE):");
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
                 _logger.LogInformation("   - ID Type: {IdType}", extractedData.IdType ?? idType);
                 _logger.LogInformation("   - ID Number: {IdNumber}", extractedData.IdNumber ?? "N/A");
@@ -779,6 +893,7 @@ namespace LingapDVO.Controllers
                 _logger.LogInformation("   - Suffix: {Suffix}", extractedData.Suffix ?? "N/A");
                 _logger.LogInformation("   - Gender: {Gender}", extractedData.Gender ?? "N/A");
                 _logger.LogInformation("   - Date of Birth: {DOB}", extractedData.DateOfBirth ?? "N/A");
+                _logger.LogInformation("   - Civil Status: {CivilStatus}", extractedData.CivilStatus ?? "N/A");
                 _logger.LogInformation("   - Address: {Address}", extractedData.Address ?? "N/A");
                 _logger.LogInformation("═══════════════════════════════════════════════════════════════");
 
@@ -802,6 +917,7 @@ namespace LingapDVO.Controllers
                         suffix = extractedData.Suffix,
                         gender = extractedData.Gender,
                         dateOfBirth = extractedData.DateOfBirth,
+                        civilStatus = extractedData.CivilStatus,
                         address = extractedData.Address,
                         city = extractedData.City,
                         barangay = extractedData.Barangay

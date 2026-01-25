@@ -412,6 +412,9 @@ namespace LingapDVO.Services
             // Extract Sex/Gender
             ExtractGender(lines, fullText, result);
 
+            // Extract Civil Status (commonly found on back of National ID)
+            ExtractCivilStatus(lines, fullText, result);
+
             // Extract Address
             ExtractAddress(lines, fullText, result);
 
@@ -453,6 +456,9 @@ namespace LingapDVO.Services
 
             // Extract Sex/Gender
             ExtractGender(lines, fullText, result);
+
+            // Extract Civil Status (if available)
+            ExtractCivilStatus(lines, fullText, result);
 
             // Extract Address
             ExtractAddress(lines, fullText, result);
@@ -496,6 +502,9 @@ namespace LingapDVO.Services
             // Extract Sex/Gender
             ExtractGender(lines, fullText, result);
 
+            // Extract Civil Status (if available)
+            ExtractCivilStatus(lines, fullText, result);
+
             // Extract Address
             ExtractAddress(lines, fullText, result);
 
@@ -531,6 +540,7 @@ namespace LingapDVO.Services
             ExtractNamesFromText(lines, fullText, result);
             ExtractDateOfBirth(lines, fullText, result);
             ExtractGender(lines, fullText, result);
+            ExtractCivilStatus(lines, fullText, result);
             ExtractAddress(lines, fullText, result);
 
             return result;
@@ -743,6 +753,52 @@ namespace LingapDVO.Services
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Extract civil status from OCR text
+        /// Common values: Single, Married, Widowed, Separated, Annulled
+        /// </summary>
+        private void ExtractCivilStatus(List<string> lines, string fullText, OcrExtractedData result)
+        {
+            var civilStatusPatterns = new[]
+            {
+                @"(?:CIVIL\s*STATUS|MARITAL\s*STATUS|STATUS|KALAGAYAN)[:\-\s]*(SINGLE|MARRIED|WIDOWED|WIDOW|SEPARATED|ANNULLED|DIVORCED)",
+                @"\b(SINGLE|MARRIED|WIDOWED|WIDOW|SEPARATED|ANNULLED|DIVORCED)\b"
+            };
+
+            foreach (var pattern in civilStatusPatterns)
+            {
+                var match = Regex.Match(fullText, pattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var status = match.Groups[1].Value.ToUpper().Trim();
+                    result.CivilStatus = NormalizeCivilStatus(status);
+                    _logger.LogDebug("Extracted Civil Status: {CivilStatus}", result.CivilStatus);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Normalize civil status value
+        /// </summary>
+        private string NormalizeCivilStatus(string status)
+        {
+            if (string.IsNullOrEmpty(status)) return "";
+
+            var upper = status.ToUpper().Trim();
+
+            return upper switch
+            {
+                "SINGLE" => "Single",
+                "MARRIED" => "Married",
+                "WIDOWED" or "WIDOW" => "Widowed",
+                "SEPARATED" => "Separated",
+                "ANNULLED" => "Annulled",
+                "DIVORCED" => "Divorced",
+                _ => status
+            };
         }
 
         /// <summary>
@@ -964,6 +1020,7 @@ namespace LingapDVO.Services
         public string? Suffix { get; set; }
         public string? Gender { get; set; }
         public string? DateOfBirth { get; set; }
+        public string? CivilStatus { get; set; }
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Barangay { get; set; }

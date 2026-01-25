@@ -41,6 +41,8 @@
   <ItemGroup>
     <Folder Include="wwwroot\HospitalAssistanceFileStorage\" />
     <Folder Include="wwwroot\FuneralAssistanceFileStorage\" />
+    <Folder Include="wwwroot\Disclaimer\" />
+    <Folder Include="wwwroot\NewFolder\" />
     <Folder Include="wwwroot\OtherAssistanceFileStorage\" />
     <Folder Include="wwwroot\Validimg\" />
     <Folder Include="wwwroot\UsersImg\" />

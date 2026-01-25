@@ -39,7 +39,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/Icon/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#DC143C">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="LingapDVO">
 
@@ -56,7 +56,7 @@
     <link rel="preload" href="/css/landingpage.css?v=20251201" as="style" fetchpriority="high">
     <link rel="preload" href="/images/helping.webp" as="image" type="image/webp" fetchpriority="high">
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" as="style">
-    <link rel="preload" href="/js/landingpage.js?v=20251201" as="script">
+    <link rel="preload" href="/js/landingpage.js?v=20260125" as="script">
 
     <!-- Critical CSS - Inline for fastest initial render -->
     <style>
@@ -115,6 +115,356 @@
     <div class="loading-screen" id="loadingScreen" role="status" aria-label="Loading">
         <div class="loader" aria-hidden="true"></div>
     </div>
+
+    <!-- Introduction Modal - Capstone Project Disclaimer -->
+    <div class="modal fade" id="introductionModal" tabindex="-1" aria-labelledby="introductionModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered intro-modal-dialog">
+            <div class="modal-content border-0 overflow-hidden intro-modal-content">
+                <!-- Header -->
+                <div class="modal-header border-0 text-white intro-modal-header">
+                    <h6 class="modal-title fw-bold mb-0" id="introductionModalLabel">Important Notice</h6>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body intro-modal-body">
+                    <p class="intro-text-main">
+                        This system is <strong class="text-danger">NOT an official website of Lingap Para sa Mahirap</strong>.
+                        It is a <strong>Capstone Project</strong> developed by
+                        <strong>Renvic Emenido</strong>, <strong>Jetlance Arabaca</strong>, and <strong>Shean Española</strong>,
+                        4th Year BSIT students from <strong>The University of Mindanao</strong>.
+                    </p>
+                    <p class="intro-text-sub">
+                        Please do not use this for actual government transactions.
+                    </p>
+
+                    <!-- Proof Images Grid Collage -->
+                    <div class="intro-grid-collage" id="introGridCollage">
+                        <div class="intro-grid-item" data-intro-index="0">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic1.jpg" alt="Proof 1" class="intro-grid-image" loading="lazy">
+                        </div>
+                        <div class="intro-grid-item" data-intro-index="1">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic2.jpg" alt="Proof 2" class="intro-grid-image" loading="lazy">
+                        </div>
+                        <div class="intro-grid-item" data-intro-index="2">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic3.jpg" alt="Proof 3" class="intro-grid-image" loading="lazy">
+                        </div>
+                        <div class="intro-grid-item intro-grid-more" data-intro-index="3">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic4.jpg" alt="Proof 4" class="intro-grid-image" loading="lazy">
+                            <div class="intro-more-overlay" id="introMoreOverlay">
+                                <span class="intro-more-count">+2</span>
+                            </div>
+                        </div>
+                        <!-- Hidden Images -->
+                        <div class="intro-grid-item intro-hidden" data-intro-index="4" style="display: none;">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic5.jpg" alt="Proof 5" class="intro-grid-image" loading="lazy">
+                        </div>
+                        <div class="intro-grid-item intro-hidden" data-intro-index="5" style="display: none;">
+                            <img src="/Dashboard/GetDisclaimerImage?imageName=meetingpic6.jpg" alt="Proof 6" class="intro-grid-image" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-0 intro-modal-footer">
+                    <button type="button" class="btn w-100 text-white fw-semibold intro-btn" data-bs-dismiss="modal">
+                        I Understand
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Introduction Modal Styles -->
+    <style>
+        /* Modal Container */
+        .intro-modal-dialog {
+            max-width: 480px;
+            margin: 0.5rem;
+        }
+
+        .intro-modal-content {
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+            animation: introSlideIn 0.25s ease-out;
+        }
+
+        @@keyframes introSlideIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Header */
+        .intro-modal-header {
+            background: linear-gradient(135deg, #DC143C 0%, #B22222 100%);
+            padding: 0.75rem 1rem;
+        }
+
+        .intro-modal-header .modal-title {
+            font-size: 0.9rem;
+        }
+
+        /* Body */
+        .intro-modal-body {
+            padding: 1rem;
+        }
+
+        .intro-text-main {
+            color: #4a5568;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .intro-text-sub {
+            color: #718096;
+            font-size: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Grid Collage */
+        .intro-grid-collage {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .intro-grid-item {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            background: #f0f0f0;
+            border-radius: 4px;
+            aspect-ratio: 4/3;
+        }
+
+        .intro-grid-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+
+        .intro-grid-item:hover .intro-grid-image {
+            transform: scale(1.05);
+        }
+
+        .intro-grid-more {
+            position: relative;
+        }
+
+        .intro-more-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .intro-more-overlay:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .intro-more-count {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .intro-modal-footer {
+            padding: 0 1rem 1rem;
+        }
+
+        .intro-btn {
+            background: linear-gradient(135deg, #DC143C 0%, #B22222 100%);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .intro-btn:hover {
+            background: linear-gradient(135deg, #B22222 0%, #8B0000 100%);
+            transform: translateY(-1px);
+        }
+
+        /* Image Viewer */
+        .intro-image-viewer {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .intro-image-viewer.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .intro-viewer-content {
+            position: relative;
+            max-width: 92vw;
+            max-height: 92vh;
+        }
+
+        .intro-viewer-image {
+            max-width: 90vw;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .intro-viewer-close {
+            position: absolute;
+            top: -36px;
+            right: 0;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .intro-viewer-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .intro-viewer-prev { left: -50px; }
+        .intro-viewer-next { right: -50px; }
+
+        .intro-viewer-counter {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+        }
+
+        /* Tablet */
+        @@media (min-width: 576px) {
+            .intro-modal-dialog {
+                max-width: 420px;
+                margin: 1rem auto;
+            }
+        }
+
+        /* Mobile - Extra Small */
+        @@media (max-width: 400px) {
+            .intro-modal-dialog {
+                max-width: 100%;
+                margin: 0.25rem;
+            }
+
+            .intro-modal-header {
+                padding: 0.6rem 0.75rem;
+            }
+
+            .intro-modal-header .modal-title {
+                font-size: 0.85rem;
+            }
+
+            .intro-modal-body {
+                padding: 0.75rem;
+            }
+
+            .intro-text-main {
+                font-size: 0.75rem;
+                line-height: 1.5;
+            }
+
+            .intro-text-sub {
+                font-size: 0.7rem;
+            }
+
+            .intro-grid-collage {
+                gap: 3px;
+            }
+
+            .intro-grid-item {
+                aspect-ratio: 1;
+            }
+
+            .intro-more-count {
+                font-size: 0.95rem;
+            }
+
+            .intro-modal-footer {
+                padding: 0 0.75rem 0.75rem;
+            }
+
+            .intro-btn {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .intro-viewer-prev { left: 8px; }
+            .intro-viewer-next { right: 8px; }
+            .intro-viewer-nav {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        /* Landscape Mobile */
+        @@media (max-height: 500px) and (orientation: landscape) {
+            .intro-modal-dialog {
+                max-width: 380px;
+            }
+
+            .intro-modal-body {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .intro-text-main {
+                font-size: 0.7rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .intro-text-sub {
+                font-size: 0.65rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .intro-grid-item {
+                aspect-ratio: 16/9;
+            }
+
+            .intro-modal-footer {
+                padding: 0.5rem 0.75rem;
+            }
+        }
+    </style>
 
     <!-- Modern Navbar -->
     <nav class="modern-navbar" id="navbar" role="navigation" aria-label="Main navigation">
@@ -399,6 +749,23 @@
         </div>
     </section>
 
+    <!-- Intro Image Viewer Modal -->
+    <div class="intro-image-viewer" id="introImageViewer" role="dialog" aria-modal="true" aria-label="Proof images viewer">
+        <div class="intro-viewer-content">
+            <button class="intro-viewer-close" id="introViewerClose" aria-label="Close viewer">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="intro-viewer-nav intro-viewer-prev" id="introViewerPrev" aria-label="Previous image">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="intro-viewer-nav intro-viewer-next" id="introViewerNext" aria-label="Next image">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <img src="" alt="Proof image" class="intro-viewer-image" id="introViewerImage">
+            <div class="intro-viewer-counter" id="introViewerCounter">1 / 11</div>
+        </div>
+    </div>
+
     <!-- Image Modal -->
     <div class="image-modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Image viewer">
         <div class="modal-content-wrapper">
@@ -447,8 +814,11 @@
     </footer>
 
     <!-- Scripts - Async loading for non-critical scripts -->
-    <script src="js/landingpage.js?v=20251201" defer></script>
-    <script src="js/bootstrap.min.js?v=20251201" defer async></script>
+    <script src="js/landingpage.js?v=20260125" defer></script>
+    <!-- Bootstrap 5 Bundle (includes Popper) - No jQuery required -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <!-- Unified Modal System -->
+    <script src="~/js/unified-modals.js" defer></script>
 
     <!-- Service Worker Registration - Inline for immediate execution -->
     <script>
@@ -459,6 +829,184 @@
                     .catch(function(err) {  });
             });
         }
+    </script>
+
+    <!-- Introduction Modal Auto-Show Script -->
+    <script>
+        (function() {
+            var introModalShown = false;
+
+            // Function to show the introduction modal
+            function showIntroductionModal() {
+                if (introModalShown) return;
+
+                var introModal = document.getElementById('introductionModal');
+                if (!introModal) return;
+
+                // Check if Bootstrap is available
+                if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
+                    // Bootstrap not loaded yet, retry
+                    setTimeout(showIntroductionModal, 200);
+                    return;
+                }
+
+                try {
+                    introModalShown = true;
+                    var bsModal = new bootstrap.Modal(introModal, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    bsModal.show();
+                } catch (e) {
+                    console.error('Error showing intro modal:', e);
+                    introModalShown = false;
+                    setTimeout(showIntroductionModal, 300);
+                }
+            }
+
+            // Wait for everything to load
+            window.addEventListener('load', function() {
+                var loadingScreen = document.getElementById('loadingScreen');
+
+                // If loading screen exists, wait for it to hide
+                if (loadingScreen && !loadingScreen.classList.contains('hide')) {
+                    // Watch for loading screen to hide
+                    var checkInterval = setInterval(function() {
+                        if (loadingScreen.classList.contains('hide') || loadingScreen.style.display === 'none' || loadingScreen.style.visibility === 'hidden') {
+                            clearInterval(checkInterval);
+                            setTimeout(showIntroductionModal, 300);
+                        }
+                    }, 100);
+
+                    // Fallback: Show after 4 seconds regardless
+                    setTimeout(function() {
+                        clearInterval(checkInterval);
+                        showIntroductionModal();
+                    }, 4000);
+                } else {
+                    // No loading screen or already hidden
+                    setTimeout(showIntroductionModal, 500);
+                }
+            });
+
+            // Additional fallback using DOMContentLoaded + delay
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    if (!introModalShown) {
+                        showIntroductionModal();
+                    }
+                }, 2500);
+            });
+        })();
+    </script>
+
+    <!-- Intro Grid Image Viewer Script -->
+    <script>
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var viewer = document.getElementById('introImageViewer');
+                var viewerImage = document.getElementById('introViewerImage');
+                var viewerCounter = document.getElementById('introViewerCounter');
+                var closeBtn = document.getElementById('introViewerClose');
+                var prevBtn = document.getElementById('introViewerPrev');
+                var nextBtn = document.getElementById('introViewerNext');
+
+                // Collect all proof images
+                var proofImages = [];
+                var gridItems = document.querySelectorAll('.intro-grid-item[data-intro-index]');
+                gridItems.forEach(function(item) {
+                    var img = item.querySelector('img');
+                    if (img) {
+                        proofImages.push({
+                            src: img.src,
+                            alt: img.alt
+                        });
+                    }
+                });
+
+                var currentIndex = 0;
+                var totalImages = proofImages.length;
+
+                // Update +N count based on actual number of images
+                var moreOverlay = document.getElementById('introMoreOverlay');
+                if (moreOverlay && totalImages > 4) {
+                    var moreCount = moreOverlay.querySelector('.intro-more-count');
+                    if (moreCount) {
+                        moreCount.textContent = '+' + (totalImages - 4);
+                    }
+                }
+
+                function showImage(index) {
+                    if (index < 0) index = totalImages - 1;
+                    if (index >= totalImages) index = 0;
+                    currentIndex = index;
+
+                    viewerImage.src = proofImages[currentIndex].src;
+                    viewerImage.alt = proofImages[currentIndex].alt;
+                    viewerCounter.textContent = (currentIndex + 1) + ' / ' + totalImages;
+                }
+
+                function openViewer(index) {
+                    showImage(index);
+                    viewer.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeViewer() {
+                    viewer.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+
+                // Click handlers for grid items
+                gridItems.forEach(function(item) {
+                    if (!item.classList.contains('intro-hidden')) {
+                        item.addEventListener('click', function() {
+                            var index = parseInt(this.getAttribute('data-intro-index'), 10);
+                            openViewer(index);
+                        });
+                    }
+                });
+
+                // Navigation
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeViewer);
+                }
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        showImage(currentIndex - 1);
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        showImage(currentIndex + 1);
+                    });
+                }
+
+                // Close on backdrop click
+                viewer.addEventListener('click', function(e) {
+                    if (e.target === viewer) {
+                        closeViewer();
+                    }
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', function(e) {
+                    if (!viewer.classList.contains('active')) return;
+
+                    if (e.key === 'Escape') {
+                        closeViewer();
+                    } else if (e.key === 'ArrowLeft') {
+                        showImage(currentIndex - 1);
+                    } else if (e.key === 'ArrowRight') {
+                        showImage(currentIndex + 1);
+                    }
+                });
+            });
+        })();
     </script>
 </body>
 </html>

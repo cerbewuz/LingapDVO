@@ -61,6 +61,192 @@ namespace LingapDVO.Controllers
             return View();
         }
 
+        // Cache for disclaimer image filename mappings (original -> encrypted filename)
+        private static Dictionary<string, string>? _disclaimerFileCache;
+        private static readonly object _cacheLock = new object();
+
+        /// <summary>
+        /// Serves decrypted disclaimer images for the introduction modal.
+        /// Images are stored with encrypted filenames and content using AES-256.
+        /// </summary>
+        [HttpGet]
+        public IActionResult GetDisclaimerImage(string imageName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageName))
+                {
+                    return BadRequest("Image name is required");
+                }
+
+                // Security: Prevent directory traversal
+                string safeImageName = Path.GetFileName(imageName);
+
+                string encryptedFolder = Path.Combine(environment.WebRootPath, "Disclaimer", "Encrypted");
+
+                // Build or retrieve filename cache
+                var fileCache = GetDisclaimerFileCache(encryptedFolder);
+
+                // Find the encrypted filename for the requested image
+                if (!fileCache.TryGetValue(safeImageName, out string? encryptedFileName))
+                {
+                    return NotFound("Image not found");
+                }
+
+                string encryptedFilePath = Path.Combine(encryptedFolder, encryptedFileName + ".enc");
+
+                if (!System.IO.File.Exists(encryptedFilePath))
+                {
+                    // Clear cache and try again
+                    lock (_cacheLock) { _disclaimerFileCache = null; }
+                    return NotFound("Image not found");
+                }
+
+                // Read encrypted bytes
+                byte[] encryptedBytes = System.IO.File.ReadAllBytes(encryptedFilePath);
+
+                // Decrypt content using AES-256
+                byte[] decryptedBytes = _aesEncryptionService.DecryptFile(encryptedBytes);
+
+                // Determine MIME type from original filename
+                string mimeType = GetImageMimeType(safeImageName);
+
+                // Set cache headers for performance
+                Response.Headers["Cache-Control"] = "private, max-age=3600";
+
+                return File(decryptedBytes, mimeType);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error serving disclaimer image: {ex.Message}");
+                return StatusCode(500, "Error loading image");
+            }
+        }
+
+        /// <summary>
+        /// Builds a cache mapping original filenames to encrypted filenames
+        /// </summary>
+        private Dictionary<string, string> GetDisclaimerFileCache(string encryptedFolder)
+        {
+            lock (_cacheLock)
+            {
+                if (_disclaimerFileCache != null)
+                    return _disclaimerFileCache;
+
+                _disclaimerFileCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                if (!Directory.Exists(encryptedFolder))
+                    return _disclaimerFileCache;
+
+                foreach (var file in Directory.GetFiles(encryptedFolder, "*.enc"))
+                {
+                    try
+                    {
+                        // Get encrypted filename without .enc extension
+                        string encryptedFileName = Path.GetFileNameWithoutExtension(file);
+
+                        // Decrypt to get original filename
+                        string originalFileName = _aesEncryptionService.DecryptFilename(encryptedFileName);
+
+                        _disclaimerFileCache[originalFileName] = encryptedFileName;
+                    }
+                    catch
+                    {
+                        // Skip files that can't be decrypted
+                    }
+                }
+
+                return _disclaimerFileCache;
+            }
+        }
+
+        /// <summary>
+        /// Helper method to get MIME type from image filename
+        /// </summary>
+        private string GetImageMimeType(string fileName)
+        {
+            string extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".webp" => "image/webp",
+                _ => "image/jpeg"
+            };
+        }
+
+        /// <summary>
+        /// Admin endpoint to encrypt disclaimer images.
+        /// Encrypts both content and filenames using AES-256.
+        /// Call this once to encrypt all images in the Disclaimer folder.
+        /// </summary>
+        [HttpPost]
+        public IActionResult EncryptDisclaimerImages()
+        {
+            try
+            {
+                // Only allow admins
+                var adminFullname = HttpContext.Session.GetString("AdminFullname");
+                if (string.IsNullOrEmpty(adminFullname))
+                {
+                    return Unauthorized("Admin access required");
+                }
+
+                string sourceFolder = Path.Combine(environment.WebRootPath, "Disclaimer");
+                string encryptedFolder = Path.Combine(sourceFolder, "Encrypted");
+
+                // Create encrypted folder if it doesn't exist
+                if (!Directory.Exists(encryptedFolder))
+                {
+                    Directory.CreateDirectory(encryptedFolder);
+                }
+
+                var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+                var encryptedFiles = new List<object>();
+
+                foreach (var file in Directory.GetFiles(sourceFolder))
+                {
+                    string ext = Path.GetExtension(file).ToLowerInvariant();
+                    if (imageExtensions.Contains(ext))
+                    {
+                        string originalFileName = Path.GetFileName(file);
+
+                        // Encrypt filename using AES-256
+                        string encryptedFileName = _aesEncryptionService.EncryptFilename(originalFileName);
+                        string encryptedPath = Path.Combine(encryptedFolder, encryptedFileName + ".enc");
+
+                        // Read original image
+                        byte[] originalBytes = System.IO.File.ReadAllBytes(file);
+
+                        // Encrypt content using AES-256
+                        using var inputStream = new MemoryStream(originalBytes);
+                        byte[] encryptedBytes = _aesEncryptionService.EncryptStream(inputStream);
+
+                        // Save encrypted file with encrypted filename
+                        System.IO.File.WriteAllBytes(encryptedPath, encryptedBytes);
+
+                        encryptedFiles.Add(new { original = originalFileName, encrypted = encryptedFileName });
+                    }
+                }
+
+                // Clear the filename cache so it rebuilds on next request
+                lock (_cacheLock) { _disclaimerFileCache = null; }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Encrypted {encryptedFiles.Count} images (content + filenames)",
+                    files = encryptedFiles
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error encrypting disclaimer images: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         public IActionResult Listofpartners()
         {
             return View();
