@@ -1317,7 +1317,7 @@ namespace LingapDVO.Controllers
                         userFullName,
                         "New Hospital Assistance Application",
                         $"{userFullName} submitted a new Hospital Assistance application.",
-                        $"/HospitalAssistancePendingStatus/{HospitalAssistance.Id}"
+                        $"/HospitalAssistancePending/{HospitalAssistance.Id}"
                     );
                 }
                 catch (Exception ex)
@@ -1766,7 +1766,7 @@ namespace LingapDVO.Controllers
                             userFullName,
                             "[PRIORITY] Retake Resubmitted - Hospital Assistance",
                             $"{userFullName} resubmitted their retake application for Hospital Assistance. PRIORITY: Ready for immediate review.",
-                            $"/HospitalAssistanceProcessingStatus/{existing.Id}"
+                            $"/HospitalAssistanceProcessing/{existing.Id}"
                         );
                     }
                     catch (Exception ex)
@@ -2112,7 +2112,7 @@ namespace LingapDVO.Controllers
                         userFullName,
                         "New Other Assistance Application",
                         $"{userFullName} submitted a new Other Assistance application.",
-                        $"/OtherAssistancePendingStatus/{OtherAssistance.Id}"
+                        $"/OtherAssistancePending/{OtherAssistance.Id}"
                     );
                 }
                 catch (Exception ex)
@@ -2658,7 +2658,7 @@ namespace LingapDVO.Controllers
                             userFullName,
                             "[PRIORITY] Retake Resubmitted - Other Assistance",
                             $"{userFullName} resubmitted their retake application for Other Assistance. PRIORITY: Ready for immediate review.",
-                            $"/OtherAssistanceProcessingStatus/{existing.Id}"
+                            $"/OtherAssistanceProcessing/{existing.Id}"
                         );
                     }
                     catch (Exception ex)
@@ -3048,7 +3048,7 @@ namespace LingapDVO.Controllers
                         userFullName,
                         "New Funeral Assistance Application",
                         $"{userFullName} submitted a new Funeral Assistance application.",
-                        $"/FuneralAssistancePendingStatus/{FuneralAssistance.Id}"
+                        $"/FuneralAssistancePending/{FuneralAssistance.Id}"
                     );
                 }
                 catch (Exception ex)
@@ -3513,7 +3513,7 @@ namespace LingapDVO.Controllers
                             userFullName,
                             "[PRIORITY] Retake Resubmitted - Funeral Assistance",
                             $"{userFullName} resubmitted their retake application for Funeral Assistance. PRIORITY: Ready for immediate review.",
-                            $"/FuneralAssistanceProcessingStatus/{existing.Id}"
+                            $"/FuneralAssistanceProcessing/{existing.Id}"
                         );
                     }
                     catch (Exception ex)
@@ -4142,6 +4142,10 @@ namespace LingapDVO.Controllers
             {
                 currentStatusBadge = "status-retake-badge";
             }
+            else if (HospitalAssistance.Status == "Processing")
+            {
+                currentStatusBadge = "status-processing-badge";
+            }
             else
             {
                 currentStatusBadge = "status-pending-badge";
@@ -4152,7 +4156,9 @@ namespace LingapDVO.Controllers
                 ? "CLAIMED"
                 : !string.IsNullOrEmpty(HospitalAssistance.Status2)
                     ? HospitalAssistance.Status2.ToUpper()
-                    : "PENDING";
+                    : HospitalAssistance.Status == "Processing"
+                        ? "PROCESSING"
+                        : "PENDING";
 
             // For timeline display
             ViewData["HasProcessing"] = HospitalAssistance.ProcessAt > DateTime.MinValue &&
@@ -4444,6 +4450,10 @@ namespace LingapDVO.Controllers
             {
                 currentStatusBadge = "status-retake-badge";
             }
+            else if (FuneralAssistance.Status == "Processing")
+            {
+                currentStatusBadge = "status-processing-badge";
+            }
             else
             {
                 currentStatusBadge = "status-pending-badge";
@@ -4454,7 +4464,9 @@ namespace LingapDVO.Controllers
                 ? "CLAIMED"
                 : !string.IsNullOrEmpty(FuneralAssistance.Status2)
                     ? FuneralAssistance.Status2.ToUpper()
-                    : "PENDING";
+                    : FuneralAssistance.Status == "Processing"
+                        ? "PROCESSING"
+                        : "PENDING";
 
             // For timeline display
             ViewData["HasProcessing"] = FuneralAssistance.ProcessAt > DateTime.MinValue &&
@@ -4824,6 +4836,10 @@ namespace LingapDVO.Controllers
             {
                 currentStatusBadge = "status-retake-badge";
             }
+            else if (medicallabform.Status == "Processing")
+            {
+                currentStatusBadge = "status-processing-badge";
+            }
             else
             {
                 currentStatusBadge = "status-pending-badge";
@@ -4834,7 +4850,9 @@ namespace LingapDVO.Controllers
                 ? "CLAIMED"
                 : !string.IsNullOrEmpty(medicallabform.Status2)
                     ? medicallabform.Status2.ToUpper()
-                    : "PENDING";
+                    : medicallabform.Status == "Processing"
+                        ? "PROCESSING"
+                        : "PENDING";
 
             // For timeline display
             ViewData["HasProcessing"] = medicallabform.ProcessAt > DateTime.MinValue &&

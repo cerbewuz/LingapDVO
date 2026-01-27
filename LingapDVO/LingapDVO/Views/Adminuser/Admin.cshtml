@@ -668,18 +668,18 @@
             <!-- Header -->
             <div class="header">
                 <div class="page-title">
-                    <h1>Application Dashboard</h1>
+                    <h1>All Applications</h1>
                 </div>
                 <div class="priority-alerts">
                     <a href="/DelayedApplications?filter=high" class="priority-alert-box high">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <span class="count" id="high-priority-count">@(ViewBag.HighPriorityCount ?? 0)</span>
-                        <span>High Priority</span>
+                        <span>High Delay</span>
                     </a>
                     <a href="/DelayedApplications?filter=medium" class="priority-alert-box medium">
                         <i class="bi bi-exclamation-circle-fill"></i>
                         <span class="count" id="medium-priority-count">@(ViewBag.MediumPriorityCount ?? 0)</span>
-                        <span>Medium Priority</span>
+                        <span>Medium Delay</span>
                     </a>
                 </div>
             </div>

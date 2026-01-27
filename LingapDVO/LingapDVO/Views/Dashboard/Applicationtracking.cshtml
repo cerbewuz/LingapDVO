@@ -1156,11 +1156,19 @@
                     </div>
                     <div class="text-center" style="min-width: 90px;">
                         <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
-                            @(Model.HospitalAssistance.Count(a => string.IsNullOrEmpty(a.Status2) || a.Status2.ToLower() == "pending") +
-                                                        Model.OtherAssistance.Count(a => string.IsNullOrEmpty(a.Status2) || a.Status2.ToLower() == "pending") +
-                                                        Model.FuneralAssistance.Count(a => string.IsNullOrEmpty(a.Status2) || a.Status2.ToLower() == "pending"))
+                            @(Model.HospitalAssistance.Count(a => string.IsNullOrEmpty(a.Status2) && string.IsNullOrEmpty(a.Status)) +
+                                                        Model.OtherAssistance.Count(a => string.IsNullOrEmpty(a.Status2) && string.IsNullOrEmpty(a.Status)) +
+                                                        Model.FuneralAssistance.Count(a => string.IsNullOrEmpty(a.Status2) && string.IsNullOrEmpty(a.Status)))
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Pending</div>
+                    </div>
+                    <div class="text-center" style="min-width: 90px;">
+                        <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
+                            @(Model.HospitalAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
+                                                        Model.OtherAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
+                                                        Model.FuneralAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)))
+                        </div>
+                        <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Processing</div>
                     </div>
                 </div>
             </div>
@@ -1223,7 +1231,7 @@
                     Type = "Hospital",
                     TypeDisplay = "Hospital Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -1239,7 +1247,7 @@
                     Type = "Hospital",
                     TypeDisplay = "Hospital Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -1257,7 +1265,7 @@
                     Type = "Medical",
                     TypeDisplay = "Medical/Other Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -1273,7 +1281,7 @@
                     Type = "Medical",
                     TypeDisplay = "Medical/Other Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -1291,7 +1299,7 @@
                     Type = "Funeral",
                     TypeDisplay = "Funeral Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -1307,7 +1315,7 @@
                     Type = "Funeral",
                     TypeDisplay = "Funeral Assistance",
                     Name = $"{app.Lastname}, {app.Firstname} {app.Middlename}",
-                    Status = string.IsNullOrEmpty(app.Status2) ? "Pending" : app.Status2,
+                    Status = !string.IsNullOrEmpty(app.Status2) ? app.Status2 : (!string.IsNullOrEmpty(app.Status) ? app.Status : "Pending"),
                     ClaimStatus = app.Status3,
                     SubmittedDate = app.CreatedAt,
                     ProcessedDate = app.ProcessAt,
@@ -2521,7 +2529,7 @@
                         id: @f.Id,
                         type: "Hospital Assistance",
                         name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
                         claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
                         submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
                         processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
@@ -2537,7 +2545,7 @@
                         id: @f.Id,
                         type: "Medical Procedure",
                         name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
                         claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
                         submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
                         processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
@@ -2553,7 +2561,7 @@
                         id: @f.Id,
                         type: "Funeral Assistance",
                         name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(string.IsNullOrEmpty(f.Status2) ? "Pending" : f.Status2)",
+                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
                         claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
                         submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
                         processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",

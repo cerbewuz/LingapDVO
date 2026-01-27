@@ -128,7 +128,7 @@
             : '<i class="bi bi-clock-history text-warning"></i>';
 
         const title = data.priority === 'high'
-            ? 'Application Delayed - High Priority'
+            ? 'Application Delayed - High Delay'
             : 'Processing Update';
 
         const alertHtml = `

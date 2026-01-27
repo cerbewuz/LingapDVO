@@ -719,39 +719,39 @@
             function getApplicationUrl(app) {
                 if (app.formType === "hospital") {
                     if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                        return `/HospitalAssistanceClaimStatus/${app.formId}`;
+                        return `/HospitalAssistanceClaim/${app.formId}`;
                     } else if (app.status2 === "approve") {
-                        return `/HospitalAssistanceApproveStatus/${app.formId}`;
+                        return `/HospitalAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        return `/HospitalAssistanceDisapproveStatus/${app.formId}`;
+                        return `/HospitalAssistanceDisapprove/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/HospitalAssistanceProcessingStatus/${app.formId}`;
+                        return `/HospitalAssistanceProcessing/${app.formId}`;
                     } else {
-                        return `/HospitalAssistancePendingStatus/${app.formId}`;
+                        return `/HospitalAssistancePending/${app.formId}`;
                     }
                 } else if (app.formType === "medical") {
                     if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                        return `/OtherAssistanceClaimStatus/${app.formId}`;
+                        return `/OtherAssistanceClaim/${app.formId}`;
                     } else if (app.status2 === "approve") {
-                        return `/OtherAssistanceApproveStatus/${app.formId}`;
+                        return `/OtherAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        return `/OtherAssistanceDisapproveStatus/${app.formId}`;
+                        return `/OtherAssistanceDisapprove/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/OtherAssistanceProcessingStatus/${app.formId}`;
+                        return `/OtherAssistanceProcessing/${app.formId}`;
                     } else {
-                        return `/OtherAssistancePendingStatus/${app.formId}`;
+                        return `/OtherAssistancePending/${app.formId}`;
                     }
                 } else if (app.formType === "funeral") {
                     if (app.status3 && (app.status3.toLowerCase() === 'claims' || app.status3.toLowerCase() === 'claimed')) {
-                        return `/FuneralAssistanceClaimStatus/${app.formId}`;
+                        return `/FuneralAssistanceClaim/${app.formId}`;
                     } else if (app.status2 === "approve") {
-                        return `/FuneralAssistanceApproveStatus/${app.formId}`;
+                        return `/FuneralAssistanceApprove/${app.formId}`;
                     } else if (app.status2 === "disapprove") {
-                        return `/FuneralAssistanceDisapproveStatus/${app.formId}`;
+                        return `/FuneralAssistanceDisapprove/${app.formId}`;
                     } else if (app.status === "processing") {
-                        return `/FuneralAssistanceProcessingStatus/${app.formId}`;
+                        return `/FuneralAssistanceProcessing/${app.formId}`;
                     } else {
-                        return `/FuneralAssistancePendingStatus/${app.formId}`;
+                        return `/FuneralAssistancePending/${app.formId}`;
                     }
                 }
                 return '#';

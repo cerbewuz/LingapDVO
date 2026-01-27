@@ -166,6 +166,15 @@
             display: none;
         }
 
+        .img-preview-inside {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            border-radius: 5px;
+            object-fit: contain;
+        }
+
         .upload-box {
             border: 2px dashed #ddd;
             border-radius: 8px;
@@ -848,18 +857,19 @@
 
     <div class="mb-3">
         <label class="">Other Assistance Document</label>
-        <div class="upload-box" onclick="document.getElementById('otherDocument').click()">
-            <div class="upload-icon">
-                <i class="bi bi-card-image"></i>
+        <div class="upload-box" id="otherDocumentUploadBox" onclick="document.getElementById('otherDocument').click()">
+            <div class="upload-placeholder" id="otherDocumentPlaceholder">
+                <div class="upload-icon">
+                    <i class="bi bi-card-image"></i>
+                </div>
+                <p>Click to upload document</p>
+                <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
             </div>
-            <p>Click to upload document</p>
-            <p>Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
+            <img id="otherDocumentPreview" class="img-preview-inside" alt="Other Assistance Document Preview" style="display: none;">
         </div>
         <input asp-for="OtherAssistanceDocument" type="file" id="otherDocument" class="d-none"
-               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImage(this, 'otherDocumentPreview')">
+               accept=".png,.jpg,.jpeg,.pdf" onchange="previewImageInBox(this, 'otherDocumentPreview', 'otherDocumentPlaceholder')">
         <span asp-validation-for="OtherAssistanceDocument" class="text-danger"></span>
-
-        <img id="otherDocumentPreview" class="img-preview mt-2" alt="Other Assistance Document Preview">
         <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
     </div>
 
@@ -1613,6 +1623,30 @@
                     uploadBox.querySelector('p:first-of-type').textContent = file.name;
                     uploadBox.style.borderColor = "var(--primary-color)";
                     uploadBox.style.backgroundColor = "var(--primary-light)";
+                }
+            }
+        }
+
+        // File Upload and Preview Inside Box
+        function previewImageInBox(input, previewId, placeholderId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            const placeholder = document.getElementById(placeholderId);
+
+            if (file) {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                        placeholder.style.display = "none";
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === "application/pdf") {
+                    preview.style.display = "none";
+                    placeholder.style.display = "block";
+                    placeholder.querySelector('p:first-of-type').textContent = file.name;
+                    placeholder.querySelector('.upload-icon i').className = 'bi bi-file-earmark-pdf';
                 }
             }
         }

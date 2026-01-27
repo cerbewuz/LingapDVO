@@ -345,6 +345,8 @@
 
     <!-- Hidden field for application ID -->
     <input type="hidden" name="id" value="@ViewData["Id"]" />
+    <!-- Hidden field for admin who processed -->
+    <input type="hidden" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
 
     <!-- Application ID -->
     <div class="info-row">

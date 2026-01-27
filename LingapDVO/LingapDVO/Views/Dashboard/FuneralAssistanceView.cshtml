@@ -282,6 +282,12 @@
         border: 1px solid #bee5eb;
     }
 
+    .status-processing-badge {
+        background-color: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #90caf9;
+    }
+
     /* Application ID Display */
     .application-id {
         font-family: 'Courier New', monospace;
@@ -1591,6 +1597,10 @@
                         {
                             currentStatusBadge = "status-retake-badge";
                         }
+                        else if (status == "Processing")
+                        {
+                            currentStatusBadge = "status-processing-badge";
+                        }
                         else
                         {
                             currentStatusBadge = "status-pending-badge";
@@ -1604,6 +1614,10 @@
                         else if (!string.IsNullOrEmpty(status2))
                         {
                             <text>@status2.ToUpper()</text>
+                        }
+                        else if (status == "Processing")
+                        {
+                            <text>PROCESSING</text>
                         }
                         else
                         {

@@ -19,21 +19,21 @@
             </div>
             <ul class="sidebar-nav">
                 <li>
-                    <a href="/Adminuser/Admin" id="nav-admin">
+                    <a href="/Admin" id="nav-admin">
                         <i class="bi bi-house-door"></i>
                         <span>Application Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/Adminuser/Analyticsdashboard" id="nav-analytics">
+                    <a href="/AdminDashboard" id="nav-analytics">
                         <i class="bi bi-bar-chart"></i>
                         <span>Analytics Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/Adminuser/Priorities" id="nav-priorities">
+                    <a href="/DelayedApplications" id="nav-delayed">
                         <i class="bi bi-bell"></i>
-                        <span>Priorities</span>
+                        <span>Delayed Applications</span>
                         <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
                     </a>
                 </li>
@@ -279,12 +279,12 @@
         });
 
         // Set active based on path
-        if (currentPath.includes('/admin') && !currentPath.includes('/analytics') && !currentPath.includes('/priorities')) {
-            document.getElementById('nav-admin')?.classList.add('active');
-        } else if (currentPath.includes('/analytics')) {
+        if (currentPath.includes('/admindashboard')) {
             document.getElementById('nav-analytics')?.classList.add('active');
-        } else if (currentPath.includes('/priorities')) {
-            document.getElementById('nav-priorities')?.classList.add('active');
+        } else if (currentPath.includes('/delayedapplications')) {
+            document.getElementById('nav-delayed')?.classList.add('active');
+        } else if (currentPath.includes('/admin')) {
+            document.getElementById('nav-admin')?.classList.add('active');
         }
     }
 
