@@ -1543,10 +1543,10 @@
             </div>
             <div class="tracking-body">
                 <div class="timeline">
-                    <!-- UPWARD TRACKING: Bottom (Oldest) to Top (Newest) -->
+                    <!-- REVERSED: Top (Oldest) to Bottom (Newest) -->
                     @if (isApproved)
                     {
-                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
                             <div class="timeline-marker submitted inactive">
                                 <i class="fas fa-paper-plane"></i>
@@ -1558,7 +1558,7 @@
                             </div>
                         </div>
 
-                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        <!-- Being Reviewed - GREY -->
                         @if (isProcessing)
                         {
                             <div class="timeline-item">
@@ -1575,7 +1575,7 @@
 
                         @if (isClaimed)
                         {
-                            <!-- Application Approved - GREY (Inactive) -->
+                            <!-- Application Approved - GREY -->
                             <div class="timeline-item">
                                 <div class="timeline-marker approved inactive">
                                     <i class="fas fa-check-circle"></i>
@@ -1593,7 +1593,7 @@
                                 </div>
                             </div>
 
-                            <!-- Step 4: Assistance Released - TOP (Newest/Current Status) -->
+                            <!-- Step 4: Assistance Released - BOTTOM (Current Status) -->
                             <div class="timeline-item">
                                 <div class="timeline-marker claimed active">
                                     <i class="fas fa-hands-helping"></i>
@@ -1609,7 +1609,7 @@
                         }
                         else
                         {
-                            <!-- Application Approved - ACTIVE (not yet claimed) -->
+                            <!-- Application Approved - ACTIVE - BOTTOM (Current Status) -->
                             <div class="timeline-item">
                                 <div class="timeline-marker approved active">
                                     <i class="fas fa-check-circle"></i>
@@ -1627,7 +1627,7 @@
                                 </div>
                             </div>
 
-                            <!-- Ready for Release - TOP (Newest/Current Status) -->
+                            <!-- Ready for Release - BOTTOM (Next Status) -->
                             <div class="timeline-item">
                                 <div class="timeline-marker waiting active">
                                     <i class="fas fa-gift"></i>
@@ -1641,7 +1641,7 @@
                     }
                     else if (isReviewed && !isRetake)
                     {
-                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
                             <div class="timeline-marker submitted inactive">
                                 <i class="fas fa-paper-plane"></i>
@@ -1653,7 +1653,7 @@
                             </div>
                         </div>
 
-                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        <!-- Being Reviewed - GREY -->
                         @if (isProcessing)
                         {
                             <div class="timeline-item">
@@ -1668,7 +1668,7 @@
                             </div>
                         }
 
-                        <!-- Step 3: Result (NOT approve and NOT retake) - TOP (Newest/Current Status) -->
+                        <!-- Step 3: Result (NOT approve) - BOTTOM (Current Status) -->
                         <div class="timeline-item">
                             <div class="timeline-marker unapproved active">
                                 <i class="fas fa-times-circle"></i>
@@ -1688,7 +1688,7 @@
                     }
                     else if (isRetake)
                     {
-                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
                             <div class="timeline-marker submitted inactive">
                                 <i class="fas fa-paper-plane"></i>
@@ -1700,7 +1700,7 @@
                             </div>
                         </div>
 
-                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        <!-- Being Reviewed - GREY -->
                         @if (isProcessing)
                         {
                             <div class="timeline-item">
@@ -1715,7 +1715,7 @@
                             </div>
                         }
 
-                        <!-- Step 3.5: Retake Request - TOP (Newest/Current Status) -->
+                        <!-- Step 3.5: Retake Request - BOTTOM (Current Status) -->
                         <div class="timeline-item">
                             <div class="timeline-marker retake active">
                                 <i class="fas fa-arrow-rotate-left"></i>
@@ -1738,7 +1738,7 @@
                     }
                     else if (isProcessing)
                     {
-                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
                             <div class="timeline-marker submitted inactive">
                                 <i class="fas fa-paper-plane"></i>
@@ -1750,7 +1750,7 @@
                             </div>
                         </div>
 
-                        <!-- Step 2: Processing (Active) - TOP (Newest/Current Status) -->
+                        <!-- Step 2: Processing (Active) - BOTTOM (Current Status) -->
                         <div class="timeline-item">
                             <div class="timeline-marker processing active">
                                 <i class="fas fa-user-check"></i>
@@ -1765,7 +1765,7 @@
                     else
                     {
                         <!-- When application is only submitted (not yet being reviewed) -->
-                        <!-- Application Submitted - ACTIVE - BOTTOM (Oldest/Start of Journey) -->
+                        <!-- Application Submitted - ACTIVE - TOP (Start of Journey) -->
                         <div class="timeline-item">
                             <div class="timeline-marker submitted active">
                                 <i class="fas fa-paper-plane"></i>
@@ -1777,7 +1777,7 @@
                             </div>
                         </div>
 
-                        <!-- Being Reviewed - ACTIVE (waiting stage) - TOP (Newest/Current Status) -->
+                        <!-- Being Reviewed - ACTIVE (waiting stage) - BOTTOM (Current Status) -->
                         <div class="timeline-item">
                             <div class="timeline-marker waiting active">
                                 <i class="fas fa-hourglass-half"></i>
@@ -2367,3 +2367,4 @@
     @Html.Partial("_ViewEncryptedDataModalForAdmin")
     @Html.Partial("_ViewEncryptedIDModal")
 }
+full code fix
