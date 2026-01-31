@@ -25,6 +25,7 @@
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
             --claimed-color: #8b5cf6;
+            --inactive-color: #9ca3af; /* Grey for inactive states */
         }
 
         body {
@@ -142,32 +143,49 @@
             line-height: 1.4;
         }
 
-        .timeline-marker.submitted {
+        /* Active state markers */
+        .timeline-marker.submitted.active {
             background: var(--success-color);
         }
 
-        .timeline-marker.processing {
+        .timeline-marker.processing.active {
             background: var(--warning-color);
         }
 
-        .timeline-marker.approved {
+        .timeline-marker.approved.active {
             background: var(--success-color);
         }
 
-        .timeline-marker.unapproved {
+        .timeline-marker.unapproved.active {
             background: var(--danger-color);
         }
 
-        .timeline-marker.waiting {
+        .timeline-marker.waiting.active {
             background: var(--secondary-color);
         }
 
-        .timeline-marker.claimed {
+        .timeline-marker.claimed.active {
             background: var(--claimed-color);
         }
 
-        .timeline-marker.retake {
+        .timeline-marker.retake.active {
             background: #ff9800;
+        }
+
+        /* Inactive state markers (grey) */
+        .timeline-marker.inactive {
+            background: var(--inactive-color);
+            color: white;
+        }
+
+        /* Inactive timeline content */
+        .timeline-content.inactive h6 {
+            color: var(--inactive-color);
+        }
+
+        .timeline-content.inactive .timeline-date,
+        .timeline-content.inactive .timeline-description {
+            color: #b0b7c3;
         }
 
         .tab-container {
@@ -663,464 +681,453 @@
         }
 
         @@keyframes slideIn {
-            from
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
 
-        {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* ========================================
-                           RESPONSIVE MEDIA QUERIES
-                           ======================================== */
+                                   RESPONSIVE MEDIA QUERIES
+                                   ======================================== */
 
         /* Tablets and Small Screens (768px and below) */
         @@media (max-width: 768px) {
-            .container
-
-        {
-            padding: 0.75rem;
-        }
-
-        .tracking-hero {
-            padding: 1.5rem 0 1.25rem !important;
-            margin-top: 60px !important;
-        }
-
-            .tracking-hero h1 {
-                font-size: 1.5rem !important;
+            .container {
+                padding: 0.75rem;
             }
 
-            .tracking-hero p {
-                font-size: 0.875rem !important;
+            .tracking-hero {
+                padding: 1.5rem 0 1.25rem !important;
+                margin-top: 60px !important;
             }
 
-            .tracking-hero i.fas {
-                font-size: 1.5rem !important;
+                .tracking-hero h1 {
+                    font-size: 1.5rem !important;
+                }
+
+                .tracking-hero p {
+                    font-size: 0.875rem !important;
+                }
+
+                .tracking-hero i.fas {
+                    font-size: 1.5rem !important;
+                }
+
+                .tracking-hero .d-flex.gap-4 {
+                    gap: 0.75rem !important;
+                    justify-content: center;
+                    width: 100%;
+                }
+
+                .tracking-hero .text-center > div:first-child {
+                    font-size: 1.5rem !important;
+                }
+
+                .tracking-hero .text-center > div:last-child {
+                    font-size: 0.75rem !important;
+                }
+            /* REVERSED TIMELINE FOR MOBILE */
+            .timeline {
+                padding-right: 1.5rem;
             }
 
-            .tracking-hero .d-flex.gap-4 {
-                gap: 0.75rem !important;
-                justify-content: center;
-                width: 100%;
+                .timeline::before {
+                    right: 12px;
+                }
+
+            .timeline-marker {
+                right: -1.5rem;
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
             }
 
-            .tracking-hero .text-center > div:first-child {
-                font-size: 1.5rem !important;
+            .timeline-content {
+                width: calc(100% - 35px);
+                padding: 0.75rem;
             }
 
-            .tracking-hero .text-center > div:last-child {
-                font-size: 0.75rem !important;
+                .timeline-content h6 {
+                    font-size: 0.9rem;
+                }
+
+            .timeline-date {
+                font-size: 0.75rem;
             }
 
-        /* REVERSED TIMELINE FOR MOBILE */
-        .timeline {
-            padding-right: 1.5rem;
-        }
-
-            .timeline::before {
-                right: 12px;
-            }
-
-        .timeline-marker {
-            right: -1.5rem;
-            width: 28px;
-            height: 28px;
-            font-size: 0.7rem;
-        }
-
-        .timeline-content {
-            width: calc(100% - 35px);
-            padding: 0.75rem;
-        }
-
-            .timeline-content h6 {
-                font-size: 0.9rem;
-            }
-
-        .timeline-date {
-            font-size: 0.75rem;
-        }
-
-        .timeline-description {
-            font-size: 0.8rem;
-        }
-
-        .go-back-top {
-            left: 10px;
-            top: 10px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            gap: 4px;
-        }
-
-        .nav-tabs {
-            flex-direction: column;
-            width: 100%;
-            padding: 0.25rem;
-        }
-
-            .nav-tabs .nav-link {
-                width: 100%;
-                text-align: center;
-                margin: 0.25rem 0;
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
-            }
-
-        .tracking-header {
-            padding: 1rem;
-        }
-
-            .tracking-header h5 {
-                font-size: 1rem;
-                flex-wrap: wrap;
-            }
-
-        .tracking-body {
-            padding: 1rem;
-        }
-
-        .application-actions {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .btn-action {
-            width: 100%;
-            justify-content: center;
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
-        }
-
-        .filter-container {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 0.75rem;
-        }
-
-        .filter-group {
-            flex-direction: column;
-            align-items: stretch;
-            width: 100%;
-        }
-
-        .filter-select,
-        .date-input {
-            width: 100%;
-        }
-
-        .date-range {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .filter-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .past-data-summary {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-
-        .past-data-table {
-            overflow-x: auto;
-        }
-
-        .table {
-            min-width: 600px;
-        }
-
-            .table th,
-            .table td {
-                padding: 0.5rem;
+            .timeline-description {
                 font-size: 0.8rem;
             }
 
-        .past-data-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 0.75rem;
-        }
-
-            .past-data-header h4 {
-                font-size: 1.1rem;
+            .go-back-top {
+                left: 10px;
+                top: 10px;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                gap: 4px;
             }
 
-        .past-data-section.active + .tab-container {
-            margin-top: 2.5rem;
-            padding-top: 0.75rem;
-        }
-
-        .status-badge {
-            font-size: 0.7rem;
-            padding: 0.3rem 0.6rem;
-        }
-
-        .empty-state {
-            padding: 1.5rem 0.75rem;
-        }
-
-            .empty-state i {
-                font-size: 2rem;
+            .nav-tabs {
+                flex-direction: column;
+                width: 100%;
+                padding: 0.25rem;
             }
 
-            .empty-state h5 {
-                font-size: 1rem;
+                .nav-tabs .nav-link {
+                    width: 100%;
+                    text-align: center;
+                    margin: 0.25rem 0;
+                    padding: 0.6rem 1rem;
+                    font-size: 0.9rem;
+                }
+
+            .tracking-header {
+                padding: 1rem;
             }
 
-            .empty-state p {
+                .tracking-header h5 {
+                    font-size: 1rem;
+                    flex-wrap: wrap;
+                }
+
+            .tracking-body {
+                padding: 1rem;
+            }
+
+            .application-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+                padding: 0.6rem 1rem;
                 font-size: 0.85rem;
             }
 
-        .toast-notification {
-            right: 10px;
-            top: 10px;
-            max-width: calc(100% - 20px);
-            padding: 0.75rem;
-        }
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0.75rem;
+            }
 
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .filter-select,
+            .date-input {
+                width: 100%;
+            }
+
+            .date-range {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .filter-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .past-data-summary {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .past-data-table {
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 600px;
+            }
+
+                .table th,
+                .table td {
+                    padding: 0.5rem;
+                    font-size: 0.8rem;
+                }
+
+            .past-data-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+                .past-data-header h4 {
+                    font-size: 1.1rem;
+                }
+
+            .past-data-section.active + .tab-container {
+                margin-top: 2.5rem;
+                padding-top: 0.75rem;
+            }
+
+            .status-badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            .empty-state {
+                padding: 1.5rem 0.75rem;
+            }
+
+                .empty-state i {
+                    font-size: 2rem;
+                }
+
+                .empty-state h5 {
+                    font-size: 1rem;
+                }
+
+                .empty-state p {
+                    font-size: 0.85rem;
+                }
+
+            .toast-notification {
+                right: 10px;
+                top: 10px;
+                max-width: calc(100% - 20px);
+                padding: 0.75rem;
+            }
         }
 
         /* Mobile Phones (480px and below) */
         @@media (max-width: 480px) {
-            .container
-
-        {
-            padding: 0.5rem;
-        }
-
-        .tracking-hero {
-            padding: 1.25rem 0 1rem !important;
-            margin-top: 60px !important;
-        }
-
-            .tracking-hero h1 {
-                font-size: 1.35rem !important;
+            .container {
+                padding: 0.5rem;
             }
 
-            .tracking-hero p {
-                font-size: 0.85rem !important;
+            .tracking-hero {
+                padding: 1.25rem 0 1rem !important;
+                margin-top: 60px !important;
             }
 
-            .tracking-hero i.fas {
-                font-size: 1.35rem !important;
-            }
-
-            .tracking-hero .d-flex.gap-4 {
-                gap: 0.5rem !important;
-                justify-content: center;
-                width: 100%;
-            }
-
-            .tracking-hero .text-center {
-                min-width: 80px !important;
-            }
-
-                .tracking-hero .text-center > div:first-child {
+                .tracking-hero h1 {
                     font-size: 1.35rem !important;
                 }
 
-                .tracking-hero .text-center > div:last-child {
-                    font-size: 0.7rem !important;
+                .tracking-hero p {
+                    font-size: 0.85rem !important;
                 }
 
-        /* REVERSED TIMELINE FOR SMALL MOBILE */
-        .timeline {
-            padding-right: 1.25rem;
-        }
+                .tracking-hero i.fas {
+                    font-size: 1.35rem !important;
+                }
 
-            .timeline::before {
-                right: 10px;
-                width: 1.5px;
+                .tracking-hero .d-flex.gap-4 {
+                    gap: 0.5rem !important;
+                    justify-content: center;
+                    width: 100%;
+                }
+
+                .tracking-hero .text-center {
+                    min-width: 80px !important;
+                }
+
+                    .tracking-hero .text-center > div:first-child {
+                        font-size: 1.35rem !important;
+                    }
+
+                    .tracking-hero .text-center > div:last-child {
+                        font-size: 0.7rem !important;
+                    }
+            /* REVERSED TIMELINE FOR SMALL MOBILE */
+            .timeline {
+                padding-right: 1.25rem;
             }
 
-        .timeline-item {
-            margin-bottom: 1rem;
-        }
+                .timeline::before {
+                    right: 10px;
+                    width: 1.5px;
+                }
 
-        .timeline-marker {
-            right: -1.25rem;
-            width: 24px;
-            height: 24px;
-            font-size: 0.65rem;
-            border: 2px solid white;
-        }
+            .timeline-item {
+                margin-bottom: 1rem;
+            }
 
-        .timeline-content {
-            width: calc(100% - 30px);
-            padding: 0.6rem;
-        }
+            .timeline-marker {
+                right: -1.25rem;
+                width: 24px;
+                height: 24px;
+                font-size: 0.65rem;
+                border: 2px solid white;
+            }
 
-            .timeline-content h6 {
-                font-size: 0.85rem;
+            .timeline-content {
+                width: calc(100% - 30px);
+                padding: 0.6rem;
+            }
+
+                .timeline-content h6 {
+                    font-size: 0.85rem;
+                    margin-bottom: 0.4rem;
+                }
+
+            .timeline-date {
+                font-size: 0.7rem;
                 margin-bottom: 0.4rem;
             }
 
-        .timeline-date {
-            font-size: 0.7rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .timeline-description {
-            font-size: 0.75rem;
-            line-height: 1.3;
-        }
-
-        .go-back-top {
-            left: 5px;
-            top: 5px;
-            padding: 5px 10px;
-            font-size: 0.75rem;
-            gap: 3px;
-        }
-
-            .go-back-top i {
-                font-size: 0.7rem;
+            .timeline-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
             }
 
-        .tab-container {
-            margin-bottom: 1rem;
-        }
-
-        .nav-tabs .nav-link {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.85rem;
-        }
-
-        .badge {
-            font-size: 0.65rem;
-            padding: 0.2rem 0.4rem;
-        }
-
-        .tracking-card {
-            margin-bottom: 1rem;
-            border-radius: 8px;
-        }
-
-        .tracking-header {
-            padding: 0.75rem;
-        }
-
-            .tracking-header h5 {
-                font-size: 0.95rem;
+            .go-back-top {
+                left: 5px;
+                top: 5px;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                gap: 3px;
             }
 
-        .tracking-date {
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-        }
+                .go-back-top i {
+                    font-size: 0.7rem;
+                }
 
-        .tracking-body {
-            padding: 0.75rem;
-        }
-
-        .application-actions {
-            padding-top: 0.75rem;
-            margin-top: 0.75rem;
-        }
-
-        .btn-action {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .filter-container {
-            padding: 0.5rem;
-            gap: 0.5rem;
-        }
-
-        .filter-label {
-            font-size: 0.85rem;
-        }
-
-        .filter-select,
-        .date-input {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.85rem;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.85rem;
-        }
-
-        .past-data-section {
-            margin-top: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-        }
-
-            .past-data-section.active + .tab-container {
-                margin-top: 2rem;
-                padding-top: 0.75rem;
+            .tab-container {
+                margin-bottom: 1rem;
             }
 
-        .past-data-header h4 {
-            font-size: 1rem;
-        }
-
-        .summary-card {
-            padding: 0.75rem;
-        }
-
-            .summary-card h5 {
+            .nav-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
                 font-size: 0.85rem;
             }
 
-            .summary-card .count {
-                font-size: 1.3rem;
+            .badge {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
             }
 
-        .table th,
-        .table td {
-            padding: 0.4rem;
-            font-size: 0.75rem;
-        }
-
-        .status-badge {
-            font-size: 0.65rem;
-            padding: 0.25rem 0.5rem;
-        }
-
-        .empty-state {
-            padding: 1.25rem 0.5rem;
-        }
-
-            .empty-state i {
-                font-size: 1.75rem;
+            .tracking-card {
+                margin-bottom: 1rem;
+                border-radius: 8px;
             }
 
-            .empty-state h5 {
-                font-size: 0.95rem;
+            .tracking-header {
+                padding: 0.75rem;
             }
 
-            .empty-state p {
+                .tracking-header h5 {
+                    font-size: 0.95rem;
+                }
+
+            .tracking-date {
+                font-size: 0.75rem;
+                margin-top: 0.25rem;
+            }
+
+            .tracking-body {
+                padding: 0.75rem;
+            }
+
+            .application-actions {
+                padding-top: 0.75rem;
+                margin-top: 0.75rem;
+            }
+
+            .btn-action {
+                padding: 0.5rem 0.75rem;
                 font-size: 0.8rem;
             }
 
-        .toast-notification {
-            padding: 0.6rem;
-            font-size: 0.85rem;
-        }
+            .filter-container {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
 
-        .toast-title {
-            font-size: 0.9rem;
-        }
+            .filter-label {
+                font-size: 0.85rem;
+            }
 
-        .toast-message {
-            font-size: 0.8rem;
-        }
+            .filter-select,
+            .date-input {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.85rem;
+            }
 
+            .filter-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .past-data-section {
+                margin-top: 1rem;
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+            }
+
+                .past-data-section.active + .tab-container {
+                    margin-top: 2rem;
+                    padding-top: 0.75rem;
+                }
+
+            .past-data-header h4 {
+                font-size: 1rem;
+            }
+
+            .summary-card {
+                padding: 0.75rem;
+            }
+
+                .summary-card h5 {
+                    font-size: 0.85rem;
+                }
+
+                .summary-card .count {
+                    font-size: 1.3rem;
+                }
+
+            .table th,
+            .table td {
+                padding: 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            .status-badge {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .empty-state {
+                padding: 1.25rem 0.5rem;
+            }
+
+                .empty-state i {
+                    font-size: 1.75rem;
+                }
+
+                .empty-state h5 {
+                    font-size: 0.95rem;
+                }
+
+                .empty-state p {
+                    font-size: 0.8rem;
+                }
+
+            .toast-notification {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            .toast-title {
+                font-size: 0.9rem;
+            }
+
+            .toast-message {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -1222,11 +1229,12 @@
         @{
             // Combine all applications for Applications History (both active and archived)
             var allApplications = new List<dynamic>();
-            
+
             // Add Hospital Assistance
             foreach (var app in Model.HospitalAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Hospital",
                     TypeDisplay = "Hospital Assistance",
@@ -1242,7 +1250,8 @@
             }
             foreach (var app in Model.ArchivedHospitalAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Hospital",
                     TypeDisplay = "Hospital Assistance",
@@ -1256,11 +1265,12 @@
                     ViewAction = "HospitalAssistanceView"
                 });
             }
-            
+
             // Add Other/Medical Assistance
             foreach (var app in Model.OtherAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Medical",
                     TypeDisplay = "Medical/Other Assistance",
@@ -1276,7 +1286,8 @@
             }
             foreach (var app in Model.ArchivedOtherAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Medical",
                     TypeDisplay = "Medical/Other Assistance",
@@ -1290,11 +1301,12 @@
                     ViewAction = "OtherAssistanceView"
                 });
             }
-            
+
             // Add Funeral Assistance
             foreach (var app in Model.FuneralAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Funeral",
                     TypeDisplay = "Funeral Assistance",
@@ -1310,7 +1322,8 @@
             }
             foreach (var app in Model.ArchivedFuneralAssistance)
             {
-                allApplications.Add(new {
+                allApplications.Add(new
+                {
                     Id = app.Id,
                     Type = "Funeral",
                     TypeDisplay = "Funeral Assistance",
@@ -1324,10 +1337,10 @@
                     ViewAction = "FuneralAssistanceView"
                 });
             }
-            
+
             // Sort by most recent first
             allApplications = allApplications.OrderByDescending(a => (DateTime)a.SubmittedDate).ToList();
-            
+
             // Calculate summary statistics
             var totalApps = allApplications.Count;
             var approvedApps = allApplications.Count(a => (string)a.Status == "Approve");
@@ -1337,7 +1350,7 @@
             var retakeApps = allApplications.Count(a => (string)a.Status == "Retake");
             var claimedApps = allApplications.Count(a => !string.IsNullOrEmpty((string)a.ClaimStatus));
         }
-        
+
         <div class="past-data-section" id="pastDataSection">
             <div class="past-data-header">
                 <h4><i class="fas fa-history me-2"></i>Applications History</h4>
@@ -1403,7 +1416,7 @@
                                 var claimStatus = (string)app.ClaimStatus;
                                 var displayStatus = status;
                                 var statusClass = "status-pending";
-                                
+
                                 // Determine final status (claimed takes precedence)
                                 if (!string.IsNullOrEmpty(claimStatus))
                                 {
@@ -1435,14 +1448,14 @@
                                     displayStatus = "Pending";
                                     statusClass = "status-pending";
                                 }
-                                
+
                                 var submittedDate = (DateTime)app.SubmittedDate;
                                 var processedDate = (DateTime)app.ProcessedDate;
                                 var resultDate = (DateTime)app.ResultDate;
                                 var claimedDate = (DateTime)app.ClaimedDate;
-                                
-                                <tr class="data-row" 
-                                    data-type="@((string)app.Type).ToLower()" 
+
+                                <tr class="data-row"
+                                    data-type="@((string)app.Type).ToLower()"
                                     data-status="@status.ToLower()"
                                     data-claimed="@(!string.IsNullOrEmpty(claimStatus) ? "true" : "false")"
                                     data-date="@submittedDate.ToString("yyyy-MM-dd")">
@@ -1470,7 +1483,7 @@
                                     <td>@(resultDate > DateTime.MinValue && resultDate.Year > 1 ? resultDate.ToString("dd MMM yyyy") : "-")</td>
                                     <td>@(claimedDate > DateTime.MinValue && claimedDate.Year > 1 ? claimedDate.ToString("dd MMM yyyy") : "-")</td>
                                     <td>
-                                        <a href="@Url.Action((string)app.ViewAction, "Dashboard", new { id = app.Id })" 
+                                        <a href="@Url.Action((string)app.ViewAction, "Dashboard", new { id = app.Id })"
                                            class="btn-action btn-view" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
                                             <i class="fas fa-eye"></i> View
                                         </a>
@@ -1481,7 +1494,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination for large datasets -->
             @if (allApplications.Count > 10)
             {
@@ -1537,6 +1550,13 @@
                 {
                     @foreach (var doc in hospitalBills)
                     {
+                        var isSubmitted = doc.CreatedAt > DateTime.MinValue;
+                        var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
+                        var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
+                        var isApproved = doc.Status2 == "Approve";
+                        var isRetake = doc.Status2 == "Retake";
+                        var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
+
                         <div class="tracking-card">
                             <div class="tracking-header">
                                 <h5><i class="fas fa-hospital"></i>@doc.Lastname, @doc.Firstname @doc.Middlename</h5>
@@ -1548,12 +1568,12 @@
                                 <div class="timeline">
                                     <!-- REVERSED ORDER: Latest updates at the top -->
                                     <!-- Step 4: Claim Status (Only show if approved) - TOP -->
-                                    @if (doc.Status2 == "Approve")
+                                    @if (isApproved)
                                     {
-                                        @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                        @if (isClaimed)
                                         {
                                             <div class="timeline-item">
-                                                <div class="timeline-marker claimed">
+                                                <div class="timeline-marker claimed active">
                                                     <i class="fas fa-hands-helping"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1564,11 +1584,30 @@
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            <!-- Application Approved - GREY -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved inactive">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
                                         }
                                         else
                                         {
+                                            <!-- Ready for Release -->
                                             <div class="timeline-item">
-                                                <div class="timeline-marker waiting">
+                                                <div class="timeline-marker waiting active">
                                                     <i class="fas fa-gift"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1576,33 +1615,105 @@
                                                     <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                 </div>
                                             </div>
-                                        }
-                                    }
 
-                                    <!-- Step 3.9: Result if NOT approve and NOT retake -->
-                                    @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1 && doc.Status2 != "Approve" && doc.Status2 != "Retake")
-                                    {
+                                            <!-- Application Approved - ACTIVE (not yet claimed) -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved active">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker unapproved">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isReviewed && !isRetake)
+                                    {
+                                        <!-- Step 3: Result (NOT approve and NOT retake) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker unapproved active">
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Decision Made</h6>
+                                                <h6>Application @doc.Status2</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description">We have made a decision on your application.</p>
+                                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                                    Your application was not approved at this time.
+                                                </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.Comments))
                                                 {
                                                     <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
                                                 }
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 3.5: Retake Request (Show if Status2 is "Retake") -->
-                                    @if (doc.Status2 == "Retake")
-                                    {
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker retake">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isRetake)
+                                    {
+                                        <!-- Step 3.5: Retake Request -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker retake active">
                                                 <i class="fas fa-arrow-rotate-left"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1628,42 +1739,39 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 3: Result (EXCLUDE Retake) -->
-                                    @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1 && doc.Status2 != "Retake")
-                                    {
-                                        <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
-                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
                                             </div>
-                                            <div class="timeline-content">
-                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
-                                                <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    @if (doc.Status2 == "Approve")
-                                                    {
-                                                        <text>Your application has been approved. You can now claim your assistance.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <text>Your application was not approved at this time.</text>
-                                                    }
-                                                </p>
+                                        }
 
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
                                             </div>
                                         </div>
                                     }
-
-                                    <!-- Step 2: Processing -->
-                                    @if (doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Processby))
+                                    else if (isProcessing)
                                     {
+                                        <!-- Step 2: Processing (Active) - TOP -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker processing">
+                                            <div class="timeline-marker processing active">
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1672,11 +1780,25 @@
                                                 <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
-                                    }
-                                    else if (doc.Result <= DateTime.MinValue || doc.Result.Year <= 1)
-                                    {
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker waiting">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- When application is only submitted (not yet being reviewed) -->
+                                        <!-- Being Reviewed - ACTIVE (waiting stage) - TOP -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker waiting active">
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1684,19 +1806,19 @@
                                                 <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 1: Document Submitted - BOTTOM -->
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker submitted">
-                                            <i class="fas fa-paper-plane"></i>
+                                        <!-- Application Submitted - ACTIVE - BOTTOM -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted active">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                                            </div>
                                         </div>
-                                        <div class="timeline-content">
-                                            <h6>Application Submitted</h6>
-                                            <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">We have received your application for Hospital assistance.</p>
-                                        </div>
-                                    </div>
+                                    }
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -1737,6 +1859,13 @@
                 {
                     @foreach (var doc in medicalForms)
                     {
+                        var isSubmitted = doc.CreatedAt > DateTime.MinValue;
+                        var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
+                        var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
+                        var isApproved = doc.Status2 == "Approve";
+                        var isRetake = doc.Status2 == "Retake";
+                        var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
+
                         <div class="tracking-card">
                             <div class="tracking-header">
                                 <h5><i class="fas fa-microscope"></i>@doc.Lastname, @doc.Firstname @doc.Middlename</h5>
@@ -1748,12 +1877,12 @@
                                 <div class="timeline">
                                     <!-- REVERSED ORDER: Latest updates at the top -->
                                     <!-- Step 4: Claimed Status (Only show if approved) - TOP -->
-                                    @if (doc.Status2 == "Approve")
+                                    @if (isApproved)
                                     {
-                                        @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                        @if (isClaimed)
                                         {
                                             <div class="timeline-item">
-                                                <div class="timeline-marker claimed">
+                                                <div class="timeline-marker claimed active">
                                                     <i class="fas fa-hands-helping"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1764,11 +1893,30 @@
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            <!-- Application Approved - GREY -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved inactive">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
                                         }
                                         else
                                         {
+                                            <!-- Ready for Release -->
                                             <div class="timeline-item">
-                                                <div class="timeline-marker waiting">
+                                                <div class="timeline-marker waiting active">
                                                     <i class="fas fa-gift"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1776,14 +1924,105 @@
                                                     <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                 </div>
                                             </div>
-                                        }
-                                    }
 
-                                    <!-- Step 3.5: Retake Request (Show if Status2 is "Retake") -->
-                                    @if (doc.Status2 == "Retake")
-                                    {
+                                            <!-- Application Approved - ACTIVE (not yet claimed) -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved active">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker retake">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Medical assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isReviewed && !isRetake)
+                                    {
+                                        <!-- Step 3: Result (NOT approve and NOT retake) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker unapproved active">
+                                                <i class="fas fa-times-circle"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6>Application @doc.Status2</h6>
+                                                <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                                    Your application was not approved at this time.
+                                                </p>
+                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                {
+                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Medical assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isRetake)
+                                    {
+                                        <!-- Step 3.5: Retake Request -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker retake active">
                                                 <i class="fas fa-arrow-rotate-left"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1809,42 +2048,39 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 3: Result (EXCLUDE Retake) -->
-                                    @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1 && doc.Status2 != "Retake")
-                                    {
-                                        <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
-                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
                                             </div>
-                                            <div class="timeline-content">
-                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
-                                                <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    @if (doc.Status2 == "Approve")
-                                                    {
-                                                        <text>Your application has been approved. You can now claim your assistance.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <text>Your application was not approved at this time.</text>
-                                                    }
-                                                </p>
+                                        }
 
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Medical assistance.</p>
                                             </div>
                                         </div>
                                     }
-
-                                    <!-- Step 2: Processing -->
-                                    @if (doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Processby))
+                                    else if (isProcessing)
                                     {
+                                        <!-- Step 2: Processing (Active) - TOP -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker processing">
+                                            <div class="timeline-marker processing active">
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1853,11 +2089,25 @@
                                                 <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
-                                    }
-                                    else if (doc.Result <= DateTime.MinValue || doc.Result.Year <= 1)
-                                    {
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker waiting">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Medical assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- When application is only submitted (not yet being reviewed) -->
+                                        <!-- Being Reviewed - ACTIVE (waiting stage) - TOP -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker waiting active">
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1865,19 +2115,19 @@
                                                 <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 1: Document Submitted - BOTTOM -->
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker submitted">
-                                            <i class="fas fa-paper-plane"></i>
+                                        <!-- Application Submitted - ACTIVE - BOTTOM -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted active">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Medical assistance.</p>
+                                            </div>
                                         </div>
-                                        <div class="timeline-content">
-                                            <h6>Application Submitted</h6>
-                                            <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">We have received your application for Medical assistance.</p>
-                                        </div>
-                                    </div>
+                                    }
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -1918,6 +2168,13 @@
                 {
                     @foreach (var doc in funeralForms)
                     {
+                        var isSubmitted = doc.CreatedAt > DateTime.MinValue;
+                        var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
+                        var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
+                        var isApproved = doc.Status2 == "Approve";
+                        var isRetake = doc.Status2 == "Retake";
+                        var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
+
                         <div class="tracking-card">
                             <div class="tracking-header">
                                 <h5><i class="fas fa-monument"></i>@doc.Lastname, @doc.Firstname @doc.Middlename</h5>
@@ -1929,12 +2186,12 @@
                                 <div class="timeline">
                                     <!-- REVERSED ORDER: Latest updates at the top -->
                                     <!-- Step 4: Claimed Status (Only show if approved) - TOP -->
-                                    @if (doc.Status2 == "Approve")
+                                    @if (isApproved)
                                     {
-                                        @if (doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3))
+                                        @if (isClaimed)
                                         {
                                             <div class="timeline-item">
-                                                <div class="timeline-marker claimed">
+                                                <div class="timeline-marker claimed active">
                                                     <i class="fas fa-hands-helping"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1945,11 +2202,30 @@
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            <!-- Application Approved - GREY -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved inactive">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
                                         }
                                         else
                                         {
+                                            <!-- Ready for Release -->
                                             <div class="timeline-item">
-                                                <div class="timeline-marker waiting">
+                                                <div class="timeline-marker waiting active">
                                                     <i class="fas fa-gift"></i>
                                                 </div>
                                                 <div class="timeline-content">
@@ -1957,14 +2233,105 @@
                                                     <p class="waiting-text">Your assistance is ready. Please visit our office to collect it.</p>
                                                 </div>
                                             </div>
-                                        }
-                                    }
 
-                                    <!-- Step 3.5: Retake Request (Show if Status2 is "Retake") -->
-                                    @if (doc.Status2 == "Retake")
-                                    {
+                                            <!-- Application Approved - ACTIVE (not yet claimed) -->
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker approved active">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="timeline-content">
+                                                    <h6>Application Approved</h6>
+                                                    <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                                        Your application has been approved. You can now claim your assistance.
+                                                    </p>
+                                                    @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                    {
+                                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker retake">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isReviewed && !isRetake)
+                                    {
+                                        <!-- Step 3: Result (NOT approve and NOT retake) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker unapproved active">
+                                                <i class="fas fa-times-circle"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6>Application @doc.Status2</h6>
+                                                <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                                    Your application was not approved at this time.
+                                                </p>
+                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
+                                                {
+                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isRetake)
+                                    {
+                                        <!-- Step 3.5: Retake Request -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker retake active">
                                                 <i class="fas fa-arrow-rotate-left"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -1990,42 +2357,39 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 3: Result (EXCLUDE Retake) -->
-                                    @if (doc.Result > DateTime.MinValue && doc.Result.Year > 1 && doc.Status2 != "Retake")
-                                    {
-                                        <div class="timeline-item">
-                                            <div class="timeline-marker @(doc.Status2 == "Approve" ? "approved" : "unapproved")">
-                                                <i class="fas @(doc.Status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                                        @if (isProcessing)
+                                        {
+                                            <div class="timeline-item">
+                                                <div class="timeline-marker processing inactive">
+                                                    <i class="fas fa-user-check"></i>
+                                                </div>
+                                                <div class="timeline-content inactive">
+                                                    <h6>Being Reviewed</h6>
+                                                    <span class="timeline-date">@doc.ProcessAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                    <p class="timeline-description">Your application was reviewed by <strong>@doc.Processby</strong></p>
+                                                </div>
                                             </div>
-                                            <div class="timeline-content">
-                                                <h6>Application @(doc.Status2 == "Approve" ? "Approved" : doc.Status2)</h6>
-                                                <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                                <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    @if (doc.Status2 == "Approve")
-                                                    {
-                                                        <text>Your application has been approved. You can now claim your assistance.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <text>Your application was not approved at this time.</text>
-                                                    }
-                                                </p>
+                                        }
 
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
+                                        <!-- Application Submitted - GREY (since we've passed this stage) -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
                                             </div>
                                         </div>
                                     }
-
-                                    <!-- Step 2: Processing -->
-                                    @if (doc.ProcessAt > DateTime.MinValue && doc.ProcessAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Processby))
+                                    else if (isProcessing)
                                     {
+                                        <!-- Step 2: Processing (Active) - TOP -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker processing">
+                                            <div class="timeline-marker processing active">
                                                 <i class="fas fa-user-check"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -2034,11 +2398,25 @@
                                                 <p class="timeline-description">Your application is being reviewed by <strong>@doc.Processby</strong></p>
                                             </div>
                                         </div>
-                                    }
-                                    else if (doc.Result <= DateTime.MinValue || doc.Result.Year <= 1)
-                                    {
+
+                                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM -->
                                         <div class="timeline-item">
-                                            <div class="timeline-marker waiting">
+                                            <div class="timeline-marker submitted inactive">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content inactive">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <!-- When application is only submitted (not yet being reviewed) -->
+                                        <!-- Being Reviewed - ACTIVE (waiting stage) - TOP -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker waiting active">
                                                 <i class="fas fa-hourglass-half"></i>
                                             </div>
                                             <div class="timeline-content">
@@ -2046,19 +2424,19 @@
                                                 <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
                                             </div>
                                         </div>
-                                    }
 
-                                    <!-- Step 1: Document Submitted - BOTTOM -->
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker submitted">
-                                            <i class="fas fa-paper-plane"></i>
+                                        <!-- Application Submitted - ACTIVE - BOTTOM -->
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker submitted active">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6>Application Submitted</h6>
+                                                <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                                            </div>
                                         </div>
-                                        <div class="timeline-content">
-                                            <h6>Application Submitted</h6>
-                                            <span class="timeline-date">@doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                            <p class="timeline-description">We have received your application for Funeral assistance.</p>
-                                        </div>
-                                    </div>
+                                    }
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -2212,12 +2590,12 @@
             function applyFilters() {
                 const rows = pastDataTableBody.querySelectorAll('.data-row');
                 const noDataRow = pastDataTableBody.querySelector('.no-data-row');
-                
+
                 const typeFilter = filterType ? filterType.value.toLowerCase() : 'all';
                 const statusFilter = filterStatus ? filterStatus.value.toLowerCase() : 'all';
                 const startDateVal = startDate ? new Date(startDate.value) : null;
                 const endDateVal = endDate ? new Date(endDate.value) : null;
-                
+
                 if (endDateVal) {
                     endDateVal.setHours(23, 59, 59, 999);
                 }
@@ -2264,14 +2642,14 @@
                         matchingRows.push(row);
                         visibleCount++;
                     }
-                    
+
                     row.classList.add('hidden');
                 });
 
                 // Apply pagination
                 const totalPages = Math.ceil(matchingRows.length / itemsPerPage);
                 if (currentPage > totalPages) currentPage = 1;
-                
+
                 const startIndex = (currentPage - 1) * itemsPerPage;
                 const endIndex = startIndex + itemsPerPage;
 
@@ -2308,7 +2686,7 @@
                     if (existingNoResults) {
                         existingNoResults.remove();
                     }
-                    
+
                     const emptyRow = document.createElement('tr');
                     emptyRow.className = 'no-results-row';
                     emptyRow.innerHTML = `
@@ -2389,14 +2767,14 @@
             function clearFilters() {
                 if (filterType) filterType.value = 'all';
                 if (filterStatus) filterStatus.value = 'all';
-                
+
                 const today = new Date();
                 const oneYearAgo = new Date();
                 oneYearAgo.setFullYear(today.getFullYear() - 1);
-                
+
                 if (startDate) startDate.value = oneYearAgo.toISOString().split('T')[0];
                 if (endDate) endDate.value = today.toISOString().split('T')[0];
-                
+
                 currentPage = 1;
                 applyFilters();
             }
@@ -2484,39 +2862,39 @@
         window.userApplications = [
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    {
-                        formId: @f.Id,
-                        type: "Hospital Assistance",
-                        status: "@f.Status?.ToLower()",
-                        createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
-                        userId: '@ViewBag.UserId'
-                    },
-                    </text>
+                        <text>
+                        {
+                            formId: @f.Id,
+                            type: "Hospital Assistance",
+                            status: "@f.Status?.ToLower()",
+                            createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                            userId: '@ViewBag.UserId'
+                        },
+                        </text>
             }
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    {
-                        formId: @f.Id,
-                        type: "Medical and Laboratory Procedure",
-                        status: "@f.Status?.ToLower()",
-                        createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
-                        userId: '@ViewBag.UserId'
-                    },
-                    </text>
+                        <text>
+                        {
+                            formId: @f.Id,
+                            type: "Medical and Laboratory Procedure",
+                            status: "@f.Status?.ToLower()",
+                            createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                            userId: '@ViewBag.UserId'
+                        },
+                        </text>
             }
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    {
-                        formId: @f.Id,
-                        type: "Funeral and Burial Assistance",
-                        status: "@f.Status?.ToLower()",
-                        createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
-                        userId: '@ViewBag.UserId'
-                    },
-                    </text>
+                        <text>
+                        {
+                            formId: @f.Id,
+                            type: "Funeral and Burial Assistance",
+                            status: "@f.Status?.ToLower()",
+                            createdAt: "@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")",
+                            userId: '@ViewBag.UserId'
+                        },
+                        </text>
             }
         ];
 
@@ -2524,51 +2902,51 @@
         window.archivedApplications = [
             @foreach (var f in Model.ArchivedHospitalAssistance)
             {
-                    <text>
-                    {
-                        id: @f.Id,
-                        type: "Hospital Assistance",
-                        name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
-                        claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
-                        submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
-                        processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
-                        resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
-                        claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
-                    },
-                    </text>
+                        <text>
+                        {
+                            id: @f.Id,
+                            type: "Hospital Assistance",
+                            name: "@f.Firstname @f.Middlename @f.Lastname",
+                            status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
+                            claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                            submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                            processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                            resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                            claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
+                        },
+                        </text>
             }
             @foreach (var f in Model.ArchivedOtherAssistance)
             {
-                    <text>
-                    {
-                        id: @f.Id,
-                        type: "Medical Procedure",
-                        name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
-                        claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
-                        submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
-                        processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
-                        resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
-                        claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
-                    },
-                    </text>
+                        <text>
+                        {
+                            id: @f.Id,
+                            type: "Medical Procedure",
+                            name: "@f.Firstname @f.Middlename @f.Lastname",
+                            status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
+                            claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                            submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                            processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                            resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                            claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
+                        },
+                        </text>
             }
             @foreach (var f in Model.ArchivedFuneralAssistance)
             {
-                    <text>
-                    {
-                        id: @f.Id,
-                        type: "Funeral Assistance",
-                        name: "@f.Firstname @f.Middlename @f.Lastname",
-                        status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
-                        claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
-                        submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
-                        processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
-                        resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
-                        claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
-                    },
-                    </text>
+                        <text>
+                        {
+                            id: @f.Id,
+                            type: "Funeral Assistance",
+                            name: "@f.Firstname @f.Middlename @f.Lastname",
+                            status: "@(!string.IsNullOrEmpty(f.Status2) ? f.Status2 : (!string.IsNullOrEmpty(f.Status) ? f.Status : "Pending"))",
+                            claimStatus: "@(string.IsNullOrEmpty(f.Status3) ? "" : f.Status3)",
+                            submittedDate: "@f.CreatedAt.ToString("yyyy-MM-dd")",
+                            processedDate: "@(f.ProcessAt != DateTime.MinValue ? f.ProcessAt.ToString("yyyy-MM-dd") : "")",
+                            resultDate: "@(f.Result != DateTime.MinValue ? f.Result.ToString("yyyy-MM-dd") : "")",
+                            claimedDate: "@(f.ClaimedAt != DateTime.MinValue ? f.ClaimedAt.ToString("yyyy-MM-dd") : "")"
+                        },
+                        </text>
             }
         ];
     </script>
