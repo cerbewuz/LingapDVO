@@ -18,6 +18,14 @@
     var processBy = ViewData["Processby"]?.ToString() ?? "";
     var comments = ViewData["Comments"]?.ToString() ?? "";
     var retakeReason = ViewData["RetakeReason"]?.ToString() ?? "";
+
+    // Determine status flags
+    var isSubmitted = createdDate > DateTime.MinValue;
+    var isProcessing = processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy);
+    var isReviewed = resultDate > DateTime.MinValue && resultDate.Year > 1;
+    var isApproved = status2 == "Approve";
+    var isRetake = status2 == "Retake";
+    var isClaimed = claimedDate > DateTime.MinValue && claimedDate.Year > 1 && !string.IsNullOrWhiteSpace(status3);
 }
 
 <style>
@@ -207,32 +215,49 @@
         line-height: 1.4;
     }
 
-    .timeline-marker.submitted {
+    /* Active state markers */
+    .timeline-marker.submitted.active {
         background: #10b981;
     }
 
-    .timeline-marker.processing {
+    .timeline-marker.processing.active {
         background: #f59e0b;
     }
 
-    .timeline-marker.approved {
+    .timeline-marker.approved.active {
         background: #10b981;
     }
 
-    .timeline-marker.unapproved {
+    .timeline-marker.unapproved.active {
         background: #ef4444;
     }
 
-    .timeline-marker.waiting {
+    .timeline-marker.waiting.active {
         background: #6c757d;
     }
 
-    .timeline-marker.claimed {
+    .timeline-marker.claimed.active {
         background: #8b5cf6;
     }
 
-    .timeline-marker.retake {
+    .timeline-marker.retake.active {
         background: #ff9800;
+    }
+
+    /* Inactive state markers (grey) */
+    .timeline-marker.inactive {
+        background: #9ca3af;
+        color: white;
+    }
+
+    /* Inactive timeline content */
+    .timeline-content.inactive h6 {
+        color: #9ca3af;
+    }
+
+    .timeline-content.inactive .timeline-date,
+    .timeline-content.inactive .timeline-description {
+        color: #b0b7c3;
     }
 
     .waiting-text {
@@ -800,7 +825,7 @@
     .is-invalid {
         border-color: #dc3545;
         padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 .4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right calc(0.375em + 0.1875rem) center;
         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
@@ -1519,106 +1544,58 @@
             <div class="tracking-body">
                 <div class="timeline">
                     <!-- UPWARD TRACKING: Bottom (Oldest) to Top (Newest) -->
-                    <!-- Step 1: Document Submitted - BOTTOM (Start of Journey) -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker submitted">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Application Submitted</h6>
-                            <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">We have received your application for Hospital assistance.</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Processing -->
-                    @if (processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
+                    @if (isApproved)
                     {
+                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
                         <div class="timeline-item">
-                            <div class="timeline-marker processing">
-                                <i class="fas fa-user-check"></i>
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
                             </div>
-                            <div class="timeline-content">
-                                <h6>Being Reviewed</h6>
-                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
-                            </div>
-                        </div>
-                    }
-                    else if (resultDate <= DateTime.MinValue || resultDate.Year <= 1)
-                    {
-                        <div class="timeline-item">
-                            <div class="timeline-marker waiting">
-                                <i class="fas fa-hourglass-half"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6>Waiting for Review</h6>
-                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
                             </div>
                         </div>
-                    }
 
-                    <!-- Step 3: Result -->
-                    @if (resultDate > DateTime.MinValue && resultDate.Year > 1)
-                    {
-                        @if (status2 == "Retake")
+                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        @if (isProcessing)
                         {
                             <div class="timeline-item">
-                                <div class="timeline-marker retake">
-                                    <i class="fas fa-arrow-rotate-left"></i>
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Action Required - Retake Application</h6>
-                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                    <p class="timeline-description">
-                                        We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
-                                    </p>
-                                    @if (!string.IsNullOrWhiteSpace(retakeReason))
-                                    {
-                                        <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                            <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                            <p class="mb-0" style="color: #666;">@retakeReason</p>
-                                        </div>
-                                    }
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
                                 </div>
                             </div>
                         }
-                        else
+
+                        @if (isClaimed)
                         {
+                            <!-- Application Approved - GREY (Inactive) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker @(status2 == "Approve" ? "approved" : "unapproved")">
-                                    <i class="fas @(status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                <div class="timeline-marker approved inactive">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Application @(status2 == "Approve" ? "Approved" : status2)</h6>
+                                <div class="timeline-content inactive">
+                                    <h6>Application Approved</h6>
                                     <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
                                     <p class="timeline-description text-gray-700 leading-relaxed">
-                                        @if (status2 == "Approve")
-                                        {
-                                            <text>Your application has been approved. You can now claim your assistance.</text>
-                                        }
-                                        else
-                                        {
-                                            <text>Your application was not approved at this time.</text>
-                                        }
+                                        Your application has been approved. You can now claim your assistance.
                                     </p>
-
                                     @if (!string.IsNullOrWhiteSpace(comments))
                                     {
                                         <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
                                     }
                                 </div>
                             </div>
-                        }
-                    }
 
-                    <!-- Step 4: Claim Status (Most Recent) - TOP (Current Status/End of Journey) -->
-                    @if (status2 == "Approve")
-                    {
-                        @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
-                        {
+                            <!-- Step 4: Assistance Released - TOP (Newest/Current Status) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker claimed">
+                                <div class="timeline-marker claimed active">
                                     <i class="fas fa-hands-helping"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1630,10 +1607,29 @@
                                 </div>
                             </div>
                         }
-                        else if (status2 == "Approve")
+                        else
                         {
+                            <!-- Application Approved - ACTIVE (not yet claimed) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker waiting">
+                                <div class="timeline-marker approved active">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Application Approved</h6>
+                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                        Your application has been approved. You can now claim your assistance.
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(comments))
+                                    {
+                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Ready for Release - TOP (Newest/Current Status) -->
+                            <div class="timeline-item">
+                                <div class="timeline-marker waiting active">
                                     <i class="fas fa-gift"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1642,6 +1638,155 @@
                                 </div>
                             </div>
                         }
+                    }
+                    else if (isReviewed && !isRetake)
+                    {
+                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3: Result (NOT approve and NOT retake) - TOP (Newest/Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker unapproved active">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application @status2</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                    Your application was not approved at this time.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(comments))
+                                {
+                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isRetake)
+                    {
+                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY (since we've passed this stage) -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3.5: Retake Request - TOP (Newest/Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker retake active">
+                                <i class="fas fa-arrow-rotate-left"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Action Required - Retake Application</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">
+                                    We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(retakeReason))
+                                {
+                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                        <p class="mb-0" style="color: #666;">@retakeReason</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isProcessing)
+                    {
+                        <!-- Application Submitted - GREY (since we've passed this stage) - BOTTOM (Oldest) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Processing (Active) - TOP (Newest/Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker processing active">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Being Reviewed</h6>
+                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- When application is only submitted (not yet being reviewed) -->
+                        <!-- Application Submitted - ACTIVE - BOTTOM (Oldest/Start of Journey) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted active">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Hospital assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - ACTIVE (waiting stage) - TOP (Newest/Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker waiting active">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Waiting for Review</h6>
+                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            </div>
+                        </div>
                     }
                 </div>
             </div>
