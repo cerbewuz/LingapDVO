@@ -18,6 +18,14 @@
     var processBy = ViewData["Processby"]?.ToString() ?? "";
     var comments = ViewData["Comments"]?.ToString() ?? "";
     var retakeReason = ViewData["RetakeReason"]?.ToString() ?? "";
+
+    // Determine status flags
+    var isSubmitted = createdDate > DateTime.MinValue;
+    var isProcessing = processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy);
+    var isReviewed = resultDate > DateTime.MinValue && resultDate.Year > 1;
+    var isApproved = status2 == "Approve";
+    var isRetake = status2 == "Retake";
+    var isClaimed = claimedDate > DateTime.MinValue && claimedDate.Year > 1 && !string.IsNullOrWhiteSpace(status3);
 }
 
 <style>
@@ -134,12 +142,12 @@
                 background: #a8a8a8;
             }
 
-    /* UPDATED TIMELINE TO MATCH HOSPITAL VIEW */
+    /* REVERSED TIMELINE - Bottom to Top */
     .timeline {
         position: relative;
         padding-left: 2rem;
         display: flex;
-        flex-direction: column-reverse; /* This reverses the order - newest at top */
+        flex-direction: column-reverse; /* This reverses the order */
     }
 
         .timeline::before {
@@ -207,32 +215,49 @@
         line-height: 1.4;
     }
 
-    .timeline-marker.submitted {
+    /* Active state markers */
+    .timeline-marker.submitted.active {
         background: #10b981;
     }
 
-    .timeline-marker.processing {
+    .timeline-marker.processing.active {
         background: #f59e0b;
     }
 
-    .timeline-marker.approved {
+    .timeline-marker.approved.active {
         background: #10b981;
     }
 
-    .timeline-marker.unapproved {
+    .timeline-marker.unapproved.active {
         background: #ef4444;
     }
 
-    .timeline-marker.waiting {
+    .timeline-marker.waiting.active {
         background: #6c757d;
     }
 
-    .timeline-marker.claimed {
+    .timeline-marker.claimed.active {
         background: #8b5cf6;
     }
 
-    .timeline-marker.retake {
+    .timeline-marker.retake.active {
         background: #ff9800;
+    }
+
+    /* Inactive state markers (grey) */
+    .timeline-marker.inactive {
+        background: #9ca3af;
+        color: white;
+    }
+
+    /* Inactive timeline content */
+    .timeline-content.inactive h6 {
+        color: #9ca3af;
+    }
+
+    .timeline-content.inactive .timeline-date,
+    .timeline-content.inactive .timeline-description {
+        color: #b0b7c3;
     }
 
     .waiting-text {
@@ -308,7 +333,346 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Keep all other styles the same as before... */
+    /* Funeral Information Container */
+    .funeral-info-container {
+        display: none;
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        margin-top: 0.5rem;
+        animation: fadeInScale 0.4s ease-out;
+    }
+
+    .funeral-info-visible {
+        display: block;
+    }
+
+    /* Funeral Loading Container */
+    .funeral-loading-container {
+        display: none;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 1rem 0;
+        margin-top: 0.5rem;
+        border: none;
+        text-align: center;
+    }
+
+        .funeral-loading-container .progress {
+            background-color: #e9ecef;
+        }
+
+        .funeral-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Decrypted Display Styles */
+    .decrypted-display {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+
+    .decrypted-field {
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+        display: flex;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+        .decrypted-field:hover {
+            border-color: transparent;
+            box-shadow: none;
+            transform: none;
+            background-color: transparent;
+        }
+
+        .decrypted-field .info-label {
+            color: #6c757d !important;
+            font-weight: 500;
+        }
+
+            .decrypted-field .info-label i {
+                color: #2d3748 !important;
+            }
+
+    .decrypted-value {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        font-size: 0.95rem;
+        color: #2d3748;
+        flex: 1;
+    }
+
+    /* Encrypted Display Styles */
+    .encrypted-info-section {
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .encrypted-display {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .encrypted-text {
+        letter-spacing: 0.5px;
+    }
+
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Alert styling */
+    .alert-info {
+        background-color: #e7f3ff;
+        border-color: #b3d9ff;
+        color: #004085;
+    }
+
+        .alert-info i {
+            font-size: 1.25rem;
+            color: #0066cc;
+        }
+
+    /* Info label styling */
+    .info-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    /* Image Zoom Modal */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .zoom-modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .close-zoom {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
+        }
+
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    .pdf-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .pdf-preview {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+        .pdf-preview:hover {
+            border-color: #16496B;
+            background-color: #e8f4fe;
+            transform: translateY(-2px);
+        }
+
+    .pdf-icon {
+        font-size: 3rem;
+        color: #dc143c;
+        margin-right: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-filename {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+
+    .pdf-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .pdf-viewer-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.95);
+    }
+
+    .pdf-viewer-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pdf-viewer-header {
+        background-color: #333;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .pdf-viewer-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        padding: 0 0.5rem;
+        line-height: 1;
+    }
+
+        .pdf-viewer-close:hover {
+            color: #16496B;
+        }
+
+    .pdf-viewer-body {
+        flex: 1;
+        background-color: #525659;
+        position: relative;
+        overflow: auto;
+    }
+
+    .pdf-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        min-height: 100%;
+    }
+
+    #pdfCanvas {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: white;
+    }
+
+    .pdf-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .page-info {
+        color: white;
+        font-size: 0.9rem;
+        margin: 0 10px;
+    }
+
+    .zoom-level {
+        color: white;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pdf-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        display: none;
+    }
+
+        .pdf-error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
 
     /* Status Buttons Styling */
     .status-buttons {
@@ -461,7 +825,7 @@
     .is-invalid {
         border-color: #dc3545;
         padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 .4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right calc(0.375em + 0.1875rem) center;
         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
@@ -470,37 +834,6 @@
         .is-invalid ~ .invalid-feedback {
             display: block;
         }
-
-    /* Receipt Sections */
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .section-header {
-        color: #16496B;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #67AFEB;
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-
-    .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: #6c757d;
-    }
-
-    .info-value {
-        flex: 1;
-        color: #555;
-    }
 
     /* Success Modal */
     .success-modal {
@@ -580,406 +913,35 @@
             color: #16496B;
         }
 
-    /* Funeral Information Container - consistent with regular form fields */
-    .funeral-info-container {
-        display: none;
-        background-color: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-        margin-top: 0.5rem;
-        animation: fadeInScale 0.4s ease-out;
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
     }
 
-    .funeral-info-visible {
-        display: block;
+    .section-header {
+        color: #16496B;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #67AFEB;
     }
 
-    /* Decrypted display - consistent with regular form fields */
-    .decrypted-display {
-        background-color: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-    }
-
-    .decrypted-field {
-        background-color: transparent;
-        border-radius: 0;
-        padding: 0;
-        border: none;
+    .info-row {
         display: flex;
         margin-bottom: 0.5rem;
-        flex-wrap: wrap;
     }
 
-        .decrypted-field:hover {
-            border-color: transparent;
-            box-shadow: none;
-            transform: none;
-            background-color: transparent;
-        }
-
-    .decrypted-value {
-        background-color: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-        font-size: 0.95rem;
-        color: #2d3748;
-        flex: 1;
-    }
-
-    /* Funeral Loading Container */
-    .funeral-loading-container {
-        display: none;
-        background-color: transparent;
-        border-radius: 0;
-        padding: 1rem 0;
-        margin-top: 0.5rem;
-        border: none;
-        text-align: center;
-    }
-
-        .funeral-loading-container .progress {
-            background-color: #e9ecef;
-        }
-
-        .funeral-loading-container .progress-bar {
-            background-color: #3498db;
-        }
-
-    /* Animation for decrypted display */
-    @@keyframes fadeInScale {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    /* Alert styling */
-    .alert-info {
-        background-color: #e7f3ff;
-        border-color: #b3d9ff;
-        color: #004085;
-    }
-
-        .alert-info i {
-            font-size: 1.25rem;
-            color: #0066cc;
-        }
-
-    /* Info label styling */
     .info-label {
-        color: #6c757d;
+        flex: 0 0 30%;
         font-weight: 500;
-    }
-
-    /* Valid ID Styles */
-    .valid-id-loading {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    /* Valid ID Container with DARKER THEME */
-    .valid-id-container {
-        display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-        color: white;
-    }
-
-    /* Encrypted Display Styles - consistent with regular form fields */
-    .encrypted-info-section {
-        background-color: transparent;
-        border-radius: 0;
-        padding: 0;
-        border: none;
-    }
-
-    .encrypted-display {
-        background-color: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
-        font-family: 'Courier New', monospace;
-        font-size: 0.85rem;
         color: #6c757d;
-        overflow-x: auto;
-        white-space: nowrap;
     }
 
-    .encrypted-text {
-        letter-spacing: 0.5px;
-    }
-
-    /* Image Zoom Modal */
-    .zoom-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        padding-top: 50px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.9);
-    }
-
-    .zoom-modal-content {
-        margin: auto;
-        display: block;
-        max-width: 90%;
-        max-height: 90%;
-    }
-
-    .close-zoom {
-        position: absolute;
-        top: 15px;
-        right: 35px;
-        color: #fff;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    /* Image preview styles */
-    .id-image-container {
-        cursor: pointer;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 2px solid #dee2e6;
-        transition: all 0.3s ease;
-        margin-top: 0.5rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-        .id-image-container:hover {
-            border-color: #67AFEB;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-    .id-image {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-
-    /* PDF STYLES COPIED FROM HOSPITAL VIEW */
-    /* PDF Viewer Modal - FULLY COPIED FROM HOSPITAL VIEW */
-    .pdf-viewer-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.95);
-    }
-
-    .pdf-viewer-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-viewer-header {
-        background-color: #333;
-        color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .pdf-viewer-title {
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-
-    .pdf-viewer-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 2rem;
-        cursor: pointer;
-        padding: 0 0.5rem;
-        line-height: 1;
-    }
-
-        .pdf-viewer-close:hover {
-            color: #16496B;
-        }
-
-    .pdf-viewer-body {
+    .info-value {
         flex: 1;
-        background-color: #525659;
-        position: relative;
-        overflow: auto;
-    }
-
-    .pdf-container {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        min-height: 100%;
-    }
-
-    #pdfCanvas {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        background-color: white;
-    }
-
-    /* PDF Controls - COPIED FROM HOSPITAL VIEW */
-    .pdf-controls {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: auto;
-        flex-wrap: wrap;
-    }
-
-    .page-info {
-        color: white;
-        font-size: 0.9rem;
-        margin: 0 10px;
-    }
-
-    .zoom-level {
-        color: white;
-        font-size: 0.9rem;
-        min-width: 40px;
-        text-align: center;
-    }
-
-    .pdf-loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .pdf-error {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        color: white;
-        display: none;
-    }
-
-        .pdf-error i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-    /* PDF Control Buttons - COPIED FROM HOSPITAL VIEW */
-    .pdf-controls .btn {
-        background-color: #404040;
-        border-color: #505050;
-        color: #fff;
-        font-size: 0.85rem;
-        padding: 6px 12px;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        min-width: 85px;
-        justify-content: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-        .pdf-controls .btn:hover:not(:disabled) {
-            background-color: #505050;
-            border-color: #606060;
-            color: #fff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .pdf-controls .btn:active:not(:disabled) {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .pdf-controls .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        .pdf-controls .btn i {
-            font-size: 0.9rem;
-        }
-
-    /* PDF Preview in Document Section - COPIED FROM HOSPITAL VIEW */
-    .pdf-preview {
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-        margin-top: 0.5rem;
-    }
-
-        .pdf-preview:hover {
-            border-color: #16496B;
-            background-color: #e8f4fe;
-            transform: translateY(-2px);
-        }
-
-    .pdf-icon {
-        font-size: 3rem;
-        color: #dc143c;
-        margin-right: 1rem;
-    }
-
-    .pdf-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .pdf-filename {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 0.25rem;
-    }
-
-    .pdf-label {
-        font-size: 0.9rem;
-        color: #6c757d;
+        color: #555;
     }
 
     /* Responsive adjustments */
@@ -1002,25 +964,6 @@
         .timeline-marker {
             left: -1.75rem;
         }
-
-        .pdf-controls {
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .page-info {
-            display: none;
-        }
-
-        .pdf-preview {
-            padding: 0.75rem;
-            gap: 0.75rem;
-        }
-
-        .pdf-icon {
-            font-size: 2rem;
-        }
     }
 </style>
 
@@ -1030,7 +973,7 @@
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<!-- PDF Viewer Modal - COPIED FROM HOSPITAL VIEW -->
+<!-- PDF Viewer Modal -->
 <div id="pdfViewerModal" class="pdf-viewer-modal">
     <div class="pdf-viewer-content">
         <div class="pdf-viewer-header">
@@ -1638,107 +1581,59 @@
             </div>
             <div class="tracking-body">
                 <div class="timeline">
-                    <!-- UPDATED TIMELINE ORDER TO MATCH HOSPITAL VIEW: Bottom (Oldest) to Top (Newest) -->
-                    <!-- Step 1: Document Submitted - BOTTOM (Start of Journey) -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker submitted">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Application Submitted</h6>
-                            <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">We have received your application for Funeral assistance.</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Processing -->
-                    @if (processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
+                    <!-- REVERSED: Top (Oldest) to Bottom (Newest) -->
+                    @if (isApproved)
                     {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
-                            <div class="timeline-marker processing">
-                                <i class="fas fa-user-check"></i>
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
                             </div>
-                            <div class="timeline-content">
-                                <h6>Being Reviewed</h6>
-                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
-                            </div>
-                        </div>
-                    }
-                    else if (resultDate <= DateTime.MinValue || resultDate.Year <= 1)
-                    {
-                        <div class="timeline-item">
-                            <div class="timeline-marker waiting">
-                                <i class="fas fa-hourglass-half"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6>Waiting for Review</h6>
-                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
                             </div>
                         </div>
-                    }
 
-                    <!-- Step 3: Result -->
-                    @if (resultDate > DateTime.MinValue && resultDate.Year > 1)
-                    {
-                        @if (status2 == "Retake")
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
                         {
                             <div class="timeline-item">
-                                <div class="timeline-marker retake">
-                                    <i class="fas fa-arrow-rotate-left"></i>
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Action Required - Retake Application</h6>
-                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                    <p class="timeline-description">
-                                        We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
-                                    </p>
-                                    @if (!string.IsNullOrWhiteSpace(retakeReason))
-                                    {
-                                        <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                            <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                            <p class="mb-0" style="color: #666;">@retakeReason</p>
-                                        </div>
-                                    }
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
                                 </div>
                             </div>
                         }
-                        else
+
+                        @if (isClaimed)
                         {
+                            <!-- Application Approved - GREY -->
                             <div class="timeline-item">
-                                <div class="timeline-marker @(status2 == "Approve" ? "approved" : "unapproved")">
-                                    <i class="fas @(status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                <div class="timeline-marker approved inactive">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Application @(status2 == "Approve" ? "Approved" : status2)</h6>
+                                <div class="timeline-content inactive">
+                                    <h6>Application Approved</h6>
                                     <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
                                     <p class="timeline-description text-gray-700 leading-relaxed">
-                                        @if (status2 == "Approve")
-                                        {
-                                            <text>Your application has been approved. You can now claim your assistance.</text>
-                                        }
-                                        else
-                                        {
-                                            <text>Your application was not approved at this time.</text>
-                                        }
+                                        Your application has been approved. You can now claim your assistance.
                                     </p>
-
                                     @if (!string.IsNullOrWhiteSpace(comments))
                                     {
                                         <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
                                     }
                                 </div>
                             </div>
-                        }
-                    }
 
-                    <!-- Step 4: Claim Status (Most Recent) - TOP (Current Status/End of Journey) -->
-                    @if (status2 == "Approve")
-                    {
-                        @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
-                        {
+                            <!-- Step 4: Assistance Released - BOTTOM (Current Status) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker claimed">
+                                <div class="timeline-marker claimed active">
                                     <i class="fas fa-hands-helping"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1750,10 +1645,29 @@
                                 </div>
                             </div>
                         }
-                        else if (status2 == "Approve")
+                        else
                         {
+                            <!-- Application Approved - ACTIVE - BOTTOM (Current Status) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker waiting">
+                                <div class="timeline-marker approved active">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Application Approved</h6>
+                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                        Your application has been approved. You can now claim your assistance.
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(comments))
+                                    {
+                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Ready for Release - BOTTOM (Next Status) -->
+                            <div class="timeline-item">
+                                <div class="timeline-marker waiting active">
                                     <i class="fas fa-gift"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1762,6 +1676,155 @@
                                 </div>
                             </div>
                         }
+                    }
+                    else if (isReviewed && !isRetake)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3: Result (NOT approve) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker unapproved active">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application @status2</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                    Your application was not approved at this time.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(comments))
+                                {
+                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isRetake)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3.5: Retake Request - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker retake active">
+                                <i class="fas fa-arrow-rotate-left"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Action Required - Retake Application</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">
+                                    We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(retakeReason))
+                                {
+                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                        <p class="mb-0" style="color: #666;">@retakeReason</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isProcessing)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Processing (Active) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker processing active">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Being Reviewed</h6>
+                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- When application is only submitted (not yet being reviewed) -->
+                        <!-- Application Submitted - ACTIVE - TOP (Start of Journey) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted active">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for Funeral assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - ACTIVE (waiting stage) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker waiting active">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Waiting for Review</h6>
+                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            </div>
+                        </div>
                     }
                 </div>
             </div>
@@ -1777,7 +1840,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        // PDF Viewer Variables - COPIED FROM HOSPITAL VIEW
+        // PDF Viewer Variables
         let currentPDF = null;
         let currentPage = 1;
         let totalPages = 1;
@@ -1811,7 +1874,7 @@
             }
         });
 
-        // PDF Viewer Function - COPIED FROM HOSPITAL VIEW
+        // PDF Viewer Function
         async function viewPDFInModal(fileName, fileType, displayName) {
             const modal = document.getElementById('pdfViewerModal');
             const title = document.getElementById('pdfViewerTitle');
@@ -1878,7 +1941,7 @@
             }
         }
 
-        // Render specific page - COPIED FROM HOSPITAL VIEW
+        // Render specific page
         async function renderPage(pageNum) {
             if (!currentPDF) return;
 
@@ -1908,7 +1971,7 @@
             }
         }
 
-        // Navigation functions - COPIED FROM HOSPITAL VIEW
+        // Navigation functions
         function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
@@ -1949,7 +2012,7 @@
             if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
-        // Close PDF Viewer - COPIED FROM HOSPITAL VIEW
+        // Close PDF Viewer
         function closePDFViewer() {
             const modal = document.getElementById('pdfViewerModal');
             if (modal) {
@@ -2065,7 +2128,18 @@
             }, 2000); // Show modal for 2 seconds before redirecting
         }
 
-        // Funeral Information Functions (Matching Hospital Assistance pattern)
+        // Funeral Information Functions
+        function toggleFuneralInfo() {
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                hideFuneralInfo();
+            } else {
+                openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields());
+            }
+        }
+
         function getFuneralAssistanceFields() {
             const fieldNames = [
                 'DeceasedPersonName',
@@ -2113,21 +2187,6 @@
             };
         }
 
-        // Toggle function for Funeral Information (View/Hide)
-        function toggleFuneralInfo() {
-            const viewButton = document.getElementById('viewFuneralInfoBtn');
-            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
-
-            if (isDecrypted) {
-                // Currently showing decrypted data, hide it
-                hideFuneralInfo();
-            } else {
-                // Currently hidden, show the decrypt modal
-                openViewAdditionalInfoModal('Funeral', '@ViewData["Id"]', getFuneralAssistanceFields());
-            }
-        }
-
-        // Function to hide funeral information
         function hideFuneralInfo() {
             const funeralInfoContainer = document.getElementById('funeralInfoContainer');
             const funeralInfoEncrypted = document.getElementById('funeralInfoEncrypted');
@@ -2166,11 +2225,14 @@
                 btnText.textContent = 'View Funeral Information';
             }
 
-            // Clear decrypted data
             window.decryptedFuneralData = {};
         }
 
-        // Function to show funeral information after successful decryption
+        window.onFuneralInfoDecrypted = function() {
+            console.log('Funeral information decrypted successfully');
+            showFuneralInfoAfterDecryption();
+        };
+
         function showFuneralInfoAfterDecryption() {
             console.log('Showing funeral information after decryption...');
 
@@ -2326,7 +2388,115 @@
             showSuccessModal('Disapprove');
         }
 
-        // Keyboard shortcuts and navigation - COPIED FROM HOSPITAL VIEW
+        // Function to toggle Valid ID view
+        function toggleValidID(frontImagePath, backImagePath) {
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                hideValidID();
+            } else {
+                openViewIDModal('@ViewData["Id"]', frontImagePath, backImagePath);
+            }
+        }
+
+        // Function to hide Valid ID
+        function hideValidID() {
+            const validIDContainer = document.getElementById('validIDContainer');
+            const validIDAlert = document.getElementById('validIDAlert');
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            // Hide decrypted ID container
+            if (validIDContainer) {
+                validIDContainer.style.display = 'none';
+            }
+
+            // Show alert
+            if (validIDAlert) {
+                validIDAlert.style.display = 'flex';
+            }
+
+            // Update button to "View" state
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+                viewButton.classList.remove('btn-warning');
+                viewButton.classList.add('btn-primary');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-slash-fill');
+                btnIcon.classList.add('bi-eye-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'View Valid ID';
+            }
+        }
+
+        // Function to show Valid ID after successful decryption
+        window.onValidIDDecrypted = function(frontImageData, backImageData) {
+            console.log('Showing Valid ID after decryption...');
+
+            // Hide the alert
+            const validIDAlert = document.getElementById('validIDAlert');
+            if (validIDAlert) {
+                validIDAlert.style.display = 'none';
+            }
+
+            // Show the Valid ID container (decrypted)
+            const validIDContainer = document.getElementById('validIDContainer');
+            const frontImage = document.getElementById('decryptedFrontIDInline');
+            const backImage = document.getElementById('decryptedBackIDInline');
+            const frontContainer = document.getElementById('frontIDInlineContainer');
+            const backContainer = document.getElementById('backIDInlineContainer');
+
+            if (validIDContainer && frontImage && backImage && frontContainer && backContainer) {
+                // Set the image sources
+                if (frontImageData) {
+                    frontImage.src = 'data:image/jpeg;base64,' + frontImageData;
+                    frontImage.style.display = 'block';
+                    frontContainer.style.display = 'block';
+                } else {
+                    frontContainer.style.display = 'none';
+                }
+
+                if (backImageData) {
+                    backImage.src = 'data:image/jpeg;base64,' + backImageData;
+                    backImage.style.display = 'block';
+                    backContainer.style.display = 'block';
+                } else {
+                    backContainer.style.display = 'none';
+                }
+
+                // Show the container
+                validIDContainer.style.display = 'block';
+
+                // Scroll to the Valid ID section
+                setTimeout(() => {
+                    validIDContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            // Update button to "Hide" state
+            const viewButton = document.getElementById('viewValidIDBtn');
+            const btnIcon = document.getElementById('validIDBtnIcon');
+            const btnText = document.getElementById('validIDBtnText');
+
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'true');
+                viewButton.classList.remove('btn-primary');
+                viewButton.classList.add('btn-warning');
+            }
+            if (btnIcon) {
+                btnIcon.classList.remove('bi-eye-fill');
+                btnIcon.classList.add('bi-eye-slash-fill');
+            }
+            if (btnText) {
+                btnText.textContent = 'Hide Valid ID';
+            }
+        };
+
+        // Keyboard shortcuts and navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const zoomModal = document.getElementById("zoomModal");
@@ -2360,7 +2530,7 @@
             }
         });
 
-        // Close modal when clicking outside - COPIED FROM HOSPITAL VIEW
+        // Close modal when clicking outside
         window.onclick = function(event) {
             const zoomModal = document.getElementById("zoomModal");
             const pdfModal = document.getElementById("pdfViewerModal");
@@ -2385,13 +2555,23 @@
             }
         }
 
-        // Function to view encrypted Funeral Information
-        function viewFuneralAdditionalInfo() {
-            const formId = parseInt('@ViewData["Id"]');
-            const encryptedFields = getFuneralAssistanceFields();
+        // Initialize page state
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Funeral Information button state
+            const viewButton = document.getElementById('viewFuneralInfoBtn');
+            if (viewButton) {
+                viewButton.setAttribute('data-decrypted', 'false');
+            }
 
-            openViewAdditionalInfoModal('Funeral', formId, encryptedFields);
-        }
+            // Make sure the encrypted section is visible by default
+            const funeralInfoEncrypted = document.getElementById('funeralInfoEncrypted');
+            const funeralInfoContainer = document.getElementById('funeralInfoContainer');
+            const funeralInfoAlert = document.getElementById('funeralInfoAlert');
+
+            if (funeralInfoEncrypted) funeralInfoEncrypted.style.display = 'block';
+            if (funeralInfoContainer) funeralInfoContainer.style.display = 'none';
+            if (funeralInfoAlert) funeralInfoAlert.style.display = 'flex';
+        });
     </script>
 
     @Html.Partial("_ViewEncryptedDataModalForAdmin")
