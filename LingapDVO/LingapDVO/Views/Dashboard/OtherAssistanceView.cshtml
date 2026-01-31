@@ -6,7 +6,7 @@
     var checkedAssistance = ViewData["CheckedAssistance"] as Dictionary<string, string> ?? new();
     var checkedCMO = ViewData["CheckedCMOPERSONNEL"] as Dictionary<string, string> ?? new Dictionary<string, string>();
 
-    // Get tracking data for this specific application (ADDED FROM FUNERAL CODE)
+    // Get tracking data for this specific application
     var applicationId = ViewData["Id"]?.ToString();
     var createdDate = ViewData["CreatedAt"] != null ? Convert.ToDateTime(ViewData["CreatedAt"]) : DateTime.Now;
     var processAt = ViewData["ProcessAt"] != null && ViewData["ProcessAt"].ToString() != "" ? Convert.ToDateTime(ViewData["ProcessAt"]) : DateTime.MinValue;
@@ -18,6 +18,14 @@
     var processBy = ViewData["Processby"]?.ToString() ?? "";
     var comments = ViewData["Comments"]?.ToString() ?? "";
     var retakeReason = ViewData["RetakeReason"]?.ToString() ?? "";
+
+    // Determine status flags
+    var isSubmitted = createdDate > DateTime.MinValue;
+    var isProcessing = processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy);
+    var isReviewed = resultDate > DateTime.MinValue && resultDate.Year > 1;
+    var isApproved = status2 == "Approve";
+    var isRetake = status2 == "Retake";
+    var isClaimed = claimedDate > DateTime.MinValue && claimedDate.Year > 1 && !string.IsNullOrWhiteSpace(status3);
 }
 
 <style>
@@ -36,7 +44,7 @@
         padding: 1rem !important;
     }
 
-    /* Main container for two-column layout - FROM FUNERAL */
+    /* Main container for two-column layout */
     .application-container {
         display: flex;
         flex-wrap: wrap;
@@ -134,12 +142,12 @@
                 background: #a8a8a8;
             }
 
-    /* UPDATED TIMELINE TO MATCH FUNERAL VIEW - UPWARD TRACKING */
+    /* REVERSED TIMELINE - Bottom to Top */
     .timeline {
         position: relative;
         padding-left: 2rem;
         display: flex;
-        flex-direction: column-reverse; /* This reverses the order - newest at top */
+        flex-direction: column-reverse; /* This reverses the order */
     }
 
         .timeline::before {
@@ -207,32 +215,49 @@
         line-height: 1.4;
     }
 
-    .timeline-marker.submitted {
+    /* Active state markers */
+    .timeline-marker.submitted.active {
         background: #10b981;
     }
 
-    .timeline-marker.processing {
+    .timeline-marker.processing.active {
         background: #f59e0b;
     }
 
-    .timeline-marker.approved {
+    .timeline-marker.approved.active {
         background: #10b981;
     }
 
-    .timeline-marker.unapproved {
+    .timeline-marker.unapproved.active {
         background: #ef4444;
     }
 
-    .timeline-marker.waiting {
+    .timeline-marker.waiting.active {
         background: #6c757d;
     }
 
-    .timeline-marker.claimed {
+    .timeline-marker.claimed.active {
         background: #8b5cf6;
     }
 
-    .timeline-marker.retake {
+    .timeline-marker.retake.active {
         background: #ff9800;
+    }
+
+    /* Inactive state markers (grey) */
+    .timeline-marker.inactive {
+        background: #9ca3af;
+        color: white;
+    }
+
+    /* Inactive timeline content */
+    .timeline-content.inactive h6 {
+        color: #9ca3af;
+    }
+
+    .timeline-content.inactive .timeline-date,
+    .timeline-content.inactive .timeline-description {
+        color: #b0b7c3;
     }
 
     .waiting-text {
@@ -242,7 +267,7 @@
         font-size: 0.85rem;
     }
 
-    /* Status Badges - FROM FUNERAL */
+    /* Status Badges */
     .current-status-badge {
         display: inline-block;
         padding: 0.5rem 1rem;
@@ -288,7 +313,7 @@
         border: 1px solid #90caf9;
     }
 
-    /* Application ID Display - FROM FUNERAL */
+    /* Application ID Display */
     .application-id {
         font-family: 'Courier New', monospace;
         background-color: #f8f9fa;
@@ -308,7 +333,7 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Additional Information Styles - consistent with regular form fields */
+    /* Additional Information Container */
     .additional-info-container {
         display: none;
         background-color: transparent;
@@ -323,7 +348,26 @@
         display: block;
     }
 
-    /* Decrypted display - consistent with regular form fields */
+    /* Additional Loading Container */
+    .additional-loading-container {
+        display: none;
+        background-color: transparent;
+        border-radius: 0;
+        padding: 1rem 0;
+        margin-top: 0.5rem;
+        border: none;
+        text-align: center;
+    }
+
+        .additional-loading-container .progress {
+            background-color: #e9ecef;
+        }
+
+        .additional-loading-container .progress-bar {
+            background-color: #3498db;
+        }
+
+    /* Decrypted Display Styles */
     .decrypted-display {
         background-color: transparent;
         border: none;
@@ -348,6 +392,15 @@
             background-color: transparent;
         }
 
+        .decrypted-field .info-label {
+            color: #6c757d !important;
+            font-weight: 500;
+        }
+
+            .decrypted-field .info-label i {
+                color: #2d3748 !important;
+            }
+
     .decrypted-value {
         background-color: transparent;
         border: none;
@@ -358,40 +411,7 @@
         flex: 1;
     }
 
-    .decrypted-field .info-label {
-        color: #6c757d !important;
-        font-weight: 500;
-    }
-
-        .decrypted-field .info-label i {
-            color: #2d3748 !important;
-        }
-
-    /* Animation for decrypted display */
-    @@keyframes fadeInScale {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    /* Additional Information Loading Container */
-    .additional-loading-container {
-        display: none;
-        background-color: transparent;
-        border-radius: 0;
-        padding: 1rem 0;
-        margin-top: 0.5rem;
-        border: none;
-        text-align: center;
-    }
-
-    /* Encrypted Display Styles - consistent with regular form fields */
+    /* Encrypted Display Styles */
     .encrypted-info-section {
         background-color: transparent;
         border-radius: 0;
@@ -415,6 +435,19 @@
         letter-spacing: 0.5px;
     }
 
+    /* Animation for decrypted display */
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
     /* Alert styling */
     .alert-info {
         background-color: #e7f3ff;
@@ -433,49 +466,7 @@
         font-weight: 500;
     }
 
-    /* Valid ID Styles */
-    .valid-id-loading {
-        display: none;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-top: 1rem;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    .valid-id-container {
-        display: none;
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border: 2px solid #1a252f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        animation: fadeInScale 0.4s ease-out;
-        color: white;
-    }
-
-    .id-image-container {
-        cursor: pointer;
-        transition: transform 0.2s;
-        margin-bottom: 15px;
-    }
-
-        .id-image-container:hover {
-            transform: scale(1.02);
-        }
-
-    .id-image {
-        width: 100%;
-        height: 200px;
-        object-fit: contain;
-        background-color: #f8f9fa;
-        border: 1px solid var(--border-color);
-        border-radius: 5px;
-        padding: 10px;
-    }
-
-    /* Zoom Modal */
+    /* Image Zoom Modal */
     .zoom-modal {
         display: none;
         position: fixed;
@@ -493,7 +484,6 @@
         display: block;
         max-width: 90%;
         max-height: 90%;
-        object-fit: contain;
     }
 
     .close-zoom {
@@ -504,27 +494,42 @@
         font-size: 40px;
         font-weight: bold;
         cursor: pointer;
-        transition: color 0.2s ease;
     }
 
-        .close-zoom:hover {
-            color: #3498db;
+    .id-image-container {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .id-image-container:hover {
+            transform: scale(1.02);
         }
 
-    /* PDF Preview Styles - UPDATED TO MATCH FUNERAL */
-    .pdf-preview-container {
+    .id-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+
+    .pdf-container {
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: transform 0.2s;
+    }
+
+    .pdf-preview {
         display: flex;
         align-items: center;
         padding: 1rem;
         border: 2px dashed #dee2e6;
         border-radius: 8px;
         background-color: #f8f9fa;
-        margin-top: 0.5rem;
+        transition: all 0.3s ease;
     }
 
-        .pdf-preview-container:hover {
+        .pdf-preview:hover {
             border-color: #16496B;
             background-color: #e8f4fe;
             transform: translateY(-2px);
@@ -552,279 +557,6 @@
         color: #6c757d;
     }
 
-    /* Status Buttons Styling */
-    .status-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-approved {
-        background-color: #28a745;
-        border-color: #28a745;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-approved:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    .btn-disapproved {
-        background-color: #dc3545;
-        border-color: #dc3545;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-disapproved:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Retake Button Styling */
-    .btn-retake {
-        background-color: #ffc107;
-        border-color: #ffc107;
-        color: #212529;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-retake:hover {
-            background-color: #e0a800;
-            border-color: #d39e00;
-            color: #212529;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Claimed Button Styling */
-    .btn-claimed {
-        background-color: #17a2b8;
-        border-color: #17a2b8;
-        color: white;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        border-radius: 5px;
-        margin: 0 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-claimed:hover {
-            background-color: #138496;
-            border-color: #117a8b;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-    /* Comments Modal Styling */
-    .comments-modal {
-        display: none;
-        position: fixed;
-        z-index: 3000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .comments-modal-content {
-        background-color: white;
-        margin: 10% auto;
-        padding: 2rem;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .comments-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .comments-modal-title {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .comments-modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #6c757d;
-    }
-
-        .comments-modal-close:hover {
-            color: var(--primary-color);
-        }
-
-    .comments-required {
-        border: 2px solid #dc3545 !important;
-        background-color: #fff5f5;
-    }
-
-    /* Form Validation */
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-
-    .is-invalid {
-        border-color: #dc3545;
-        padding-right: calc(1.5em + 0.75rem);
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
-        background-repeat: no-repeat;
-        background-position: right calc(0.375em + 0.1875rem) center;
-        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-
-        .is-invalid ~ .invalid-feedback {
-            display: block;
-        }
-
-    /* Success Modal */
-    .success-modal {
-        display: none;
-        position: fixed;
-        z-index: 4000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
-    }
-
-    .success-modal-content {
-        background-color: white;
-        margin: 15% auto;
-        padding: 2rem;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-
-    .success-icon {
-        font-size: 3rem;
-        color: #28a745;
-        margin-bottom: 1rem;
-    }
-
-    /* Retake Comments Modal */
-    .retake-modal {
-        display: none;
-        position: fixed;
-        z-index: 3000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .retake-modal-content {
-        background-color = white;
-        margin: 10% auto;
-        padding: 2rem;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    .retake-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .retake-modal-title {
-        color: #ffc107;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .retake-modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #6c757d;
-    }
-
-        .retake-modal-close:hover {
-            color: var(--primary-color);
-        }
-
-    /* Receipt Sections */
-    .receipt-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .section-header {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--primary-light);
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-
-    .info-label {
-        flex: 0 0 30%;
-        font-weight: 500;
-        color: var(--secondary-color);
-    }
-
-    .info-value {
-        flex: 1;
-        color: #555;
-    }
-
-    /* PDF Viewer Modal - FROM FUNERAL */
     .pdf-viewer-modal {
         display: none;
         position: fixed;
@@ -871,7 +603,7 @@
     }
 
         .pdf-viewer-close:hover {
-            color: var(--primary-color);
+            color: #16496B;
         }
 
     .pdf-viewer-body {
@@ -942,46 +674,275 @@
             margin-bottom: 1rem;
         }
 
-    /* PDF Control Buttons - FROM FUNERAL */
-    .pdf-controls .btn {
-        background-color: #404040;
-        border-color: #505050;
-        color: #fff;
-        font-size: 0.85rem;
-        padding: 6px 12px;
-        border-radius: 5px;
-        transition: all 0.3s ease;
+    /* Status Buttons Styling */
+    .status-buttons {
         display: flex;
-        align-items: center;
-        gap: 5px;
-        min-width: 85px;
         justify-content: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
     }
 
-        .pdf-controls .btn:hover:not(:disabled) {
-            background-color: #505050;
-            border-color: #606060;
-            color: #fff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    .btn-approved {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-approved:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .pdf-controls .btn:active:not(:disabled) {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    .btn-disapproved {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-disapproved:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .pdf-controls .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
+    .btn-retake {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-retake:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .pdf-controls .btn i {
-            font-size: 0.9rem;
+    .btn-claimed {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border-radius: 5px;
+        margin: 0 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-claimed:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
+
+    /* Comments Modal Styling */
+    .comments-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .comments-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .comments-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .comments-modal-title {
+        color: #16496B;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .comments-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .comments-modal-close:hover {
+            color: #16496B;
+        }
+
+    .comments-required {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    /* Form Validation */
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6 .4.4.4-.4'/%3e%3cpath d='M6 7v1'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    /* Success Modal */
+    .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 4000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .success-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+
+    /* Retake Comments Modal */
+    .retake-modal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .retake-modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .retake-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .retake-modal-title {
+        color: #ffc107;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .retake-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+        .retake-modal-close:hover {
+            color: #16496B;
+        }
+
+    /* Receipt Sections */
+    .receipt-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .section-header {
+        color: #16496B;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #67AFEB;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+        flex: 0 0 30%;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .info-value {
+        flex: 1;
+        color: #555;
+    }
 
     /* Responsive adjustments */
     @@media (max-width: 992px) {
@@ -1003,25 +964,6 @@
         .timeline-marker {
             left: -1.75rem;
         }
-
-        .pdf-controls {
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .page-info {
-            display: none;
-        }
-
-        .pdf-preview-container {
-            padding: 0.75rem;
-            gap: 0.75rem;
-        }
-
-        .pdf-icon {
-            font-size: 2rem;
-        }
     }
 </style>
 
@@ -1031,7 +973,7 @@
     <img class="zoom-modal-content" id="zoomedImage">
 </div>
 
-<!-- PDF Viewer Modal - FROM FUNERAL -->
+<!-- PDF Viewer Modal -->
 <div id="pdfViewerModal" class="pdf-viewer-modal">
     <div class="pdf-viewer-content">
         <div class="pdf-viewer-header">
@@ -1127,7 +1069,6 @@
     </div>
 </div>
 
-<!-- TWO-COLUMN LAYOUT CONTAINER - FROM FUNERAL -->
 <div class="container" style="margin-top: 1rem; max-width: 1400px;">
     <!-- Two-Column Layout Container -->
     <div class="application-container">
@@ -1145,7 +1086,6 @@
                     <input type="hidden" id="processByInput" name="Processby" value="@Context.Session.GetString("AdminFullname")" />
 
                     <div class="receipt-body">
-
                         <!-- Patient Information -->
                         <div class="receipt-section">
                             <h5 class="section-header">Patient Information</h5>
@@ -1634,18 +1574,20 @@
                                 </div>
                             </div>
 
-                            <!-- Doctor Prescription - UPDATED TO MATCH FUNERAL PDF VIEWER -->
+                            <!-- Doctor Prescription -->
                             @if (ViewData["DoctorPrescriptionBase64"] != null)
                             {
                                 <div class="receipt-section">
                                     <h5 class="section-header">Supporting Document</h5>
                                     @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
                                     {
-                                        <div class="pdf-preview-container" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                            <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                            <div class="pdf-info">
-                                                <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                                <span class="pdf-label">Click to view PDF</span>
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -1658,18 +1600,20 @@
                                 </div>
                             }
 
-                            <!-- Medical Certificate - UPDATED TO MATCH FUNERAL PDF VIEWER -->
+                            <!-- Medical Certificate -->
                             @if (ViewData["MedicalCertificateBase64"] != null)
                             {
                                 <div class="receipt-section">
                                     <h5 class="section-header">Supporting Document</h5>
                                     @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
                                     {
-                                        <div class="pdf-preview-container" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
-                                            <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                            <div class="pdf-info">
-                                                <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
-                                                <span class="pdf-label">Click to view PDF</span>
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["MedicalCertificate"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -1682,18 +1626,20 @@
                                 </div>
                             }
 
-                            <!-- Death Certificate - UPDATED TO MATCH FUNERAL PDF VIEWER -->
+                            <!-- Death Certificate -->
                             @if (ViewData["DeathCertificateBase64"] != null)
                             {
                                 <div class="receipt-section">
                                     <h5 class="section-header">Supporting Document</h5>
                                     @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
                                     {
-                                        <div class="pdf-preview-container" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
-                                            <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-                                            <div class="pdf-info">
-                                                <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
-                                                <span class="pdf-label">Click to view PDF</span>
+                                        <div class="pdf-container">
+                                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
+                                                <div class="pdf-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                                                <div class="pdf-info">
+                                                    <span class="pdf-filename">@ViewData["DeathCertificate"]</span>
+                                                    <span class="pdf-label">Click to view PDF</span>
+                                                </div>
                                             </div>
                                         </div>
                                     }
@@ -1707,7 +1653,7 @@
                             }
                         </div>
 
-                        <!-- Status Action Buttons (Only show if user has admin rights) - FROM FUNERAL -->
+                        <!-- Status Action Buttons (Only show if user has admin rights) -->
                         @if (Context.Session.GetString("UserRole") == "Admin")
                         {
                             <div class="receipt-section">
@@ -1736,7 +1682,7 @@
             </div>
         </div>
 
-        <!-- Right Column: Application Tracking - FROM FUNERAL WITH UPWARD TRACKING -->
+        <!-- Right Column: Application Tracking -->
         <div class="application-tracking">
             <div class="tracking-header">
                 <h5>
@@ -1803,107 +1749,59 @@
             </div>
             <div class="tracking-body">
                 <div class="timeline">
-                    <!-- UPWARD TRACKING: Bottom (Oldest) to Top (Newest) -->
-                    <!-- Step 1: Document Submitted - BOTTOM (Start of Journey) -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker submitted">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
-                        <div class="timeline-content">
-                            <h6>Application Submitted</h6>
-                            <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                            <p class="timeline-description">We have received your application for @ViewData["Typeassistance"].</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Processing -->
-                    @if (processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy))
+                    <!-- REVERSED: Top (Oldest) to Bottom (Newest) -->
+                    @if (isApproved)
                     {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
                         <div class="timeline-item">
-                            <div class="timeline-marker processing">
-                                <i class="fas fa-user-check"></i>
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
                             </div>
-                            <div class="timeline-content">
-                                <h6>Being Reviewed</h6>
-                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
-                            </div>
-                        </div>
-                    }
-                    else if (resultDate <= DateTime.MinValue || resultDate.Year <= 1)
-                    {
-                        <div class="timeline-item">
-                            <div class="timeline-marker waiting">
-                                <i class="fas fa-hourglass-half"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <h6>Waiting for Review</h6>
-                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for @ViewData["Typeassistance"] assistance.</p>
                             </div>
                         </div>
-                    }
 
-                    <!-- Step 3: Result -->
-                    @if (resultDate > DateTime.MinValue && resultDate.Year > 1)
-                    {
-                        @if (status2 == "Retake")
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
                         {
                             <div class="timeline-item">
-                                <div class="timeline-marker retake">
-                                    <i class="fas fa-arrow-rotate-left"></i>
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Action Required - Retake Application</h6>
-                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
-                                    <p class="timeline-description">
-                                        We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
-                                    </p>
-                                    @if (!string.IsNullOrWhiteSpace(retakeReason))
-                                    {
-                                        <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                            <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                            <p class="mb-0" style="color: #666;">@retakeReason</p>
-                                        </div>
-                                    }
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
                                 </div>
                             </div>
                         }
-                        else
+
+                        @if (isClaimed)
                         {
+                            <!-- Application Approved - GREY -->
                             <div class="timeline-item">
-                                <div class="timeline-marker @(status2 == "Approve" ? "approved" : "unapproved")">
-                                    <i class="fas @(status2 == "Approve" ? "fa-check-circle" : "fa-times-circle")"></i>
+                                <div class="timeline-marker approved inactive">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6>Application @(status2 == "Approve" ? "Approved" : status2)</h6>
+                                <div class="timeline-content inactive">
+                                    <h6>Application Approved</h6>
                                     <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
                                     <p class="timeline-description text-gray-700 leading-relaxed">
-                                        @if (status2 == "Approve")
-                                        {
-                                            <text>Your application has been approved. You can now claim your assistance.</text>
-                                        }
-                                        else
-                                        {
-                                            <text>Your application was not approved at this time.</text>
-                                        }
+                                        Your application has been approved. You can now claim your assistance.
                                     </p>
-
                                     @if (!string.IsNullOrWhiteSpace(comments))
                                     {
                                         <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
                                     }
                                 </div>
                             </div>
-                        }
-                    }
 
-                    <!-- Step 4: Claim Status (Most Recent) - TOP (Current Status/End of Journey) -->
-                    @if (status2 == "Approve")
-                    {
-                        @if (claimedDate > DateTime.MinValue && claimedDate.Year > 1 && status3 == "Claimed")
-                        {
+                            <!-- Step 4: Assistance Released - BOTTOM (Current Status) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker claimed">
+                                <div class="timeline-marker claimed active">
                                     <i class="fas fa-hands-helping"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1915,10 +1813,29 @@
                                 </div>
                             </div>
                         }
-                        else if (status2 == "Approve")
+                        else
                         {
+                            <!-- Application Approved - ACTIVE - BOTTOM (Current Status) -->
                             <div class="timeline-item">
-                                <div class="timeline-marker waiting">
+                                <div class="timeline-marker approved active">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Application Approved</h6>
+                                    <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description text-gray-700 leading-relaxed">
+                                        Your application has been approved. You can now claim your assistance.
+                                    </p>
+                                    @if (!string.IsNullOrWhiteSpace(comments))
+                                    {
+                                        <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Ready for Release - BOTTOM (Next Status) -->
+                            <div class="timeline-item">
+                                <div class="timeline-marker waiting active">
                                     <i class="fas fa-gift"></i>
                                 </div>
                                 <div class="timeline-content">
@@ -1927,6 +1844,155 @@
                                 </div>
                             </div>
                         }
+                    }
+                    else if (isReviewed && !isRetake)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for @ViewData["Typeassistance"] assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3: Result (NOT approve) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker unapproved active">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application @status2</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description text-gray-700 leading-relaxed">
+                                    Your application was not approved at this time.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(comments))
+                                {
+                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isRetake)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for @ViewData["Typeassistance"] assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - GREY -->
+                        @if (isProcessing)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker processing inactive">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="timeline-content inactive">
+                                    <h6>Being Reviewed</h6>
+                                    <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                    <p class="timeline-description">Your application was reviewed by <strong>@processBy</strong></p>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 3.5: Retake Request - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker retake active">
+                                <i class="fas fa-arrow-rotate-left"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Action Required - Retake Application</h6>
+                                <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">
+                                    We need additional documents or corrections for your application. Please review the comments below and resubmit your application with the required updates.
+                                </p>
+                                @if (!string.IsNullOrWhiteSpace(retakeReason))
+                                {
+                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
+                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                        <p class="mb-0" style="color: #666;">@retakeReason</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (isProcessing)
+                    {
+                        <!-- Application Submitted - GREY (Oldest) - TOP -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted inactive">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content inactive">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for @ViewData["Typeassistance"] assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Processing (Active) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker processing active">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Being Reviewed</h6>
+                                <span class="timeline-date">@processAt.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">Your application is being reviewed by <strong>@processBy</strong></p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- When application is only submitted (not yet being reviewed) -->
+                        <!-- Application Submitted - ACTIVE - TOP (Start of Journey) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker submitted active">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Application Submitted</h6>
+                                <span class="timeline-date">@createdDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                                <p class="timeline-description">We have received your application for @ViewData["Typeassistance"] assistance.</p>
+                            </div>
+                        </div>
+
+                        <!-- Being Reviewed - ACTIVE (waiting stage) - BOTTOM (Current Status) -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker waiting active">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Waiting for Review</h6>
+                                <p class="waiting-text">Your application is waiting to be reviewed. We will review it within 1-2 hours.</p>
+                            </div>
+                        </div>
                     }
                 </div>
             </div>
@@ -1937,12 +2003,12 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Configure PDF.js worker - FROM FUNERAL
+        // Configure PDF.js worker
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        // PDF Viewer Variables - FROM FUNERAL
+        // PDF Viewer Variables
         let currentPDF = null;
         let currentPage = 1;
         let totalPages = 1;
@@ -1954,9 +2020,6 @@
         const requestorLastname = '@ViewData["RLastname"]';
         const requestorSuffix = '@ViewData["RSuffix"]';
         const requestorFullName = `${requestorFirstname} ${requestorMiddlename} ${requestorLastname}${requestorSuffix && requestorSuffix !== 'None' ? ' ' + requestorSuffix : ''}`.trim().replace(/\s+/g, ' ');
-
-        // Assistance Type
-        const assistanceType = '@ViewData["Typeassistance"]';
 
         // Image Zoom Functionality
         function zoomImage(src) {
@@ -1977,17 +2040,9 @@
                     if (modal) modal.style.display = "none";
                 }
             }
-
-            // Close on outside click
-            window.onclick = function(event) {
-                const zoomModal = document.getElementById("zoomModal");
-                if (event.target == zoomModal && zoomModal) {
-                    zoomModal.style.display = "none";
-                }
-            }
         });
 
-        // PDF Viewer Function - FROM FUNERAL
+        // PDF Viewer Function
         async function viewPDFInModal(fileName, fileType, displayName) {
             const modal = document.getElementById('pdfViewerModal');
             const title = document.getElementById('pdfViewerTitle');
@@ -2054,7 +2109,7 @@
             }
         }
 
-        // Render specific page - FROM FUNERAL
+        // Render specific page
         async function renderPage(pageNum) {
             if (!currentPDF) return;
 
@@ -2084,7 +2139,7 @@
             }
         }
 
-        // Navigation functions - FROM FUNERAL
+        // Navigation functions
         function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
@@ -2125,7 +2180,7 @@
             if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
         }
 
-        // Close PDF Viewer - FROM FUNERAL
+        // Close PDF Viewer
         function closePDFViewer() {
             const modal = document.getElementById('pdfViewerModal');
             if (modal) {
@@ -2138,11 +2193,12 @@
             }
         }
 
-        // Status Submission Functions - FROM FUNERAL
+        // Status Submission Functions
         function markAsApprove() {
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
             const processByInput = document.getElementById('processByInput');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
             if (statusInput) statusInput.value = 'Approve';
             if (commentsInput) commentsInput.value = 'Application approved';
@@ -2212,6 +2268,7 @@
             const statusInput = document.getElementById('statusInput');
             const commentsInput = document.getElementById('commentsInput');
             const processByInput = document.getElementById('processByInput');
+            const forCMOPersonnelInput = document.getElementById('forCMOPersonnelInput');
 
             if (statusInput) statusInput.value = 'Claimed';
             if (commentsInput) commentsInput.value = `Application marked as claimed by ${requestorFullName} (the requestor)`;
@@ -2238,10 +2295,21 @@
             // Submit the form after a short delay to show the modal
             setTimeout(() => {
                 document.getElementById('statusForm').submit();
-            }, 2000);
+            }, 2000); // Show modal for 2 seconds before redirecting
         }
 
         // Additional Information Functions
+        function toggleAdditionalInfo() {
+            const viewButton = document.getElementById('viewAdditionalInfoBtn');
+            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
+
+            if (isDecrypted) {
+                hideAdditionalInfo();
+            } else {
+                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
+            }
+        }
+
         function getOtherAssistanceFields() {
             const assistanceType = '@ViewData["Typeassistance"]';
 
@@ -2298,21 +2366,6 @@
             };
         }
 
-        // Toggle function for Additional Information (View/Hide)
-        function toggleAdditionalInfo() {
-            const viewButton = document.getElementById('viewAdditionalInfoBtn');
-            const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
-
-            if (isDecrypted) {
-                // Currently showing decrypted data, hide it
-                hideAdditionalInfo();
-            } else {
-                // Currently hidden, show the decrypt modal
-                openViewAdditionalInfoModal('Other', '@ViewData["Id"]', getOtherAssistanceFields());
-            }
-        }
-
-        // Function to hide additional information
         function hideAdditionalInfo() {
             const additionalInfoContainer = document.getElementById('additionalInfoContainer');
             const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
@@ -2351,11 +2404,9 @@
                 btnText.textContent = 'View Additional Information';
             }
 
-            // Clear decrypted data
             window.decryptedAdditionalData = {};
         }
 
-        // Function to show additional information after successful decryption
         window.onAdditionalInfoDecrypted = function() {
             console.log('Additional information decrypted successfully');
             showAdditionalInfoAfterDecryption();
@@ -2407,7 +2458,36 @@
             }
         }
 
-        // Comments modal functions for disapproval - FROM FUNERAL
+        // Function to start the 5-second loading animation
+        function startAdditionalInfoLoading() {
+            console.log('Starting additional information loading...');
+
+            // Hide alert
+            const additionalInfoAlert = document.getElementById('additionalInfoAlert');
+            if (additionalInfoAlert) {
+                additionalInfoAlert.style.display = 'none';
+            }
+
+            // Hide encrypted display
+            const additionalInfoEncrypted = document.getElementById('additionalInfoEncrypted');
+            if (additionalInfoEncrypted) {
+                additionalInfoEncrypted.style.display = 'none';
+            }
+
+            // Hide any existing additional info container
+            const additionalInfoContainer = document.getElementById('additionalInfoContainer');
+            if (additionalInfoContainer) {
+                additionalInfoContainer.style.display = 'none';
+                additionalInfoContainer.classList.remove('additional-info-visible');
+            }
+
+            // Start 5-second progress bar
+            setTimeout(() => {
+                showAdditionalInfoAfterDecryption();
+            }, 300);
+        }
+
+        // Comments modal functions for disapproval
         function showCommentsModal() {
             const modal = document.getElementById('commentsModal');
             const textarea = document.getElementById('commentsTextarea');
@@ -2456,75 +2536,14 @@
             showSuccessModal('Disapprove');
         }
 
-        // Keyboard shortcuts and navigation - FROM FUNERAL
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const zoomModal = document.getElementById("zoomModal");
-                if (zoomModal) zoomModal.style.display = "none";
-                closePDFViewer();
-                closeCommentsModal();
-                closeRetakeModal();
-            }
-
-            const pdfModal = document.getElementById('pdfViewerModal');
-            if (pdfModal && pdfModal.style.display === 'block') {
-                switch(e.key) {
-                    case 'ArrowLeft':
-                        e.preventDefault();
-                        prevPage();
-                        break;
-                    case 'ArrowRight':
-                        e.preventDefault();
-                        nextPage();
-                        break;
-                    case '+':
-                    case '=':
-                        e.preventDefault();
-                        zoomIn();
-                        break;
-                    case '-':
-                        e.preventDefault();
-                        zoomOut();
-                        break;
-                }
-            }
-        });
-
-        // Close modal when clicking outside - FROM FUNERAL
-        window.onclick = function(event) {
-            const zoomModal = document.getElementById("zoomModal");
-            const pdfModal = document.getElementById("pdfViewerModal");
-            const commentsModal = document.getElementById("commentsModal");
-            const retakeModal = document.getElementById("retakeModal");
-            const successModal = document.getElementById("successModal");
-
-            if (event.target == zoomModal && zoomModal) {
-                zoomModal.style.display = "none";
-            }
-            if (event.target == pdfModal && pdfModal) {
-                closePDFViewer();
-            }
-            if (event.target == commentsModal && commentsModal) {
-                closeCommentsModal();
-            }
-            if (event.target == retakeModal && retakeModal) {
-                closeRetakeModal();
-            }
-            if (event.target == successModal && successModal) {
-                successModal.style.display = "none";
-            }
-        }
-
         // Function to toggle Valid ID view
         function toggleValidID(frontImagePath, backImagePath) {
             const viewButton = document.getElementById('viewValidIDBtn');
             const isDecrypted = viewButton.getAttribute('data-decrypted') === 'true';
 
             if (isDecrypted) {
-                // Currently showing decrypted data, hide it
                 hideValidID();
             } else {
-                // Currently hidden, show the decrypt modal for ID
                 openViewIDModal('@ViewData["Id"]', frontImagePath, backImagePath);
             }
         }
@@ -2532,7 +2551,6 @@
         // Function to hide Valid ID
         function hideValidID() {
             const validIDContainer = document.getElementById('validIDContainer');
-            const validIDEncrypted = document.getElementById('validIDEncrypted');
             const validIDAlert = document.getElementById('validIDAlert');
             const viewButton = document.getElementById('viewValidIDBtn');
             const btnIcon = document.getElementById('validIDBtnIcon');
@@ -2541,11 +2559,6 @@
             // Hide decrypted ID container
             if (validIDContainer) {
                 validIDContainer.style.display = 'none';
-            }
-
-            // Show encrypted ID display
-            if (validIDEncrypted) {
-                validIDEncrypted.style.display = 'block';
             }
 
             // Show alert
@@ -2571,12 +2584,6 @@
         // Function to show Valid ID after successful decryption
         window.onValidIDDecrypted = function(frontImageData, backImageData) {
             console.log('Showing Valid ID after decryption...');
-
-            // Hide the encrypted display section
-            const validIDEncrypted = document.getElementById('validIDEncrypted');
-            if (validIDEncrypted) {
-                validIDEncrypted.style.display = 'none';
-            }
 
             // Hide the alert
             const validIDAlert = document.getElementById('validIDAlert');
@@ -2637,6 +2644,65 @@
             }
         };
 
+        // Keyboard shortcuts and navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const zoomModal = document.getElementById("zoomModal");
+                if (zoomModal) zoomModal.style.display = "none";
+                closePDFViewer();
+                closeCommentsModal();
+                closeRetakeModal();
+            }
+
+            const pdfModal = document.getElementById('pdfViewerModal');
+            if (pdfModal && pdfModal.style.display === 'block') {
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        prevPage();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        nextPage();
+                        break;
+                    case '+':
+                    case '=':
+                        e.preventDefault();
+                        zoomIn();
+                        break;
+                    case '-':
+                        e.preventDefault();
+                        zoomOut();
+                        break;
+                }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const zoomModal = document.getElementById("zoomModal");
+            const pdfModal = document.getElementById("pdfViewerModal");
+            const commentsModal = document.getElementById("commentsModal");
+            const retakeModal = document.getElementById("retakeModal");
+            const successModal = document.getElementById("successModal");
+
+            if (event.target == zoomModal && zoomModal) {
+                zoomModal.style.display = "none";
+            }
+            if (event.target == pdfModal && pdfModal) {
+                closePDFViewer();
+            }
+            if (event.target == commentsModal && commentsModal) {
+                closeCommentsModal();
+            }
+            if (event.target == retakeModal && retakeModal) {
+                closeRetakeModal();
+            }
+            if (event.target == successModal && successModal) {
+                successModal.style.display = "none";
+            }
+        }
+
         // Initialize page state
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Additional Information button state
@@ -2653,15 +2719,6 @@
             if (additionalInfoEncrypted) additionalInfoEncrypted.style.display = 'block';
             if (additionalInfoContainer) additionalInfoContainer.style.display = 'none';
             if (additionalInfoAlert) additionalInfoAlert.style.display = 'flex';
-
-            // Initialize Valid ID visibility
-            const validIDEncrypted = document.getElementById('validIDEncrypted');
-            const validIDContainer = document.getElementById('validIDContainer');
-            const validIDAlert = document.getElementById('validIDAlert');
-
-            if (validIDEncrypted) validIDEncrypted.style.display = 'block';
-            if (validIDContainer) validIDContainer.style.display = 'none';
-            if (validIDAlert) validIDAlert.style.display = 'flex';
         });
     </script>
 
