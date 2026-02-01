@@ -481,16 +481,13 @@
             }
 
         @@keyframes priorityPulse {
-            0%, 100%
+            0%, 100% {
+                transform: scale(1);
+            }
 
-        {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.05);
-        }
-
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .priority-alert-box.high i {
@@ -560,99 +557,93 @@
         }
 
         @@media (max-width: 768px) {
-            .dashboard-header
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-        {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+            .date-filter {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        .date-filter {
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-        }
+            .date-input {
+                width: 100%;
+            }
 
-        .date-input {
-            width: 100%;
-        }
+            .priority-alerts {
+                flex-direction: column;
+                width: 100%;
+                align-items: stretch;
+            }
 
-        .priority-alerts {
-            flex-direction: column;
-            width: 100%;
-            align-items: stretch;
-        }
+            .priority-alert-box {
+                justify-content: center;
+            }
 
-        .priority-alert-box {
-            justify-content: center;
-        }
+            .chart-controls {
+                justify-content: center;
+            }
 
-        .chart-controls {
-            justify-content: center;
-        }
+            .chart-select,
+            .btn-custom {
+                flex: 1;
+            }
 
-        .chart-select,
-        .btn-custom {
-            flex: 1;
-        }
+            .barangay-list {
+                max-height: 200px;
+            }
 
-        .barangay-list {
-            max-height: 200px;
-        }
-
-        .chart-container {
-            height: 300px;
-            padding: 1rem;
-        }
-
+            .chart-container {
+                height: 300px;
+                padding: 1rem;
+            }
         }
 
         @@media (max-width: 576px) {
-            .menu-toggle
+            .menu-toggle {
+                display: block;
+            }
 
-        {
-            display: block;
-        }
+            .header-title h1 {
+                font-size: 1.3rem;
+            }
 
-        .header-title h1 {
-            font-size: 1.3rem;
-        }
+            .date-filter {
+                gap: 0.5rem;
+            }
 
-        .date-filter {
-            gap: 0.5rem;
-        }
+            .chart-controls {
+                flex-direction: column;
+                width: 100%;
+            }
 
-        .chart-controls {
-            flex-direction: column;
-            width: 100%;
-        }
+            .chart-select,
+            .btn-custom {
+                width: 100%;
+            }
 
-        .chart-select,
-        .btn-custom {
-            width: 100%;
-        }
+            .summary-card {
+                padding: 1rem;
+            }
 
-        .summary-card {
-            padding: 1rem;
-        }
+            .claim-metric-card {
+                padding: 1rem;
+            }
 
-        .claim-metric-card {
-            padding: 1rem;
-        }
+            .claim-metric-value {
+                font-size: 2rem;
+            }
 
-        .claim-metric-value {
-            font-size: 2rem;
-        }
+            .chart-container {
+                height: 250px;
+                padding: 0.75rem;
+            }
 
-        .chart-container {
-            height: 250px;
-            padding: 0.75rem;
-        }
-
-        .barangay-item {
-            font-size: 0.85rem;
-        }
-
+            .barangay-item {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -900,6 +891,38 @@
             funeral: '#e53935'
         };
 
+        // Specific color mapping for common assistance types
+        const assistanceTypeColors = {
+            // Funeral related - distinct purple/pink tones
+            'Funeral Assistance': '#9C27B0',
+            'Burial Assistance': '#7B1FA2',
+            'Funeral': '#8E24AA',
+
+            // Government assistance - distinct green tones
+            'Government Assistance': '#388E3C',
+            'Financial Assistance': '#2E7D32',
+            'Cash Assistance': '#43A047',
+            'Educational Assistance': '#4CAF50',
+
+            // Medicine/Medical assistance - distinct blue tones
+            'Medicine Assistance': '#0288D1',
+            'Medical Assistance': '#0277BD',
+            'Medicine': '#039BE5',
+            'Medical': '#29B6F6',
+            'Laboratory Assistance': '#2196F3',
+
+            // Hospital related - distinct dark blue
+            'Hospital Bill Assistance': '#1565C0',
+            'Hospitalization': '#1976D2',
+
+            // Other common types
+            'Food Assistance': '#FF9800',
+            'Transportation': '#FF5722',
+            'Educational': '#009688',
+            'Housing': '#795548',
+            'Livelihood': '#F57C00'
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const totalPriorityCount = @Html.Raw(ViewBag.TotalPriorityCount ?? 0);
             if (typeof window.AdminSidebar !== 'undefined' && window.AdminSidebar.updatePriorityBadge) {
@@ -950,62 +973,62 @@
 
             @foreach (var f in Model.HospitalAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Hospital Assistance",
-                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@(f.Status?.ToLower() ?? "")",
-                        status2: "@(f.Status2?.ToLower() ?? "")",
-                        status3: "@(f.Status3?.ToLower() ?? "")",
-                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
-                        typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
-                        formId: @f.Id,
-                        controller: "Dashboard",
-                        isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Hospital Assistance",
+                            name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
+                            brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
+                            typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
+                            formId: @f.Id,
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
+                        });
+                        </text>
             }
 
             @foreach (var f in Model.OtherAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Other Assistance",
-                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@(f.Status?.ToLower() ?? "")",
-                        status2: "@(f.Status2?.ToLower() ?? "")",
-                        status3: "@(f.Status3?.ToLower() ?? "")",
-                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
-                        typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
-                        formId: @f.Id,
-                        controller: "Dashboard",
-                        isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Other Assistance",
+                            name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
+                            brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
+                            typeassistance: "@Html.Raw(f.Typeassistance?.Replace("\"", "\\\"") ?? "")",
+                            formId: @f.Id,
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
+                        });
+                        </text>
             }
 
             @foreach (var f in Model.FuneralAssistance)
             {
-                    <text>
-                    allApplications.push({
-                        type: "Funeral Assistance",
-                        name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
-                        createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
-                        status: "@(f.Status?.ToLower() ?? "")",
-                        status2: "@(f.Status2?.ToLower() ?? "")",
-                        status3: "@(f.Status3?.ToLower() ?? "")",
-                        brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
-                        typeassistance: "Funeral Assistance",
-                        formId: @f.Id,
-                        controller: "Dashboard",
-                        isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
-                        retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
-                    });
-                    </text>
+                        <text>
+                        allApplications.push({
+                            type: "Funeral Assistance",
+                            name: formatName("@Html.Raw(f.Lastname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Firstname?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Middlename?.Replace("\"", "\\\"") ?? "")", "@Html.Raw(f.Suffix?.Replace("\"", "\\\"") ?? "")"),
+                            createdAt: new Date("@f.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")"),
+                            status: "@(f.Status?.ToLower() ?? "")",
+                            status2: "@(f.Status2?.ToLower() ?? "")",
+                            status3: "@(f.Status3?.ToLower() ?? "")",
+                            brgy: "@Html.Raw(f.Brgy?.Replace("\"", "\\\"") ?? "")",
+                            typeassistance: "Funeral Assistance",
+                            formId: @f.Id,
+                            controller: "Dashboard",
+                            isRetakeApplication: @(f.IsRetakeApplication ? "true" : "false"),
+                            retakeRequestedAt: @Html.Raw(f.RetakeRequestedAt.HasValue ? $"new Date(\"{f.RetakeRequestedAt.Value:yyyy-MM-ddTHH:mm:ss}\")" : "null")
+                        });
+                        </text>
             }
 
             originalData = {
@@ -1038,7 +1061,8 @@
                     updateStatusByTypeChart('stackedBar');
                     updateClaimRateMetrics();
                 } catch (error) {
-                                    } finally {
+                    console.error('Error updating charts:', error);
+                } finally {
                     showLoading(false);
                 }
             }, 500);
@@ -1497,7 +1521,11 @@
         function createBarChart(ctx, labels, assistanceData, chartType) {
             const isStacked = chartType === 'stackedBar';
             const assistanceTypes = Object.keys(assistanceData);
-            const assistanceColors = generateAssistanceTypeColors(assistanceTypes.length);
+
+            // Use specific colors for known assistance types, generate for others
+            const assistanceColors = assistanceTypes.map(type =>
+                assistanceTypeColors[type] || generateUniqueColor(type)
+            );
 
             const barangayTotals = labels.map((_, index) =>
                 assistanceTypes.reduce((sum, type) => sum + (assistanceData[type][index] || 0), 0)
@@ -1582,13 +1610,18 @@
                 total > 0 ? Math.round((value / total) * 100) : 0
             );
 
+            // Generate distinct colors for each barangay
+            const colors = labels.map((_, index) =>
+                `hsl(${(index * 137.508) % 360}, 70%, 60%)`
+            );
+
             barangayChart = new Chart(ctx, {
                 type: chartType,
                 data: {
                     labels: labels,
                     datasets: [{
                         data: totals,
-                        backgroundColor: generateAssistanceTypeColors(labels.length),
+                        backgroundColor: colors,
                         borderWidth: 2,
                         borderColor: '#ffffff'
                     }]
@@ -1631,6 +1664,49 @@
             });
         }
 
+        function generateUniqueColor(assistanceType) {
+            // Create a hash from the assistance type string to generate consistent colors
+            let hash = 0;
+            for (let i = 0; i < assistanceType.length; i++) {
+                hash = assistanceType.charCodeAt(i) + ((hash << 5) - hash);
+            }
+
+            // Generate HSL color with distinct hue
+            const hue = Math.abs(hash) % 360;
+
+            // Adjust saturation and lightness based on assistance type category
+            let saturation = 70;
+            let lightness = 60;
+
+            // Make funeral assistance more purple
+            if (assistanceType.toLowerCase().includes('funeral') ||
+                assistanceType.toLowerCase().includes('burial')) {
+                return `hsl(280, ${saturation}%, ${lightness}%)`;
+            }
+
+            // Make government assistance more green
+            if (assistanceType.toLowerCase().includes('government') ||
+                assistanceType.toLowerCase().includes('financial') ||
+                assistanceType.toLowerCase().includes('cash')) {
+                return `hsl(120, ${saturation}%, ${lightness}%)`;
+            }
+
+            // Make medicine/medical assistance more blue
+            if (assistanceType.toLowerCase().includes('medicine') ||
+                assistanceType.toLowerCase().includes('medical') ||
+                assistanceType.toLowerCase().includes('laboratory')) {
+                return `hsl(210, ${saturation}%, ${lightness}%)`;
+            }
+
+            // Make hospital assistance dark blue
+            if (assistanceType.toLowerCase().includes('hospital')) {
+                return `hsl(220, ${saturation}%, 50%)`;
+            }
+
+            // Default: use golden angle for distinct colors
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
         function updateBarangayList(labels, totals, assistanceData) {
             const container = document.getElementById('barangayListContainer');
             if (!container) return;
@@ -1644,7 +1720,14 @@
                     const count = assistanceData[type][index];
                     if (count > 0) {
                         const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-                        barangayAssistance.push(`${type}: ${count} (${percentage}%)`);
+                        // Get color for this assistance type
+                        const color = assistanceTypeColors[type] || generateUniqueColor(type);
+                        barangayAssistance.push({
+                            type,
+                            count,
+                            percentage,
+                            color
+                        });
                     }
                 });
 
@@ -1656,7 +1739,7 @@
                             ${label} <span style="font-weight:700;color:${colors.primary};">(${barangayPercentage}%)</span>
                             <div class="assistance-details">
                                 ${barangayAssistance.map(item =>
-                                    `<span class="assistance-type-badge">${item}</span>`
+                                    `<span class="assistance-type-badge" style="background:${item.color};color:white;">${item.type}: ${item.count} (${item.percentage}%)</span>`
                                 ).join('')}
                             </div>
                         </div>
@@ -1666,23 +1749,6 @@
             });
 
             container.innerHTML = html;
-        }
-
-        function generateAssistanceTypeColors(count) {
-            const colorPalette = [
-                '#1e88e5', '#1565c0', '#42a5f5', '#64b5f6', '#90caf9',
-                '#00acc1', '#0097a7', '#26c6da', '#4dd0e1', '#80deea',
-                '#7e57c2', '#673ab7', '#9575cd', '#b39ddb', '#d1c4e9',
-                '#43a047', '#388e3c', '#66bb6a', '#81c784', '#a5d6a7',
-                '#fb8c00', '#f57c00', '#ffa726', '#ffb74d', '#ffcc80',
-                '#e53935', '#d32f2f', '#ef5350', '#e57373', '#ef9a9a'
-            ];
-
-            const generatedColors = [];
-            for (let i = 0; i < count; i++) {
-                generatedColors.push(colorPalette[i % colorPalette.length]);
-            }
-            return generatedColors;
         }
 
         function showLoading(show) {
@@ -2016,7 +2082,7 @@
             const totalApps = statusData.totals.map((total, index) => ({ type: typeNames[index], total }));
             const approvalRates = statusData.approved.map((approved, index) => ({
                 type: typeNames[index],
-                rate: statusData.totals[index] > 0 ? Math.round((approved / statusData.totals[index]) * 100) : 0
+                                rate: statusData.totals[index] > 0 ? Math.round((approved / statusData.totals[index]) * 100) : 0
             }));
             const pendingCounts = statusData.pending.map((pending, index) => ({ type: typeNames[index], pending }));
 
