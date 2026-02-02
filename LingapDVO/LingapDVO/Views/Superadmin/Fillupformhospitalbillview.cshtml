@@ -151,7 +151,7 @@
                 <label for="statusDropdown" class="form-label">Status</label>
                 <select class="form-select" id="statusDropdown" name="status" disabled>
                     <option value="Pending" selected="@(ViewData["Status"]?.ToString() == "Pending")">Pending</option>
-                    <option value="Approve" selected="@(ViewData["Status"]?.ToString() == "Approve")">Approve</option>
+                    <option value="Approve" selected="@(ViewData["Status"]?.ToString() == "Approve")">Approved</option>
                     <option value="Unapproved" selected="@(ViewData["Status"]?.ToString() == "Unapproved")">Unapproved</option>
                     <option value="Processing" selected="@(ViewData["Status"]?.ToString() == "Processing")">Processing</option>
                     <option value="Claimed" selected="@(ViewData["Status"]?.ToString() == "Claimed")">Claimed</option>

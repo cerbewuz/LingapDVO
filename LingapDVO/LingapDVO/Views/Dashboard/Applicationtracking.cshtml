@@ -1205,8 +1205,8 @@
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
-                        <option value="approve">Approve</option>
-                        <option value="unapproved">Unapprove</option>
+                        <option value="approve">Approved</option>
+                        <option value="unapproved">Disapproved</option>
                         <option value="retake">Retake</option>
                         <option value="claimed">Claims</option>
                     </select>
@@ -1363,7 +1363,7 @@
                     <div class="count">@totalApps</div>
                 </div>
                 <div class="summary-card">
-                    <h5>Approve</h5>
+                    <h5>Approved</h5>
                     <div class="count" style="color: var(--success-color);">@approvedApps</div>
                 </div>
                 <div class="summary-card">
@@ -1375,7 +1375,7 @@
                     <div class="count" style="color: var(--primary-color);">@processingApps</div>
                 </div>
                 <div class="summary-card">
-                    <h5>Unapprove</h5>
+                    <h5>Disapproved</h5>
                     <div class="count" style="color: var(--danger-color);">@unapprovedApps</div>
                 </div>
                 <div class="summary-card">
@@ -1425,7 +1425,7 @@
                                 }
                                 else if (status == "Approve")
                                 {
-                                    displayStatus = "Approve";
+                                    displayStatus = "Approved";
                                     statusClass = "status-approved";
                                 }
                                 else if (status == "Processing")
@@ -1435,7 +1435,7 @@
                                 }
                                 else if (status == "Unapproved" || status == "Disapprove")
                                 {
-                                    displayStatus = "Unapprove";
+                                    displayStatus = "Disapproved";
                                     statusClass = "status-unapproved";
                                 }
                                 else if (status == "Retake")
@@ -2732,7 +2732,7 @@
                         <div class="count">${total}</div>
                     </div>
                     <div class="summary-card">
-                        <h5>Approve</h5>
+                        <h5>Approved</h5>
                         <div class="count" style="color: var(--success-color);">${approved}</div>
                     </div>
                     <div class="summary-card">
@@ -2744,7 +2744,7 @@
                         <div class="count" style="color: var(--primary-color);">${processing}</div>
                     </div>
                     <div class="summary-card">
-                        <h5>Unapprove</h5>
+                        <h5>Disapproved</h5>
                         <div class="count" style="color: var(--danger-color);">${unapproved}</div>
                     </div>
                     <div class="summary-card">

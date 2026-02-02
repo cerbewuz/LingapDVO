@@ -14,20 +14,20 @@ namespace LingapDVO.Controllers
         private readonly IWebHostEnvironment _environment;
         private readonly IDateTimeService _dateTimeService;
         private readonly ILogger<DataSeederController> _logger;
-
-        // AES256 encryption key (from system requirements)
-        private const string AES_KEY = "2B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D904519033C";
+        private readonly IConfiguration _configuration;
 
         public DataSeederController(
             ApplicationDbContext context,
             IWebHostEnvironment environment,
             IDateTimeService dateTimeService,
-            ILogger<DataSeederController> logger)
+            ILogger<DataSeederController> logger,
+            IConfiguration configuration)
         {
             _context = context;
             _environment = environment;
             _dateTimeService = dateTimeService;
             _logger = logger;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -48,7 +48,10 @@ namespace LingapDVO.Controllers
             {
                 _logger.LogInformation("Starting data seeding process...");
 
-                var seeder = new DataSeeder(_context, _environment, _dateTimeService, AES_KEY);
+                string aesKey = _configuration["Security:AesEncryption:Key"] 
+                    ?? throw new InvalidOperationException("AES encryption key not found in configuration");
+                
+                var seeder = new DataSeeder(_context, _environment, _dateTimeService, aesKey);
                 await seeder.SeedDataAsync();
 
                 _logger.LogInformation("Data seeding completed successfully");

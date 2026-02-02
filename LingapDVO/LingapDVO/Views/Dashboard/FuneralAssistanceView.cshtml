@@ -1554,6 +1554,14 @@
                         {
                             <text>CLAIMED</text>
                         }
+                        else if (status2 == "Approve")
+                        {
+                            <text>APPROVED</text>
+                        }
+                        else if (status2 == "Disapprove" || status2 == "Unapproved")
+                        {
+                            <text>DISAPPROVED</text>
+                        }
                         else if (!string.IsNullOrEmpty(status2))
                         {
                             <text>@status2.ToUpper()</text>

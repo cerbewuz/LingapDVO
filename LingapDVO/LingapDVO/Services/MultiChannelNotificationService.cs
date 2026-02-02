@@ -168,6 +168,11 @@ namespace LingapDVO.Services
             {
                 await SendRetakeNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
             }
+            // Special handling for "Resubmitted" status to track retake response
+            else if (status == "Resubmitted")
+            {
+                await SendResubmittedNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, comments, processedBy);
+            }
             else
             {
                 await SendStatusNotificationAsync(userId, applicantName, title, message, type, link, formType, formId, status, comments, processedBy);
@@ -479,10 +484,42 @@ namespace LingapDVO.Services
                 // Map formType to ApplicationType
                 var applicationType = MapFormTypeToApplicationType(formType);
 
-                // Get retake iteration count
+                // Get retake iteration count (how many retake notifications already exist for this application)
                 var retakeCount = await _context.Notifications
-                    .Where(n => n.UserId == userId && n.ApplicationId == formId && n.IsRetake)
+                    .Where(n => n.UserId == userId && n.ApplicationId == formId && n.ApplicationType == applicationType && n.IsRetake)
                     .CountAsync();
+
+                var retakeIteration = retakeCount + 1;
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Medical and Laboratory Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
+                    _ => "Assistance"
+                };
+
+                // Generate PRECISE title and message based on retake iteration and reason
+                var ordinal = GetOrdinal(retakeIteration);
+                var preciseTitle = retakeIteration == 1
+                    ? $"Action Required - Document Resubmission Needed"
+                    : $"Action Required - {ordinal} Resubmission Request";
+
+                // Build precise message with admin reason if available
+                string preciseMessage;
+                if (!string.IsNullOrWhiteSpace(comments))
+                {
+                    preciseMessage = retakeIteration == 1
+                        ? $"Your {formTypeDisplay} application requires document corrections. Reason: {comments}. Please update your documents and resubmit."
+                        : $"Your {formTypeDisplay} application requires additional corrections ({ordinal} request). Reason: {comments}. Please review and resubmit the required documents.";
+                }
+                else
+                {
+                    preciseMessage = retakeIteration == 1
+                        ? $"Your {formTypeDisplay} application requires document corrections. Please check your application and upload the corrected documents."
+                        : $"Your {formTypeDisplay} application requires additional corrections ({ordinal} request). Please review your documents carefully and resubmit.";
+                }
 
                 // **SAVE NOTIFICATION TO DATABASE FIRST**
                 var notification = new Notification
@@ -491,8 +528,8 @@ namespace LingapDVO.Services
                     ApplicationType = applicationType,
                     ApplicationId = formId,
                     ApplicantName = applicantName,
-                    Title = title,
-                    Message = message,
+                    Title = preciseTitle,
+                    Message = preciseMessage,
                     Type = type,
                     Link = link,
                     Status = "Retake",
@@ -501,12 +538,12 @@ namespace LingapDVO.Services
                     ProcessStage = "retake",
                     CreatedAt = _dateTimeService.Now,
                     EventTimestamp = _dateTimeService.Now,
-                    RetakeIteration = retakeCount + 1,
+                    RetakeIteration = retakeIteration,
                     IsRetake = true,
                     SentViaInApp = user.PreferInAppNotification,
                     SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
                     SentViaSms = user.PreferSmsNotification,
-                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_retake_{retakeCount + 1}_{_dateTimeService.Now.Ticks}",
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_retake_{retakeIteration}_{_dateTimeService.Now.Ticks}",
                     DisplayOrder = 2,
                     IsRead = false
                 };
@@ -514,25 +551,17 @@ namespace LingapDVO.Services
                 await _context.Notifications.AddAsync(notification);
                 await _context.SaveChangesAsync();
 
-                // Get assistance type display
-                var formTypeDisplay = formType switch
-                {
-                    "HospitalAssistance" => "Hospital Assistance",
-                    "OtherAssistance" => "Other Assistance",
-                    "FuneralAssistance" => "Funeral Assistance",
-                    _ => "Assistance"
-                };
-
                 // Send in-app notification via SignalR if preferred
                 if (user.PreferInAppNotification)
                 {
                     await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
                     {
                         id = notification.Id,
-                        title = title,
-                        message = message,
+                        title = preciseTitle,
+                        message = preciseMessage,
                         type = type,
                         link = link,
+                        retakeIteration = retakeIteration,
                         createdAt = _dateTimeService.Now,
                         isRead = false
                     });
@@ -541,7 +570,7 @@ namespace LingapDVO.Services
                 // NOTE: Email notification is handled by Adminuser.cs with detailed templates
                 // Skipping generic email here to avoid duplicate emails being sent
 
-                // Send SMS notification with application tracking link if preferred
+                // Send SMS notification with precise message if preferred
                 if (user.PreferSmsNotification)
                 {
                     var verifyAccount = await _context.VerifiedAccount
@@ -549,16 +578,149 @@ namespace LingapDVO.Services
 
                     if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
                     {
-                        var smsMessage = $"LingapDVO: Hello {applicantName}, we need you to send some papers again for your {formTypeDisplay} request. Please check your application at lingap.online and upload the needed papers.";
+                        var smsMessage = retakeIteration == 1
+                            ? $"LingapDVO: Hello {applicantName}, your {formTypeDisplay} application needs document corrections. Please visit lingap.online to review and resubmit."
+                            : $"LingapDVO: Hello {applicantName}, your {formTypeDisplay} application needs corrections ({ordinal} request). Please visit lingap.online to resubmit.";
                         await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
                     }
                 }
 
-                _logger.LogInformation($"Multi-channel retake notification sent and saved to database for user {userId}, application {formId}");
+                _logger.LogInformation($"Multi-channel retake notification (iteration {retakeIteration}) sent and saved to database for user {userId}, application {formId}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error sending multi-channel retake notification to user {userId}");
+            }
+        }
+
+        // Helper method to convert number to ordinal string (1 → "1st", 2 → "2nd", etc.)
+        private string GetOrdinal(int number)
+        {
+            if (number <= 0) return number.ToString();
+
+            var suffix = (number % 100) switch
+            {
+                11 or 12 or 13 => "th",
+                _ => (number % 10) switch
+                {
+                    1 => "st",
+                    2 => "nd",
+                    3 => "rd",
+                    _ => "th"
+                }
+            };
+
+            return $"{number}{suffix}";
+        }
+
+        // Send notification when user resubmits after a retake request
+        private async Task SendResubmittedNotificationAsync(int userId, string applicantName, string title, string message, string type, string link, string formType, int formId, string? comments, string? processedBy)
+        {
+            try
+            {
+                // Get user preferences
+                var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return;
+                }
+
+                // Map formType to ApplicationType
+                var applicationType = MapFormTypeToApplicationType(formType);
+
+                // Get the retake iteration this resubmission responds to
+                var lastRetakeNotification = await _context.Notifications
+                    .Where(n => n.UserId == userId && n.ApplicationId == formId && n.ApplicationType == applicationType && n.IsRetake)
+                    .OrderByDescending(n => n.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                var retakeIteration = lastRetakeNotification?.RetakeIteration ?? 1;
+
+                // Get assistance type display
+                var formTypeDisplay = formType switch
+                {
+                    "HospitalAssistance" => "Hospital Assistance",
+                    "OtherAssistance" => "Medical and Laboratory Assistance",
+                    "FuneralAssistance" => "Funeral Assistance",
+                    _ => "Assistance"
+                };
+
+                // Generate precise title and message based on retake context
+                var ordinal = GetOrdinal(retakeIteration);
+                var preciseTitle = retakeIteration == 1
+                    ? $"Documents Resubmitted - {formTypeDisplay}"
+                    : $"Documents Resubmitted ({ordinal} Request) - {formTypeDisplay}";
+
+                var preciseMessage = retakeIteration == 1
+                    ? $"Your {formTypeDisplay} documents have been resubmitted successfully. Our team will review your updated documents and notify you once a decision is made."
+                    : $"Your {formTypeDisplay} documents have been resubmitted in response to the {ordinal} correction request. Our team will review your updated documents promptly.";
+
+                // **SAVE NOTIFICATION TO DATABASE FIRST**
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    ApplicationType = applicationType,
+                    ApplicationId = formId,
+                    ApplicantName = applicantName,
+                    Title = preciseTitle,
+                    Message = preciseMessage,
+                    Type = type,
+                    Link = link,
+                    Status = "Resubmitted",
+                    Status2 = "Resubmitted",
+                    Comments = comments,
+                    ProcessedBy = processedBy,
+                    ProcessStage = "resubmitted",
+                    CreatedAt = _dateTimeService.Now,
+                    EventTimestamp = _dateTimeService.Now,
+                    RetakeIteration = retakeIteration,
+                    SentViaInApp = user.PreferInAppNotification,
+                    SentViaEmail = user.PreferEmailNotification && !string.IsNullOrEmpty(user.Email),
+                    SentViaSms = user.PreferSmsNotification,
+                    NotificationIdentifier = $"{applicationType.ToLower()}_{formId}_resubmitted_{retakeIteration}_{_dateTimeService.Now.Ticks}",
+                    DisplayOrder = 2,
+                    IsRead = false
+                };
+
+                await _context.Notifications.AddAsync(notification);
+                await _context.SaveChangesAsync();
+
+                // Send in-app notification via SignalR if preferred
+                if (user.PreferInAppNotification)
+                {
+                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNotification", new
+                    {
+                        id = notification.Id,
+                        title = preciseTitle,
+                        message = preciseMessage,
+                        type = type,
+                        link = link,
+                        retakeIteration = retakeIteration,
+                        createdAt = _dateTimeService.Now,
+                        isRead = false
+                    });
+                }
+
+                // NOTE: Email notification can be skipped as user just submitted, but send confirmation if preferred
+                // Send SMS confirmation if preferred
+                if (user.PreferSmsNotification)
+                {
+                    var verifyAccount = await _context.VerifiedAccount
+                        .FirstOrDefaultAsync(v => v.UserId == userId);
+
+                    if (verifyAccount != null && !string.IsNullOrEmpty(verifyAccount.Phonenumber))
+                    {
+                        var smsMessage = $"LingapDVO: Your {formTypeDisplay} documents have been resubmitted successfully. You will be notified once reviewed.";
+                        await _smsService.SendSmsAsync(verifyAccount.Phonenumber, smsMessage);
+                    }
+                }
+
+                _logger.LogInformation($"Multi-channel resubmitted notification (retake iteration {retakeIteration}) sent and saved to database for user {userId}, application {formId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending multi-channel resubmitted notification to user {userId}");
             }
         }
 
@@ -747,14 +909,14 @@ namespace LingapDVO.Services
 
             return normalizedStatus switch
             {
-                "Pending" => $"Application Sent - {formTypeDisplay}",
-                "Processing" => "Your Application is being Reviewed",
-                "Approve" => "Good News! Your Application is Approved",
-                "Disapprove" => "Application Not Approved",
-                "Retake" => "Please Review Your Application",
-                "Resubmitted" => "✅ Application Resubmitted Successfully",
-                "Claimed" => "Assistance Claimed",
-                _ => "Application Status Update"
+                "Pending" => $"Application Submitted - {formTypeDisplay}",
+                "Processing" => $"Application Under Review - {formTypeDisplay}",
+                "Approve" => $"Application Approved - {formTypeDisplay}",
+                "Disapprove" => $"Application Not Approved - {formTypeDisplay}",
+                "Retake" => $"Action Required - Document Resubmission",
+                "Resubmitted" => $"Documents Resubmitted - {formTypeDisplay}",
+                "Claimed" => $"Assistance Released - {formTypeDisplay}",
+                _ => $"Status Update - {formTypeDisplay}"
             };
         }
 
@@ -787,16 +949,16 @@ namespace LingapDVO.Services
 
             return normalizedStatus switch
             {
-                "Pending" => $"Your application has been submitted and is now in queue. You will receive an update within an hour.",
-                "Processing" => !string.IsNullOrWhiteSpace(processedBy) 
-                    ? $"Your {formTypeDisplay} application is being reviewed by {processedBy}."
-                    : $"Your {formTypeDisplay} application is now being reviewed.",
-                "Approve" => $"Your {formTypeDisplay} request is approved! Please visit our office to get your help.",
-                "Disapprove" => $"We are sorry, but your {formTypeDisplay} request is not approved. You can contact us for more information.",
-                "Retake" => $"We need you to send some papers again for your {formTypeDisplay} request. Please check your application and upload the needed papers.",
-                "Resubmitted" => $"Thank you for resubmitting your {formTypeDisplay} application with the updated documents. Our team will review it shortly and get back to you soon.",
-                "Claimed" => $"You have received your {formTypeDisplay}. Thank you for using LingapDVO.",
-                _ => $"Your {formTypeDisplay} application status has been updated."
+                "Pending" => $"Your {formTypeDisplay} application has been submitted successfully and is now in our processing queue. You will receive an update once review begins.",
+                "Processing" => !string.IsNullOrWhiteSpace(processedBy)
+                    ? $"Your {formTypeDisplay} application is now being reviewed by {processedBy}. You will be notified once a decision is made."
+                    : $"Your {formTypeDisplay} application is now being reviewed by our team. You will be notified once a decision is made.",
+                "Approve" => $"Congratulations! Your {formTypeDisplay} application has been approved. Please visit our office during business hours to claim your assistance.",
+                "Disapprove" => $"We regret to inform you that your {formTypeDisplay} application was not approved. Please contact our office for more details about the decision.",
+                "Retake" => $"Your {formTypeDisplay} application requires document corrections. Please check your application and upload the corrected documents.",
+                "Resubmitted" => $"Your {formTypeDisplay} documents have been resubmitted successfully. Our team will review the updated documents and notify you of the decision.",
+                "Claimed" => $"Your {formTypeDisplay} has been successfully released. Thank you for using LingapDVO services.",
+                _ => $"Your {formTypeDisplay} application status has been updated. Please check your application for details."
             };
         }
 

@@ -711,7 +711,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="approved-count">0</h3>
-                        <p>Approve</p>
+                        <p>Approved</p>
                     </div>
                 </div>
                 <div class="stat-card disapprove" data-status="disapprove">
@@ -720,7 +720,7 @@
                     </div>
                     <div class="stat-info">
                         <h3 id="disapproved-count">0</h3>
-                        <p>Disapprove</p>
+                        <p>Disapproved</p>
                     </div>
                 </div>
                 <div class="stat-card pending" data-status="pending">
@@ -1408,8 +1408,8 @@
                 }
 
                 const statusMap = {
-                    'approve': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approve' },
-                    'disapprove': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapprove' },
+                    'approve': { class: 'status-approved', icon: 'bi-check-circle', text: 'Approved' },
+                    'disapprove': { class: 'status-disapproved', icon: 'bi-x-circle', text: 'Disapproved' },
                     'pending': { class: 'status-pending', icon: 'bi-hourglass-split', text: 'Pending' },
                     'processing': { class: 'status-processing', icon: 'bi-gear', text: displayStatus === 'processing' && displayText === 'Processing (Resubmitted)' ? displayText : 'Processing' },
                     'claimed': { class: 'status-claimed', icon: 'bi-cloud-check', text: 'Claimed' },
