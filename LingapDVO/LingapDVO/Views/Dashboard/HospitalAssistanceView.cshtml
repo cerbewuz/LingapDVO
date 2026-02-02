@@ -1682,15 +1682,11 @@
                                 <i class="fas fa-times-circle"></i>
                             </div>
                             <div class="timeline-content">
-                                <h6>Application @status2</h6>
+                                <h6>Application was Disapproved</h6>
                                 <span class="timeline-date">@resultDate.ToString("dd MMM yyyy, hh:mm tt")</span>
                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                    Your application was not approved at this time.
+                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(comments) ? "No reason provided." : comments)
                                 </p>
-                                @if (!string.IsNullOrWhiteSpace(comments))
-                                {
-                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @comments</p>
-                                }
                             </div>
                         </div>
                     }

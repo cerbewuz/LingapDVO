@@ -1670,15 +1670,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
@@ -1979,15 +1975,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
@@ -2288,15 +2280,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
