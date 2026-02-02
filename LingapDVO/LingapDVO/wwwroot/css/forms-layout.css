@@ -1151,6 +1151,22 @@ textarea.is-invalid {
         font-size: 0.875rem;
         padding: 0.375rem 0.25rem;
     }
+
+    /* Force 2-column grid layout on medium screens */
+    .row.g-3 {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 0.75rem;
+    }
+
+    .col-sm-12:not(.col-12) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .col-md-12:not(.col-12) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
 }
 
 /* Small Mobile (≤ 480px) */
@@ -1193,8 +1209,13 @@ textarea.is-invalid {
 
     .form-control,
     .form-select {
-        padding: 0.375rem 0.25rem;
-        font-size: 0.875rem;
+        padding: 0.3rem 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    .form-label {
+        font-size: 0.75rem;
+        margin-bottom: 0.2rem;
     }
 
     .section-header,
@@ -1207,6 +1228,73 @@ textarea.is-invalid {
     .btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
+    }
+
+    /* Maintain 2-column grid on small mobile */
+    .row.g-3 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+    .col-sm-12:not(.col-12) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .col-md-12:not(.col-12) {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .form-check-label {
+        font-size: 0.75rem;
+    }
+
+    .form-check-input {
+        width: 0.9rem;
+        height: 0.9rem;
+    }
+
+    .text-muted {
+        font-size: 0.7rem;
+    }
+}
+
+/* Extra Small Mobile (≤ 400px) */
+@media (max-width: 400px) {
+    .form-content-wrapper {
+        padding: 0.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 0.25rem 0.2rem;
+        font-size: 0.75rem;
+    }
+
+    .form-label {
+        font-size: 0.7rem;
+    }
+
+    .row.g-3 {
+        --bs-gutter-x: 0.4rem;
+        --bs-gutter-y: 0.4rem;
+    }
+
+    .form-check-label {
+        font-size: 0.7rem;
+    }
+
+    .form-check-input {
+        width: 0.85rem;
+        height: 0.85rem;
+    }
+
+    .section-header,
+    h5.section-header,
+    h4.section-header {
+        font-size: 0.75rem;
+        padding: 0.4rem;
     }
 }
 

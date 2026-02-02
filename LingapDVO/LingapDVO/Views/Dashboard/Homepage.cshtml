@@ -147,7 +147,7 @@
             }
 
         .mobile-user-actions {
-            display: block;
+            display: none;
             position: fixed;
             top: 0;
             right: -300px;
@@ -496,17 +496,22 @@
 
         @@media (max-width: 767.98px) {
             .user-actions {
-                display: none !important;
+                display: flex !important;
+                gap: 0.25rem;
+            }
+
+            .user-actions .btn-icon,
+            .user-actions .btn-link {
+                width: 36px;
+                height: 36px;
             }
 
             .burger-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                display: none !important;
             }
 
             .mobile-user-actions {
-                display: block;
+                display: none !important;
             }
         }
 
@@ -526,153 +531,114 @@
                 border: 2px solid white;
             }
 
-        /* Notification Dropdown - Positioned below notification icon, relative to the button */
+        /* Notification Dropdown - Consistent bubble design across all screen sizes */
         .notification-dropdown {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 15px);
             right: 0;
             left: auto;
             transform: none;
-            width: 95vw;
-            max-width: 400px;
+            width: 380px;
+            max-width: calc(100vw - 20px);
             background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
             z-index: 1060;
             display: none;
-            border: 1px solid var(--gray-200);
+            border: 1px solid rgba(220, 20, 60, 0.1);
             max-height: calc(100vh - 100px);
-            overflow: hidden;
+            overflow: visible;
+            animation: bubbleFadeIn 0.25s ease-out;
         }
 
-        /* Small phones: Position below icon, relative to button */
+        /* Bubble pointer/arrow connecting to notification button */
+        .notification-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            right: 10px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 12px solid white;
+            filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
+            z-index: 1;
+        }
+
+        /* Bubble pointer border */
+        .notification-dropdown::after {
+            content: '';
+            position: absolute;
+            top: -13px;
+            right: 9px;
+            width: 0;
+            height: 0;
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-bottom: 13px solid rgba(220, 20, 60, 0.1);
+            z-index: 0;
+        }
+
+        /* Rounded header for bubble design */
+        .notification-dropdown .notification-header {
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
+        }
+
+        /* Rounded footer for bubble design */
+        .notification-dropdown .notification-footer {
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* Small phones: Narrower dropdown width and adjusted height */
         @@media (max-width: 575.98px) {
             .notification-dropdown {
-                position: absolute;
-                top: calc(100% + 10px);
+                width: 300px;
+                max-width: calc(100vw - 40px);
+                max-height: calc(100vh - 150px);
                 right: 0;
-                left: auto;
-                transform: none;
-                width: calc(100vw - 20px);
-                max-width: 400px;
-                max-height: calc(100vh - 100px);
+                overflow: hidden;
+            }
+
+            .notification-dropdown::before {
+                right: 8px;
+            }
+
+            .notification-dropdown::after {
+                right: 7px;
             }
         }
 
-        /* Tablets and larger phones: Apply desktop configuration for consistent experience */
-        @@media (min-width: 576px) and (max-width: 991.98px) {
+        /* Extra small phones */
+        @@media (max-width: 400px) {
             .notification-dropdown {
-                position: absolute;
-                top: calc(100% + 15px);
+                width: 280px;
+                max-width: calc(100vw - 30px);
+                max-height: calc(100vh - 160px);
                 right: 0;
-                left: auto;
-                transform: none;
-                width: 420px;
-                max-width: 95vw; /* Prevent overflow on smaller tablets */
-                max-height: calc(100vh - 90px);
-                z-index: 1060;
-                border-radius: 16px !important;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
-                border: 1px solid rgba(220, 20, 60, 0.1) !important;
-                overflow: visible !important;
             }
-                /* Bubble pointer/arrow connecting to notification button */
-                .notification-dropdown::before {
-                    content: '';
-                    position: absolute;
-                    top: -12px;
-                    right: 10px;
-                    width: 0;
-                    height: 0;
-                    border-left: 12px solid transparent;
-                    border-right: 12px solid transparent;
-                    border-bottom: 12px solid white;
-                    filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
-                    z-index: 1;
-                }
-                /* Bubble pointer border */
-                .notification-dropdown::after {
-                    content: '';
-                    position: absolute;
-                    top: -13px;
-                    right: 9px;
-                    width: 0;
-                    height: 0;
-                    border-left: 13px solid transparent;
-                    border-right: 13px solid transparent;
-                    border-bottom: 13px solid rgba(220, 20, 60, 0.1);
-                    z-index: 0;
-                }
-                /* Rounded header for bubble design */
-                .notification-dropdown .notification-header {
-                    border-radius: 16px 16px 0 0;
-                    background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
-                }
-                /* Rounded footer for bubble design */
-                .notification-dropdown .notification-footer {
-                    border-radius: 0 0 16px 16px;
-                }
-            /* Bubble fade-in animation for tablets */
-            .notification-dropdown {
-                animation: bubbleFadeIn 0.25s ease-out;
+
+            .notification-dropdown::before {
+                right: 6px;
+            }
+
+            .notification-dropdown::after {
+                right: 5px;
             }
         }
 
-        /* Desktop: Bubble design - Position below notification icon, relative to button */
+        /* Tablets and larger: Wider dropdown */
+        @@media (min-width: 576px) {
+            .notification-dropdown {
+                width: 400px;
+            }
+        }
+
+        /* Desktop: Even wider */
         @@media (min-width: 992px) {
             .notification-dropdown {
-                position: absolute;
-                top: calc(100% + 15px);
-                right: 0;
-                left: auto;
-                transform: none;
                 width: 420px;
-                max-height: calc(100vh - 90px);
-                z-index: 1060;
-                border-radius: 16px !important;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1) !important;
-                border: 1px solid rgba(220, 20, 60, 0.1) !important;
-                overflow: visible !important;
-            }
-                /* Bubble pointer/arrow connecting to notification button */
-                .notification-dropdown::before {
-                    content: '';
-                    position: absolute;
-                    top: -12px;
-                    right: 10px;
-                    width: 0;
-                    height: 0;
-                    border-left: 12px solid transparent;
-                    border-right: 12px solid transparent;
-                    border-bottom: 12px solid white;
-                    filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.08));
-                    z-index: 1;
-                }
-                /* Bubble pointer border */
-                .notification-dropdown::after {
-                    content: '';
-                    position: absolute;
-                    top: -13px;
-                    right: 9px;
-                    width: 0;
-                    height: 0;
-                    border-left: 13px solid transparent;
-                    border-right: 13px solid transparent;
-                    border-bottom: 13px solid rgba(220, 20, 60, 0.1);
-                    z-index: 0;
-                }
-                /* Rounded header for bubble design */
-                .notification-dropdown .notification-header {
-                    border-radius: 16px 16px 0 0;
-                    background: linear-gradient(135deg, rgba(220, 20, 60, 0.05) 0%, rgba(220, 20, 60, 0.02) 100%);
-                }
-                /* Rounded footer for bubble design */
-                .notification-dropdown .notification-footer {
-                    border-radius: 0 0 16px 16px;
-                }
-            /* Bubble fade-in animation for desktop */
-            .notification-dropdown {
-                animation: bubbleFadeIn 0.25s ease-out;
             }
         }
 
@@ -732,10 +698,10 @@
                 color: white;
             }
 
-        /* Mobile layout: Show close button */
+        /* Mobile layout: Show header actions (same as desktop) */
         @@media (max-width: 991.98px) {
             .notification-close-btn {
-                display: flex;
+                display: none;
             }
 
             .notification-header {
@@ -743,25 +709,20 @@
             }
 
             .notification-header-actions {
-                display: none;
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .notification-header-actions .btn {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.8rem;
             }
         }
 
-        /* Notification dropdown overlay for mobile */
+        /* Notification dropdown overlay - disabled */
         .notification-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1045;
+            display: none !important;
         }
-
-            .notification-overlay.active {
-                display: block;
-            }
 
         .notification-body {
             height: 420px;
@@ -794,12 +755,13 @@
         @@media (max-width: 575.98px) {
             .notification-body {
                 height: auto;
-                max-height: calc(100vh - 250px); /* Responsive height based on viewport */
-                min-height: 300px; /* Minimum height to show at least 3-4 notifications */
-                overflow-y: auto;
+                max-height: calc(100vh - 280px);
+                min-height: 200px;
+                overflow-y: auto !important;
                 overflow-x: hidden;
                 scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
             }
                 /* Mobile scrollbar - thinner and more subtle */
                 .notification-body::-webkit-scrollbar {
@@ -823,16 +785,16 @@
         /* Small mobile screens: Further optimize for limited space */
         @@media (max-width: 400px) {
             .notification-body {
-                max-height: calc(100vh - 220px);
-                min-height: 280px;
+                max-height: calc(100vh - 300px);
+                min-height: 180px;
             }
         }
 
         /* Landscape mobile: Reduce height to fit */
         @@media (max-height: 600px) and (orientation: landscape) {
             .notification-body {
-                max-height: calc(100vh - 180px);
-                min-height: 200px;
+                max-height: 150px;
+                min-height: 120px;
             }
         }
 
@@ -1475,7 +1437,24 @@
             }
 
             .service-card {
-                padding: 1.25rem;
+                padding: 1rem;
+            }
+
+            .service-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .service-title {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .service-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
             }
 
             .greeting-text h2 {
@@ -1485,17 +1464,32 @@
 
         /* Extra extra small devices (very small phones) */
         @@media (max-width: 400px) {
+            .service-card {
+                padding: 0.75rem;
+            }
+
+            .service-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+                border-radius: 8px;
+            }
+
+            .service-title {
+                font-size: 0.75rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .service-description {
+                font-size: 0.65rem;
+                line-height: 1.2;
+            }
             .user-actions .btn-icon,
             .user-actions .btn-link {
                 width: 32px;
                 height: 32px;
                 font-size: 0.8rem;
-            }
-
-            .notification-dropdown {
-                width: 92vw;
-                right: 0;
-                left: auto;
             }
 
             .greeting-card {
@@ -1542,10 +1536,6 @@
                 font-size: 8px;
                 padding: 1px 4px;
             }
-
-            .mobile-notification-body .notification-item {
-                padding: 10px;
-            }
         }
 
         /* Height adjustments for landscape mobile */
@@ -1584,6 +1574,70 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="logo mb-0">LingapDVO</h1>
+
+                <!-- Desktop User Actions -->
+                <div class="user-actions">
+                    <!-- Notifications Button -->
+                    <div class="notification-container">
+                        <button class="btn btn-icon position-relative" id="notificationButton" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  id="notificationBadge" style="display: none;">
+                                0
+                            </span>
+                        </button>
+
+                        <!-- Notification Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h6 class="mb-0">Notifications</h6>
+                                <div class="notification-header-actions">
+                                    <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-muted" id="markAllRead" title="Mark all as read">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-muted" id="refreshNotifications" title="Refresh">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                                <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="notification-body" id="notificationList">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Management -->
+                    @if (isVerified)
+                    {
+                        <a href="/Userprofile" class="btn btn-link text-muted">
+                            <i class="fas fa-user" title="Profile"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="btn btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
+                            <i class="fas fa-user" title="Profile - Verification Required"></i>
+                        </span>
+                    }
+
+                    <!-- Logout -->
+                    <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-link text-danger">
+                            <i class="fas fa-sign-out-alt" title="Logout"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Mobile Burger Menu Button -->
+                <button class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu" title="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -1717,7 +1771,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="saveNotificationSettings">
-                        <i class="fas fa-save"></i> Save Preferences
+                        Save Preferences
                     </button>
                 </div>
             </div>
@@ -1817,83 +1871,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Desktop User Actions -->
-                            <div class="user-actions">
-                                <!-- Verify Status -->
-                                @if (isVerified)
-                                {
-                                    <span class="btn btn-link text-success" style="pointer-events: none;">
-                                        <i class="fas fa-check-circle" title="Verified"></i>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <a href="/VerifyAccount" class="btn btn-link text-warning">
-                                        <i class="fas fa-exclamation-triangle" title="Incomplete Verification"></i>
-                                    </a>
-                                }
-
-                                <!-- Notifications Button -->
-                                <div class="notification-container">
-                                    <button class="btn btn-icon position-relative" id="notificationButton" title="Notifications">
-                                        <i class="fas fa-bell"></i>
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                              id="notificationBadge" style="display: none;">
-                                            0
-                                        </span>
-                                    </button>
-
-                                    <!-- Notification Dropdown -->
-                                    <div class="notification-dropdown" id="notificationDropdown">
-                                        <div class="notification-header">
-                                            <h6 class="mb-0">Notifications</h6>
-                                            <div class="notification-header-actions">
-                                                <button class="btn btn-sm btn-link text-muted" id="notificationSettings" title="Notification Settings">
-                                                    <i class="fas fa-cog"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-link text-muted" id="markAllRead" title="Mark all as read">
-                                                    <i class="fas fa-check-double"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-link text-muted" id="refreshNotifications" title="Refresh">
-                                                    <i class="fas fa-sync-alt"></i>
-                                                </button>
-                                            </div>
-                                            <button class="notification-close-btn" id="notificationCloseBtn" title="Close">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="notification-body" id="notificationList">
-                                            <!-- Notifications will be loaded here -->
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Profile Management -->
-                                @if (isVerified)
-                                {
-                                    <a href="/Userprofile" class="btn btn-link text-muted">
-                                        <i class="fas fa-user" title="Profile"></i>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="btn btn-link text-muted" style="cursor: not-allowed; opacity: 0.6;">
-                                        <i class="fas fa-user" title="Profile - Verification Required"></i>
-                                    </span>
-                                }
-
-                                <!-- Logout -->
-                                <form asp-controller="Login" asp-action="Logout" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-link text-danger">
-                                        <i class="fas fa-sign-out-alt" title="Logout"></i>
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- Mobile Burger Menu Button -->
-                            <button class="burger-menu-btn" id="burgerMenuBtn" aria-label="Menu" title="Menu">
-                                <i class="fas fa-bars"></i>
-                            </button>
                         </div>
                     </div>
 
@@ -1919,9 +1896,9 @@
                     <!-- Services Section -->
                     <div class="mb-5">
                         <h3 class="section-title">SERVICES OFFERED</h3>
-                        <div class="row g-4">
+                        <div class="row g-2 g-md-3 g-lg-4">
                             <!-- Service 1 - Hospital Assistance -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
                                     <a href="/HospitalAssistance" class="text-decoration-none">
@@ -1947,7 +1924,7 @@
                             </div>
 
                             <!-- Service 2 - Funeral Assistance -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
                                     <a href="/FuneralAssistance" class="text-decoration-none">
@@ -1973,7 +1950,7 @@
                             </div>
 
                             <!-- Service 3 - Other Assistance -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
                                     <a href="/OtherAssistance" class="text-decoration-none">
@@ -1999,7 +1976,7 @@
                             </div>
 
                             <!-- Service 4 - Application History -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 @if (isVerified)
                                 {
                                     <a href="/Applicationtracking" class="text-decoration-none">
@@ -2025,7 +2002,7 @@
                             </div>
 
                             <!-- Service 5 - Locate Facilities -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 <a href="/Nearbyoffices" class="text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
@@ -2038,7 +2015,7 @@
                             </div>
 
                             <!-- Service 6 - Partner Directory -->
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-6 col-lg-4">
                                 <a href="/Feedback" class="text-decoration-none">
                                     <div class="service-card">
                                         <div class="service-icon">
@@ -2191,28 +2168,11 @@
             notificationButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const isVisible = notificationDropdown.style.display === 'block';
-                const notificationOverlay = document.getElementById('notificationOverlay');
-                const burgerMenuBtn = document.getElementById('burgerMenuBtn');
 
                 if (isVisible) {
                     notificationDropdown.style.display = 'none';
-                    notificationOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                    // Show burger icon again on mobile
-                    if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.classList.remove('hidden');
-                    }
                 } else {
                     notificationDropdown.style.display = 'block';
-                    // Show overlay on mobile/tablet only
-                    if (window.innerWidth < 992) {
-                        notificationOverlay.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                        // Hide burger icon on mobile when notification dropdown is showing
-                        if (burgerMenuBtn) {
-                            burgerMenuBtn.classList.add('hidden');
-                        }
-                    }
                     loadRealNotifications();
                 }
             });
@@ -2223,44 +2183,13 @@
                 notificationCloseBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     notificationDropdown.style.display = 'none';
-                    const notificationOverlay = document.getElementById('notificationOverlay');
-                    notificationOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                    // Show burger icon again on mobile
-                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
-                    if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.classList.remove('hidden');
-                    }
                 });
             }
 
-            // Close notification dropdown when clicking overlay
-            const notificationOverlay = document.getElementById('notificationOverlay');
-            if (notificationOverlay) {
-                notificationOverlay.addEventListener('click', function() {
-                    notificationDropdown.style.display = 'none';
-                    notificationOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                    // Show burger icon again on mobile
-                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
-                    if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.classList.remove('hidden');
-                    }
-                });
-            }
-
-            // Close dropdown when clicking outside (desktop only)
+            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!notificationDropdown.contains(e.target) && e.target !== notificationButton) {
                     notificationDropdown.style.display = 'none';
-                    const notificationOverlay = document.getElementById('notificationOverlay');
-                    notificationOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                    // Show burger icon again on mobile
-                    const burgerMenuBtn = document.getElementById('burgerMenuBtn');
-                    if (burgerMenuBtn && window.innerWidth < 992) {
-                        burgerMenuBtn.classList.remove('hidden');
-                    }
                 }
             });
 

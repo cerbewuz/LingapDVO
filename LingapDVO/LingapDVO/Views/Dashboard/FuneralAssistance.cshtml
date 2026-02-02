@@ -205,45 +205,489 @@
             margin-right: 0.5rem;
         }
 
-        /* Responsive Styles */
+        /* Responsive Styles - Medium screens */
         @@media (max-width: 768px) {
             .section-header {
                 font-size: 1.1rem;
             }
-            
+
             .form-label {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
-            
+
             .form-control, .form-select {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.6rem;
             }
-            
+
             .btn-submit {
                 padding: 8px 20px;
                 font-size: 0.9rem;
             }
-            
+
             .upload-box {
                 padding: 1rem;
             }
-            
+
+            .upload-box p {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+
             .upload-icon {
                 font-size: 1.5rem;
             }
+
+            .row.g-3 {
+                --bs-gutter-x: 0.75rem;
+                --bs-gutter-y: 0.75rem;
+            }
+
+            /* Force 2-column grid on medium screens */
+            .col-sm-12 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            .col-md-12 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            .form-check-label {
+                font-size: 0.8rem;
+            }
+
+            .form-check-input {
+                width: 1rem;
+                height: 1rem;
+            }
+
+            /* Radio button group responsive */
+            .d-flex.gap-5 {
+                gap: 1.5rem !important;
+            }
+
+            .form-note {
+                font-size: 0.75rem;
+            }
+
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+
+            .modal-content {
+                border-radius: 12px !important;
+            }
+
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-body h4 {
+                font-size: 1.25rem;
+            }
+
+            .modal-body p {
+                font-size: 0.85rem;
+            }
+
+            /* Requestor Address - Blk/Lot/Street full width, Sub/Vill and Brgy side by side */
+            .requestor-address-row .blk-lot-street-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+                order: 1;
+            }
+
+            .requestor-address-row .sub-vill-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 2;
+            }
+
+            .requestor-address-row .brgy-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 3;
+            }
+
+            /* Patient Address - Same layout */
+            .patient-address-row .blk-lot-street-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+                order: 1;
+            }
+
+            .patient-address-row .sub-vill-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 2;
+            }
+
+            .patient-address-row .brgy-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 3;
+            }
+
+            /* Show Patient Details button */
+            #togglePatientBtn {
+                font-size: 0.85rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+            }
+
+            /* Patient Details section - Sex radio buttons */
+            .patient-sex-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            .patient-sex-col .d-flex.gap-5 {
+                gap: 2rem !important;
+            }
+
+            /* Patient Details name fields */
+            #patientDetailsSection .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            #patientDetailsSection .col-lg-2.col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
         }
 
+        /* Responsive Styles - Small screens */
         @@media (max-width: 576px) {
             .section-header {
                 font-size: 1rem;
+                margin-bottom: 0.75rem;
             }
-            
-            .form-check-label {
-                font-size: 0.85rem;
-            }
-            
-            .text-muted {
+
+            .form-label {
                 font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.5rem;
+            }
+
+            .row.g-3 {
+                --bs-gutter-x: 0.5rem;
+                --bs-gutter-y: 0.5rem;
+            }
+
+            /* Force 2-column grid on small screens */
+            .col-sm-12,
+            .col-md-12 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            /* Full width for specific elements */
+            .col-12.col-sm-12.col-md-6.col-lg-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            .form-check-label {
+                font-size: 0.75rem;
+            }
+
+            .form-check-input {
+                width: 0.9rem;
+                height: 0.9rem;
+            }
+
+            .form-check {
+                margin-bottom: 0.35rem;
+            }
+
+            .form-check-inline {
+                margin-right: 0.5rem;
+            }
+
+            /* Radio button group responsive */
+            .d-flex.gap-5 {
+                gap: 1rem !important;
+            }
+
+            .text-muted {
+                font-size: 0.7rem;
+            }
+
+            .upload-box {
+                padding: 0.75rem;
+            }
+
+            .upload-box p {
+                font-size: 0.75rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .upload-icon {
+                font-size: 1.25rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .form-note {
+                font-size: 0.7rem;
+            }
+
+            .btn-submit {
+                padding: 8px 20px;
+                font-size: 0.85rem;
+                width: 100%;
+            }
+
+            .img-preview {
+                max-height: 200px;
+            }
+
+            .img-preview-inside {
+                max-height: 150px;
+            }
+
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem) !important;
+            }
+
+            .modal-body h4 {
+                font-size: 1.1rem;
+            }
+
+            .modal-body p {
+                font-size: 0.8rem;
+            }
+
+            .alert {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            /* Terms checkbox responsive */
+            .mb-4 .form-check-label {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+
+            /* Requestor Address - Blk/Lot/Street full width, Sub/Vill and Brgy side by side */
+            .requestor-address-row .blk-lot-street-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+                order: 1;
+            }
+
+            .requestor-address-row .sub-vill-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 2;
+            }
+
+            .requestor-address-row .brgy-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 3;
+            }
+
+            /* Patient Address - Same layout */
+            .patient-address-row .blk-lot-street-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+                order: 1;
+            }
+
+            .patient-address-row .sub-vill-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 2;
+            }
+
+            .patient-address-row .brgy-col {
+                flex: 0 0 50%;
+                max-width: 50%;
+                order: 3;
+            }
+
+            /* Show Patient Details button */
+            #togglePatientBtn {
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+            }
+
+            /* Patient Details section - Sex radio buttons */
+            .patient-sex-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            .patient-sex-col .d-flex.gap-5 {
+                gap: 1.5rem !important;
+            }
+
+            /* Patient Details name fields */
+            #patientDetailsSection .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            #patientDetailsSection .col-lg-2.col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            /* Patient Details row layout adjustments */
+            #patientDetailsSection .row.g-3 .col-lg-2.col-md-3.col-sm-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            #patientDetailsSection .row.g-3 .col-lg-3.col-md-4.col-sm-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            #patientDetailsSection .row.g-3 .col-lg-3.col-md-5.col-sm-12 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            #patientDetailsSection .row.g-3 .col-lg-3.col-md-6.col-sm-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            #patientDetailsSection .row.g-3 .col-lg-1.col-md-6.col-sm-6 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            /* Sex and PhilHealth reordering for small screens */
+            #patientDetailsSection .sex-philhealth-row {
+                display: flex !important;
+                flex-wrap: wrap !important;
+            }
+
+            #patientDetailsSection .sex-philhealth-row .patient-sex-col {
+                order: 1 !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+                padding-left: 1.5rem !important;
+            }
+
+            #patientDetailsSection .sex-philhealth-row .philhealth-col {
+                order: 2 !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
+            #patientDetailsSection .sex-philhealth-row .col-lg-3.col-md-5.col-sm-12 {
+                order: 3 !important;
+                flex: 0 0 100% !important;
+                max-width: 100% !important;
+            }
+
+            #patientDetailsSection .sex-philhealth-row .col-lg-3.col-md-6.col-sm-6 {
+                order: 4 !important;
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+
+            #patientDetailsSection .sex-philhealth-row .col-lg-1.col-md-6.col-sm-6 {
+                order: 5 !important;
+                flex: 0 0 50% !important;
+                max-width: 50% !important;
+            }
+        }
+
+        /* Extra small screens */
+        @@media (max-width: 400px) {
+            .section-header {
+                font-size: 0.9rem;
+            }
+
+            .form-label {
+                font-size: 0.7rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.4rem;
+            }
+
+            .row.g-3 {
+                --bs-gutter-x: 0.4rem;
+                --bs-gutter-y: 0.4rem;
+            }
+
+            .form-check-label {
+                font-size: 0.7rem;
+            }
+
+            .form-check-input {
+                width: 0.85rem;
+                height: 0.85rem;
+            }
+
+            /* Radio button group responsive */
+            .d-flex.gap-5 {
+                gap: 0.75rem !important;
+                flex-wrap: wrap;
+            }
+
+            .text-muted {
+                font-size: 0.65rem;
+            }
+
+            .upload-box {
+                padding: 0.5rem;
+            }
+
+            .upload-box p {
+                font-size: 0.7rem;
+            }
+
+            .upload-icon {
+                font-size: 1rem;
+            }
+
+            .form-note {
+                font-size: 0.65rem;
+            }
+
+            .btn-submit {
+                padding: 6px 16px;
+                font-size: 0.8rem;
+            }
+
+            .img-preview-inside {
+                max-height: 120px;
+            }
+
+            /* Modal responsive */
+            .modal-body h4 {
+                font-size: 1rem;
+            }
+
+            .modal-body p {
+                font-size: 0.75rem;
+            }
+
+            .alert {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .mb-4 .form-check-label {
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -328,8 +772,8 @@
     </div>
 
     <!-- Requestor Address -->
-    <div class="row g-3 mt-2">
-        <div class="col-lg-4 col-md-6 col-sm-12">
+    <div class="row g-3 mt-2 requestor-address-row">
+        <div class="col-lg-4 col-md-6 col-sm-12 blk-lot-street-col">
             <label class="form-label">Blk / Lot / Street</label>
             @if (isBlkLotStreetReadonly)
             {
@@ -344,7 +788,7 @@
             <span asp-validation-for="RBlkLotStreet" class="text-danger"></span>
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-6 col-sm-12 sub-vill-col">
             <label class="form-label">Sub / Vill.</label>
             @if (isSubVillReadonly)
             {
@@ -359,7 +803,7 @@
             <span asp-validation-for="RSubVill" class="text-danger"></span>
         </div>
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-3 col-md-6 col-sm-12 brgy-col">
             <label class="form-label">Brgy.</label>
             @if (isBarangayReadonly)
             {
@@ -447,20 +891,20 @@
         </div>
 
         <!-- Address -->
-        <div class="row g-3 mt-2">
-            <div class="col-lg-4 col-md-6">
+        <div class="row g-3 mt-2 patient-address-row">
+            <div class="col-lg-4 col-md-6 blk-lot-street-col">
                 <label class="form-label">Blk / Lot / Street</label>
                 <input asp-for="BlkLotStreet" type="text" class="form-control" required>
                 <span asp-validation-for="BlkLotStreet" class="text-danger"></span>
             </div>
 
-            <div class="col-lg-4 col-md-6">
+            <div class="col-lg-4 col-md-6 sub-vill-col">
                 <label class="form-label">Sub / Vill.</label>
                 <input asp-for="SubVill" type="text" class="form-control">
                 <span asp-validation-for="SubVill" class="text-danger"></span>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 brgy-col">
                 <label class="form-label">Brgy.</label>
                 <select asp-for="Brgy" class="form-select" required>
                     <option value="">Select Barangay</option>
@@ -583,8 +1027,8 @@
         </div>
 
         <!-- Gender, PhilHealth, DOB, Age -->
-        <div class="row g-3 mt-2">
-            <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="row g-3 mt-2 sex-philhealth-row">
+            <div class="col-lg-2 col-md-3 col-sm-6 patient-sex-col">
                 <label class="form-label">Sex</label>
                 <div class="d-flex gap-5 mt-2">
                     <div class="form-check">
@@ -599,7 +1043,7 @@
                 <span asp-validation-for="Sex" class="text-danger"></span>
             </div>
 
-            <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 philhealth-col">
                 <label class="form-label">PhilHealth</label>
                 <select class="form-select" asp-for="PhilHealth" id="philHealthSelect" required>
                     <option value="">Select option</option>

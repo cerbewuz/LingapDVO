@@ -404,6 +404,7 @@
             display: none;
         }
 
+        /* Medium screens */
         @@media (max-width: 768px) {
             .profile-container {
                 margin-top: 90px;
@@ -422,8 +423,20 @@
             }
 
             .info-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 0.75rem;
+            }
+
+            .info-item {
+                padding: 0.75rem;
+            }
+
+            .info-label {
+                font-size: 0.7rem;
+            }
+
+            .info-value {
+                font-size: 0.85rem;
             }
 
             .section-title {
@@ -441,6 +454,77 @@
 
             .editable-field input {
                 width: 100%;
+            }
+        }
+
+        /* Small screens */
+        @@media (max-width: 576px) {
+            .profile-container {
+                margin-top: 80px;
+            }
+
+            .profile-header {
+                padding: 1rem;
+            }
+
+            .profile-name {
+                font-size: 1.1rem;
+            }
+
+            .profile-body {
+                padding: 1rem;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .info-item {
+                padding: 0.6rem;
+                border-left-width: 2px;
+            }
+
+            .info-label {
+                font-size: 0.65rem;
+            }
+
+            .info-value {
+                font-size: 0.8rem;
+            }
+
+            .section-title {
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .section-divider {
+                margin: 1rem 0;
+            }
+
+            .verification-badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+        }
+
+        /* Extra small screens */
+        @@media (max-width: 400px) {
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.4rem;
+            }
+
+            .info-item {
+                padding: 0.5rem;
+            }
+
+            .info-label {
+                font-size: 0.6rem;
+            }
+
+            .info-value {
+                font-size: 0.75rem;
             }
         }
     </style>
