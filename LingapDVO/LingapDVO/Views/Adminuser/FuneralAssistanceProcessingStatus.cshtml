@@ -918,10 +918,23 @@
 
         .btn-approved,
         .btn-disapproved,
+        .btn-retake,
         .btn-warning {
             width: 100%;
             max-width: 300px;
             margin: 5px 0;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.85rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .btn-approved,
+        .btn-disapproved,
+        .btn-retake,
+        .btn-warning {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
         }
     }
 </style>

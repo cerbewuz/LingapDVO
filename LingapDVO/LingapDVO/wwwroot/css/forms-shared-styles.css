@@ -146,6 +146,54 @@ h4.section-header {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   RETAKE INFO BOX STYLES - Used in view forms and tracking
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.retake-info-box {
+    background-color: #fff3cd;
+    border-left: 4px solid #ff9800;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+}
+
+.retake-info-box .retake-info-title {
+    font-weight: 600;
+    color: #9a3412;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.retake-info-box .retake-info-text {
+    color: #666;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.btn-retake {
+    background-color: #ff9800;
+    border-color: #ff9800;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 16px;
+    transition: all 0.2s;
+}
+
+.btn-retake:hover {
+    background-color: #e68a00;
+    border-color: #e68a00;
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    RESPONSIVE ADJUSTMENTS - Apply to all forms
    ═══════════════════════════════════════════════════════════════════════════════ */
 
@@ -164,6 +212,31 @@ h4.section-header {
     .form-check-label {
         font-size: 0.875rem;
     }
+
+    /* Retake Info Box Responsive */
+    .retake-info-box {
+        padding: 10px;
+        margin-top: 10px;
+        border-left-width: 3px;
+    }
+
+    .retake-info-box .retake-info-title {
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .retake-info-box .retake-info-text {
+        font-size: 0.8rem;
+    }
+
+    .btn-retake {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        gap: 6px;
+        margin-top: 12px;
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -177,6 +250,42 @@ h4.section-header {
     .form-check-input {
         width: 1rem;
         height: 1rem;
+    }
+
+    /* Retake Info Box Responsive for Small Mobile */
+    .retake-info-box {
+        padding: 8px;
+        margin-top: 8px;
+        border-left-width: 3px;
+        border-radius: 4px;
+    }
+
+    .retake-info-box .retake-info-title {
+        font-size: 0.75rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .retake-info-box .retake-info-title i {
+        font-size: 0.7rem;
+    }
+
+    .retake-info-box .retake-info-text {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .btn-retake {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        gap: 5px;
+        margin-top: 10px;
+        border-radius: 4px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-retake i {
+        font-size: 0.7rem;
     }
 }
 

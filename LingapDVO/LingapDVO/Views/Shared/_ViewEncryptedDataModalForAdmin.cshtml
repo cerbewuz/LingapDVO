@@ -433,9 +433,14 @@
                     });
                 }
 
-                // Show action buttons, hide loading
-                $('#loadingSpinner').hide();
-                $('#actionButtonsStep').show();
+                // Close the modal automatically after decryption succeeds
+                var modalElement = document.getElementById('viewAdditionalInfoModal');
+                if (modalElement) {
+                    var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
             }).catch(function(error) {
                 console.error('Promise.all failed:', error);
                 $('#loadingSpinner').hide();

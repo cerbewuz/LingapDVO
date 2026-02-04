@@ -204,6 +204,26 @@ function openViewAdditionalInfoModal(formType, formId, encryptedFields) {
     }
 }
 
+// Helper function to populate decrypted fields on the page
+function populateDecryptedFields(decryptedData, infoType) {
+    decryptedData.forEach(function(field) {
+        // Try to find the element by various ID patterns
+        const possibleIds = [
+            'decrypted' + field.name,
+            infoType + 'Decrypted' + field.name,
+            field.name + 'Decrypted'
+        ];
+        
+        for (let id of possibleIds) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = field.value || 'Not provided';
+                break;
+            }
+        }
+    });
+}
+
 // Wrap all jQuery code in document ready to ensure jQuery is loaded
 if (typeof jQuery !== 'undefined') {
     $(document).ready(function() {
@@ -358,7 +378,35 @@ function initializeModal() {
 
             // Show decrypted data, hide loading
             $('#loadingSpinner').hide();
-            $('#decryptedDataStep').show();
+            
+            // Store decrypted data globally for page use
+            window.decryptedAdditionalData = {};
+            decryptedData.forEach(function(field) {
+                window.decryptedAdditionalData[field.name] = field.value;
+            });
+            
+            // Close the modal automatically
+            var modalElement = document.getElementById('viewAdditionalInfoModal');
+            if (modalElement) {
+                var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
+            
+            // Call the page-specific callback to show decrypted data on the page
+            const formType = $('#viewAdditionalInfoModal').data('formType');
+            if (formType === 'Hospital' && typeof showHospitalInfoAfterDecryption === 'function') {
+                // Populate the decrypted fields on the page
+                populateDecryptedFields(decryptedData, 'hospital');
+                showHospitalInfoAfterDecryption();
+            } else if (formType === 'Funeral' && typeof showFuneralInfoAfterDecryption === 'function') {
+                populateDecryptedFields(decryptedData, 'funeral');
+                showFuneralInfoAfterDecryption();
+            } else if ((formType === 'Other' || formType === 'Additional') && typeof showAdditionalInfoAfterDecryption === 'function') {
+                populateDecryptedFields(decryptedData, 'additional');
+                showAdditionalInfoAfterDecryption();
+            }
         }).catch(function(error) {
             console.error('Promise.all failed:', error);
             $('#loadingSpinner').hide();
