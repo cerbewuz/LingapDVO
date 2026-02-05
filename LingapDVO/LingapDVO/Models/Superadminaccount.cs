@@ -10,13 +10,13 @@ namespace LingapDVO.Models
        
             public int Id { get; set; }
 
-            [MaxLength(100)]
+            [MaxLength(80)]
             public string Fullname { get; set; } = "";
 
-            [MaxLength(100)]
+            [MaxLength(50)]
             public string Username { get; set; } = "";
 
-            [MaxLength(100)]
+            [MaxLength(255)]
             public string Password { get; set; } = "";
 
             [MaxLength(100)]

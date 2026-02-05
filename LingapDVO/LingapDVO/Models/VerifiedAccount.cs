@@ -16,10 +16,10 @@ namespace LingapDVO.Models
         [ForeignKey("User")]
         public int UserId { get; set; } 
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string IDtype { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(30)]
         public string IDnumber { get; set; } = "";
 
         [MaxLength(100)]
@@ -30,19 +30,19 @@ namespace LingapDVO.Models
 
 
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Firstname { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Middlename { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Lastname { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string Suffix { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(10)]
         public string Gender { get; set; } = "";
 
         [MaxLength(100)]
@@ -50,19 +50,22 @@ namespace LingapDVO.Models
 
 
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string BlkLotStreet { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string SubVill { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string Barangay { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(30)]
+        public string District { get; set; } = "";
+
+        [MaxLength(12)]
         public string Phonenumber { get; set; } = "";
 
-        [MaxLength(100)]
+        [MaxLength(20)]
         public string CivilStatus { get; set; } = "";
 
         [MaxLength(100)]
