@@ -1106,21 +1106,24 @@
                         return false;
                     }
 
-                    // Then check status2 for approved/disapproved
+                    // Then check status2 for approved/disapproved (case-insensitive)
                     if (status === 'approve' || status === 'disapprove') {
-                        return hasStatus2 && app.status2 === status;
+                        const status2Lower = hasStatus2 ? app.status2.toLowerCase() : '';
+                        return hasStatus2 && status2Lower === status;
                     }
 
                     // For processing status, include both regular processing and resubmitted applications
                     if (status === 'processing') {
-                        const isProcessingStatus = app.status === 'processing' && (!hasStatus2 || (app.status2 !== 'approve' && app.status2 !== 'disapprove'));
-                        const isResubmitted = hasStatus2 && app.status2.toLowerCase() === 'resubmitted';
+                        const status2Lower = hasStatus2 ? app.status2.toLowerCase() : '';
+                        const isProcessingStatus = app.status === 'processing' && (!hasStatus2 || (status2Lower !== 'approve' && status2Lower !== 'disapprove'));
+                        const isResubmitted = hasStatus2 && status2Lower === 'resubmitted';
                         return isProcessingStatus || isResubmitted;
                     }
 
                     // For pending, use original status but exclude if status2 is set
                     if (status === 'pending') {
-                        return app.status === status && (!hasStatus2 || (app.status2 !== 'approve' && app.status2 !== 'disapprove' && app.status2.toLowerCase() !== 'resubmitted'));
+                        const status2Lower = hasStatus2 ? app.status2.toLowerCase() : '';
+                        return app.status === status && (!hasStatus2 || (status2Lower !== 'approve' && status2Lower !== 'disapprove' && status2Lower !== 'resubmitted'));
                     }
 
                     return false;
@@ -1179,11 +1182,11 @@
                         if (hasStatus2 && status2Lower === 'retake') {
                             statusCounts.retakes++;
                         }
-                        // If NOT claimed and NOT retake, then check status2 for approve/disapprove/resubmitted
+                        // If NOT claimed and NOT retake, then check status2 for approve/disapprove/resubmitted (case-insensitive)
                         else if (hasStatus2) {
-                            if (app.status2 === 'approve') {
+                            if (status2Lower === 'approve') {
                                 statusCounts.approve++;
-                            } else if (app.status2 === 'disapprove') {
+                            } else if (status2Lower === 'disapprove') {
                                 statusCounts.disapprove++;
                             } else if (status2Lower === 'resubmitted') {
                                 // Resubmitted applications count as Processing
@@ -1444,20 +1447,23 @@
                 }
 
                 if (app.type === "Hospital Assistance") {
+                    // Get lowercase status2 for case-insensitive comparison
+                    const status2Lower = app.status2 ? app.status2.toLowerCase() : '';
+
                     // Check status3 FIRST for claimed (highest priority)
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/HospitalAssistanceClaim/${app.formId}`;
                     }
                     // Check status2 for retake (second priority)
-                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                    else if (status2Lower === 'retake') {
                         editUrl = `/HospitalAssistanceRetake/${app.formId}`;
                     }
-                    // Then check status2 for approved/disapproved/resubmitted
-                    else if (app.status2 === "approve") {
+                    // Then check status2 for approved/disapproved/resubmitted (case-insensitive)
+                    else if (status2Lower === "approve") {
                         editUrl = `/HospitalAssistanceApprove/${app.formId}`;
-                    } else if (app.status2 === "disapprove") {
+                    } else if (status2Lower === "disapprove") {
                         editUrl = `/HospitalAssistanceDisapprove/${app.formId}`;
-                    } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
+                    } else if (status2Lower === "resubmitted") {
                         editUrl = `/HospitalAssistanceProcessing/${app.formId}`;
                     }
                     // Then check original status
@@ -1468,18 +1474,21 @@
                     }
 
                 } else if (app.type === "Other Assistance") {
+                    // Get lowercase status2 for case-insensitive comparison
+                    const status2Lower = app.status2 ? app.status2.toLowerCase() : '';
+
                     // Apply the same logic for Medical forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/OtherAssistanceClaim/${app.formId}`;
                     }
-                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                    else if (status2Lower === 'retake') {
                         editUrl = `/OtherAssistanceRetake/${app.formId}`;
                     }
-                    else if (app.status2 === "approve") {
+                    else if (status2Lower === "approve") {
                         editUrl = `/OtherAssistanceApprove/${app.formId}`;
-                    } else if (app.status2 === "disapprove") {
+                    } else if (status2Lower === "disapprove") {
                         editUrl = `/OtherAssistanceDisapprove/${app.formId}`;
-                    } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
+                    } else if (status2Lower === "resubmitted") {
                         editUrl = `/OtherAssistanceProcessing/${app.formId}`;
                     } else if (app.status === "processing") {
                         editUrl = `/OtherAssistanceProcessing/${app.formId}`;
@@ -1488,18 +1497,21 @@
                     }
 
                 } else if (app.type === "Funeral Assistance") {
+                    // Get lowercase status2 for case-insensitive comparison
+                    const status2Lower = app.status2 ? app.status2.toLowerCase() : '';
+
                     // Apply the same logic for Funeral forms
                     if (app.status3 && app.status3.toLowerCase() === 'claimed') {
                         editUrl = `/FuneralAssistanceClaim/${app.formId}`;
                     }
-                    else if (app.status2 && app.status2.toLowerCase() === 'retake') {
+                    else if (status2Lower === 'retake') {
                         editUrl = `/FuneralAssistanceRetake/${app.formId}`;
                     }
-                    else if (app.status2 === "approve") {
+                    else if (status2Lower === "approve") {
                         editUrl = `/FuneralAssistanceApprove/${app.formId}`;
-                    } else if (app.status2 === "disapprove") {
+                    } else if (status2Lower === "disapprove") {
                         editUrl = `/FuneralAssistanceDisapprove/${app.formId}`;
-                    } else if (app.status2 && app.status2.toLowerCase() === "resubmitted") {
+                    } else if (status2Lower === "resubmitted") {
                         editUrl = `/FuneralAssistanceProcessing/${app.formId}`;
                     } else if (app.status === "processing") {
                         editUrl = `/FuneralAssistanceProcessing/${app.formId}`;

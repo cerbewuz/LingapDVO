@@ -29,5 +29,8 @@ namespace LingapDVO.Models
         public bool PreferEmailNotification { get; set; } = true;
         public bool PreferSmsNotification { get; set; } = true;
         public bool PreferInAppNotification { get; set; } = true;
+
+        // Navigation property for eager loading
+        public virtual VerifiedAccount? VerifiedAccount { get; set; }
     }
 }

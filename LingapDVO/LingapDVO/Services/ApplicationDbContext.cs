@@ -58,6 +58,37 @@ namespace LingapDVO.Services
             base.OnModelCreating(modelBuilder);
 
             // ═══════════════════════════════════════════════════════════════
+            // 🔗 NAVIGATION PROPERTY RELATIONSHIPS FOR EAGER LOADING
+            // ═══════════════════════════════════════════════════════════════
+
+            // UserAccount -> VerifiedAccount (one-to-one)
+            modelBuilder.Entity<UserAccount>()
+                .HasOne(u => u.VerifiedAccount)
+                .WithOne(v => v.User)
+                .HasForeignKey<VerifiedAccount>(v => v.UserId);
+
+            // HospitalAssistance -> UserAccount (many-to-one)
+            modelBuilder.Entity<HospitalAssistance>()
+                .HasOne(h => h.User)
+                .WithMany()
+                .HasForeignKey(h => h.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // OtherAssistance -> UserAccount (many-to-one)
+            modelBuilder.Entity<OtherAssistance>()
+                .HasOne(o => o.User)
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // FuneralAssistance -> UserAccount (many-to-one)
+            modelBuilder.Entity<FuneralAssistance>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ═══════════════════════════════════════════════════════════════
             // 🔔 UNIFIED NOTIFICATIONS INDEXES
             // ═══════════════════════════════════════════════════════════════
 

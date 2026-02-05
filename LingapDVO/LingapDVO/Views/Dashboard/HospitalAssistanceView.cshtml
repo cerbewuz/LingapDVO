@@ -14,7 +14,9 @@
     var claimedDate = ViewData["ClaimedAt"] != null && ViewData["ClaimedAt"].ToString() != "" ? Convert.ToDateTime(ViewData["ClaimedAt"]) : DateTime.MinValue;
     var status = ViewData["Status"]?.ToString() ?? "";
     var status2 = ViewData["Status2"]?.ToString() ?? "";
+    var status2Lower = status2.ToLower();
     var status3 = ViewData["Status3"]?.ToString() ?? "";
+    var status3Lower = status3.ToLower();
     var processBy = ViewData["Processby"]?.ToString() ?? "";
     var comments = ViewData["Comments"]?.ToString() ?? "";
     var retakeReason = ViewData["RetakeReason"]?.ToString() ?? "";
@@ -23,8 +25,8 @@
     var isSubmitted = createdDate > DateTime.MinValue;
     var isProcessing = processAt > DateTime.MinValue && processAt.Year > 1 && !string.IsNullOrWhiteSpace(processBy);
     var isReviewed = resultDate > DateTime.MinValue && resultDate.Year > 1;
-    var isApproved = status2 == "Approve";
-    var isRetake = status2 == "Retake";
+    var isApproved = status2Lower == "approve";
+    var isRetake = status2Lower == "retake";
     var isClaimed = claimedDate > DateTime.MinValue && claimedDate.Year > 1 && !string.IsNullOrWhiteSpace(status3);
 }
 
@@ -1889,22 +1891,22 @@
         @{
             var mobileStatusText = "";
             var mobileStatusClass = "";
-            if (status2 == "Approve" && status3 == "Claimed")
+            if (status2Lower == "approve" && status3Lower == "claimed")
             {
                 mobileStatusText = "CLAIMED";
                 mobileStatusClass = "bg-info";
             }
-            else if (status2 == "Approve")
+            else if (status2Lower == "approve")
             {
                 mobileStatusText = "APPROVED";
                 mobileStatusClass = "bg-success";
             }
-            else if (status2 == "Disapprove" || status2 == "Unapproved")
+            else if (status2Lower == "disapprove" || status2Lower == "unapproved")
             {
                 mobileStatusText = "DISAPPROVED";
                 mobileStatusClass = "bg-danger";
             }
-            else if (status2 == "Retake")
+            else if (status2Lower == "retake")
             {
                 mobileStatusText = "RETAKE";
                 mobileStatusClass = "bg-warning text-dark";
@@ -2343,7 +2345,7 @@
                                     <button type="button" class="btn-retake" onclick="markAsRetake()">
                                         <i class="fas fa-arrow-rotate-left me-2"></i>Mark as Retake
                                     </button>
-                                    @if (status2 == "Approve" && status3 != "Claimed")
+                                    @if (status2Lower == "approve" && status3Lower != "claimed")
                                     {
                                         <button type="button" class="btn-claimed" onclick="markAsClaimed()">
                                             <i class="fas fa-hands-helping me-2"></i>Mark as Claimed
@@ -2364,9 +2366,9 @@
                     <i class="fas fa-file-medical"></i> Application Tracking
                     @{
                         var currentStatusBadge = "";
-                        if (status2 == "Approve")
+                        if (status2Lower == "approve")
                         {
-                            if (status3 == "Claimed")
+                            if (status3Lower == "claimed")
                             {
                                 currentStatusBadge = "status-claimed-badge";
                             }
@@ -2375,11 +2377,11 @@
                                 currentStatusBadge = "status-approved-badge";
                             }
                         }
-                        else if (status2 == "Disapprove" || status2 == "Unapproved")
+                        else if (status2Lower == "disapprove" || status2Lower == "unapproved")
                         {
                             currentStatusBadge = "status-disapproved-badge";
                         }
-                        else if (status2 == "Retake")
+                        else if (status2Lower == "retake")
                         {
                             currentStatusBadge = "status-retake-badge";
                         }
@@ -2393,15 +2395,15 @@
                         }
                     }
                     <span class="current-status-badge @currentStatusBadge">
-                        @if (status2 == "Approve" && status3 == "Claimed")
+                        @if (status2Lower == "approve" && status3Lower == "claimed")
                         {
                             <text>CLAIMED</text>
                         }
-                        else if (status2 == "Approve")
+                        else if (status2Lower == "approve")
                         {
                             <text>APPROVED</text>
                         }
-                        else if (status2 == "Disapprove" || status2 == "Unapproved")
+                        else if (status2Lower == "disapprove" || status2Lower == "unapproved")
                         {
                             <text>DISAPPROVED</text>
                         }

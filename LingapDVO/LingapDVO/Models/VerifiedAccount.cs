@@ -79,5 +79,7 @@ namespace LingapDVO.Models
         [MaxLength(200)]
         public string? TransactionId { get; set; }
 
+        // Navigation property for eager loading
+        public virtual UserAccount? User { get; set; }
     }
 }

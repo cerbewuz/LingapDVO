@@ -1263,7 +1263,9 @@
                     </div>
                     <div class="text-center" style="min-width: 90px;">
                         <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
-                            @(Model.HospitalAssistance.Count(a => a.Status2 == "Approve") + Model.OtherAssistance.Count(a => a.Status2 == "Approve") + Model.FuneralAssistance.Count(a => a.Status2 == "Approve"))
+                            @(Model.HospitalAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)) +
+                              Model.OtherAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)) +
+                              Model.FuneralAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)))
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Approved</div>
                     </div>
@@ -1277,9 +1279,9 @@
                     </div>
                     <div class="text-center" style="min-width: 90px;">
                         <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
-                            @(Model.HospitalAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
-                                                        Model.OtherAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
-                                                        Model.FuneralAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)))
+                            @(Model.HospitalAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)) +
+                              Model.OtherAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)) +
+                              Model.FuneralAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)))
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Processing</div>
                     </div>
@@ -1447,13 +1449,13 @@
             // Sort by most recent first
             allApplications = allApplications.OrderByDescending(a => (DateTime)a.SubmittedDate).ToList();
 
-            // Calculate summary statistics
+            // Calculate summary statistics (case-insensitive comparisons)
             var totalApps = allApplications.Count;
-            var approvedApps = allApplications.Count(a => (string)a.Status == "Approve");
-            var pendingApps = allApplications.Count(a => (string)a.Status == "Pending");
-            var processingApps = allApplications.Count(a => (string)a.Status == "Processing");
-            var unapprovedApps = allApplications.Count(a => (string)a.Status == "Unapproved" || (string)a.Status == "Disapprove");
-            var retakeApps = allApplications.Count(a => (string)a.Status == "Retake");
+            var approvedApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Approve", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Approved", StringComparison.OrdinalIgnoreCase));
+            var pendingApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Pending", StringComparison.OrdinalIgnoreCase));
+            var processingApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Processing", StringComparison.OrdinalIgnoreCase));
+            var unapprovedApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Unapproved", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Disapproved", StringComparison.OrdinalIgnoreCase));
+            var retakeApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Retake", StringComparison.OrdinalIgnoreCase));
             var claimedApps = allApplications.Count(a => !string.IsNullOrEmpty((string)a.ClaimStatus));
         }
 
@@ -1523,28 +1525,31 @@
                                 var displayStatus = status;
                                 var statusClass = "status-pending";
 
+                                // Normalize status to lowercase for case-insensitive comparison
+                                var statusLower = status?.ToLower() ?? "";
+
                                 // Determine final status (claimed takes precedence)
                                 if (!string.IsNullOrEmpty(claimStatus))
                                 {
                                     displayStatus = "Claims";
                                     statusClass = "status-claimed";
                                 }
-                                else if (status == "Approve")
+                                else if (statusLower == "approve" || statusLower == "approved")
                                 {
                                     displayStatus = "Approved";
                                     statusClass = "status-approved";
                                 }
-                                else if (status == "Processing")
+                                else if (statusLower == "processing")
                                 {
                                     displayStatus = "Processing";
                                     statusClass = "status-processing";
                                 }
-                                else if (status == "Unapproved" || status == "Disapprove")
+                                else if (statusLower == "unapproved" || statusLower == "disapprove" || statusLower == "disapproved")
                                 {
                                     displayStatus = "Disapproved";
                                     statusClass = "status-unapproved";
                                 }
-                                else if (status == "Retake")
+                                else if (statusLower == "retake")
                                 {
                                     displayStatus = "Retake";
                                     statusClass = "status-retake";
@@ -1659,8 +1664,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
@@ -1963,8 +1968,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
@@ -2267,8 +2272,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
