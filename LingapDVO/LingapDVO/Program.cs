@@ -112,8 +112,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<ISmsService, SmsService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationService>();
-builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
+// Unified Notification Service (consolidates user and admin notifications)
+builder.Services.AddScoped<IUnifiedNotificationService, UnifiedNotificationService>();
+
+// Backward compatibility adapters - delegate to unified service
+builder.Services.AddScoped<IMultiChannelNotificationService, MultiChannelNotificationServiceAdapter>();
+builder.Services.AddScoped<IAdminNotificationService, AdminNotificationServiceAdapter>();
 
 // ID Verification Service (ID Analyzer)
 builder.Services.AddHttpClient<IVerificationService, IdAnalyzerService>();

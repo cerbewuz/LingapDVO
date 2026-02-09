@@ -299,6 +299,188 @@
             background-color: var(--primary-light);
         }
 
+    /* Current Uploaded Document Box */
+    .current-document-box {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    .current-document-header {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+        .current-document-header i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+    .current-document-body {
+        padding: 1rem;
+    }
+
+    .current-document-name {
+        margin-bottom: 0.75rem;
+        color: #333;
+    }
+
+    .document-preview-container {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: inline-block;
+        width: 100%;
+    }
+
+        .document-preview-container:hover {
+            transform: scale(1.02);
+        }
+
+        .document-preview-container:hover .preview-overlay {
+            opacity: 1;
+        }
+
+    .preview-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.5rem;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+        border-radius: 0 0 5px 5px;
+    }
+
+    /* Reupload Document Box */
+    .reupload-document-box {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    .reupload-document-header {
+        background-color: #e3f2fd;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: #1565c0;
+        border-bottom: 1px solid #bbdefb;
+    }
+
+        .reupload-document-header i {
+            margin-right: 0.5rem;
+        }
+
+    .reupload-document-body {
+        padding: 1rem;
+    }
+
+    .upload-area {
+        border: 2px dashed #90caf9;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #f5f9ff;
+    }
+
+        .upload-area:hover {
+            border-color: #1565c0;
+            background-color: #e3f2fd;
+        }
+
+        .upload-area .upload-icon {
+            font-size: 3rem;
+            color: #1565c0;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area .upload-text {
+            color: #1565c0;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+    /* Reupload Preview Section - Merged with Upload Area */
+    .reupload-preview-section {
+        border: 2px solid #4caf50;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #f1f8e9;
+    }
+
+    .reupload-preview-header {
+        background-color: #e8f5e9;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        color: #2e7d32;
+        border-bottom: 1px solid #c8e6c9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .reupload-preview-body {
+        padding: 1rem;
+        background-color: #fff;
+    }
+
+    .reupload-file-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.75rem;
+        word-break: break-all;
+    }
+
+    .reupload-change-btn {
+        background-color: #1565c0;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .reupload-change-btn:hover {
+        background-color: #0d47a1;
+    }
+
+    .image-preview-container {
+        position: relative;
+        cursor: pointer;
+        display: inline-block;
+        width: 100%;
+    }
+
+        .image-preview-container:hover .preview-overlay {
+            opacity: 1;
+        }
+
+    .reupload-preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .pdf-preview-container .pdf-preview {
+        cursor: pointer;
+    }
+
     .upload-icon {
         font-size: 3rem;
         color: #6c757d;
@@ -312,7 +494,7 @@
     }
 
     .btn-submit {
-        background-color: var(--primary-color);
+        background-color: #0DDE0B;
         color: white;
         padding: 0.75rem 2rem;
         font-weight: 600;
@@ -322,7 +504,7 @@
     }
 
         .btn-submit:hover {
-            background-color: var(--primary-dark);
+            background-color: #0BC50A;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
@@ -871,55 +1053,89 @@
         <div class="mb-3">
             <label class="form-label">Doctor's Prescription/Receipt</label>
 
-            <!-- Current Document Display -->
-            @if (ViewData["DoctorPrescription"] != null)
+            <!-- Current Uploaded Document Box -->
+            @if (ViewData["DoctorPrescription"] != null && ViewData["DoctorPrescriptionBase64"] != null)
             {
-                <div class="current-file">
-                    <strong>Current Document:</strong> @ViewData["DoctorPrescription"]
-                    @if (ViewData["DoctorPrescriptionBase64"] != null)
-                    {
-                        <div class="mt-2">
-                            @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
-                            {
-                                <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
-                                    <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
-                                    <div class="pdf-info">
-                                        <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
-                                        <span class="pdf-label">Click to view PDF</span>
-                                    </div>
+                <div class="current-document-box mb-3">
+                    <div class="current-document-header">
+                        <i class="fas fa-file-alt"></i> Current Uploaded Document
+                    </div>
+                    <div class="current-document-body">
+                        <p class="current-document-name"><strong>@ViewData["DoctorPrescription"]</strong></p>
+                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        {
+                            <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
+                                <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                                <div class="pdf-info">
+                                    <span class="pdf-filename">@ViewData["DoctorPrescription"]</span>
+                                    <span class="pdf-label">Click to view PDF</span>
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
-                                    <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
-                                </div>
-                            }
-                        </div>
-                    }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="document-preview-container" onclick="zoomImage('data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]')">
+                                <img src="data:image/jpeg;base64,@ViewData["DoctorPrescriptionBase64"]" alt="Doctor Prescription" class="document-preview" />
+                                <div class="preview-overlay"><i class="fas fa-search-plus"></i> Click to zoom</div>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
 
-            <div class="upload-box" onclick="document.getElementById('medicalCertificate').click()">
-                <div class="upload-icon">
-                    <i class="fas fa-file-medical"></i>
+            <!-- Reupload Document Box -->
+            <div class="reupload-document-box">
+                <div class="reupload-document-header">
+                    <i class="fas fa-upload"></i> Reupload Document
                 </div>
-                <p id="uploadTextMedical">Click to upload new document</p>
-                <p id="fileNameMedical" class="text-success fw-bold mt-2"></p>
-                <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
+                <div class="reupload-document-body">
+                    <!-- Upload Area (shown when no file selected) -->
+                    <div id="uploadAreaContainer" class="upload-area" onclick="document.getElementById('medicalCertificate').click()">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <p class="upload-text">Click to select a new document</p>
+                        <p class="form-note">Accepted formats: JPG, PNG, PDF (Max 10MB)</p>
+                    </div>
+
+                    <!-- Reupload Preview Section (shown when file is selected, replaces upload area) -->
+                    <div id="reuploadPreviewSection" class="reupload-preview-section" style="display: none;">
+                        <div class="reupload-preview-header">
+                            <span><i class="fas fa-check-circle text-success"></i> New Document Selected</span>
+                            <button type="button" class="reupload-change-btn" onclick="document.getElementById('medicalCertificate').click()">
+                                <i class="fas fa-sync-alt"></i> Change
+                            </button>
+                        </div>
+                        <div class="reupload-preview-body">
+                            <p id="fileNameMedical" class="reupload-file-name"></p>
+                            <!-- Image Preview -->
+                            <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                                <img id="receiptPreview" class="reupload-preview-image" alt="New Document Preview" onclick="zoomReuploadImage(this.src)">
+                                <div class="preview-overlay"><i class="fas fa-search-plus"></i> Click to zoom</div>
+                            </div>
+                            <!-- PDF Preview -->
+                            <div id="pdfPreviewContainer" class="pdf-preview-container" style="display: none;">
+                                <div class="pdf-preview" onclick="previewReuploadedPDF()">
+                                    <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
+                                    <div class="pdf-info">
+                                        <span class="pdf-filename" id="pdfFileName"></span>
+                                        <span class="pdf-label">Click to view PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input asp-for="HospitalAssistanceDocument"
+                           type="file"
+                           id="medicalCertificate"
+                           class="d-none"
+                           accept=".png,.jpg,.jpeg,.pdf"
+                           onchange="handleFileSelect(this)">
+                    <span asp-validation-for="HospitalAssistanceDocument"></span>
+                </div>
             </div>
-
-            <input asp-for="HospitalAssistanceDocument"
-                   type="file"
-                   id="medicalCertificate"
-                   class="d-none"
-                   accept=".png,.jpg,.jpeg,.pdf"
-                   onchange="handleFileSelect(this)">
-            <span asp-validation-for="HospitalAssistanceDocument"></span>
-
-            <img id="receiptPreview" class="img-preview mt-2" alt="Doctor Receipt Preview">
-            <div id="fileStatus" class="file-status"></div>
-            <p class="form-note">* Only images will be shown in preview. PDF files will be accepted but not previewed.</p>
+            <div id="fileStatus" class="file-status mt-2"></div>
         </div>
     </div>
 
@@ -934,7 +1150,7 @@
     <!-- Submit Button -->
     <div class="text-center mt-4 mb-4">
         <button type="submit" class="btn btn-submit" id="submitButton">
-            <i class="bi bi-save"></i> Save Changes
+            Submit
         </button>
     </div>
 </form>
@@ -1214,7 +1430,7 @@
             if (hasValidationErrors) {
                 // Re-enable submit button if it was disabled
                 if (submitButton) {
-                    submitButton.innerHTML = '<i class="bi bi-save"></i> Save Changes';
+                    submitButton.innerHTML = 'Submit';
                     submitButton.disabled = false;
                 }
             }
@@ -1387,13 +1603,19 @@
             }
         }
 
+        // Store uploaded PDF file for preview
+        let uploadedPDFFile = null;
+
         function handleFileSelect(input) {
             const file = input.files[0];
             const fileNameDisplay = document.getElementById('fileNameMedical');
-            const uploadText = document.getElementById('uploadTextMedical');
             const fileStatus = document.getElementById('fileStatus');
             const preview = document.getElementById('receiptPreview');
-            const uploadBox = input.previousElementSibling;
+            const reuploadPreviewSection = document.getElementById('reuploadPreviewSection');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+            const pdfFileName = document.getElementById('pdfFileName');
+            const uploadAreaContainer = document.getElementById('uploadAreaContainer');
 
             if (file) {
                 const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
@@ -1402,48 +1624,114 @@
                 if (!validTypes.includes(file.type)) {
                     fileStatus.innerHTML = '<span class="file-error">Invalid file type. Please upload JPG, PNG, or PDF files only.</span>';
                     input.value = '';
+                    if (reuploadPreviewSection) reuploadPreviewSection.style.display = 'none';
+                    if (uploadAreaContainer) uploadAreaContainer.style.display = 'block';
                     return;
                 }
 
                 if (file.size > maxSize) {
                     fileStatus.innerHTML = '<span class="file-error">File size too large. Maximum size is 10MB.</span>';
                     input.value = '';
+                    if (reuploadPreviewSection) reuploadPreviewSection.style.display = 'none';
+                    if (uploadAreaContainer) uploadAreaContainer.style.display = 'block';
                     return;
                 }
 
-                fileNameDisplay.textContent = file.name;
-                fileStatus.innerHTML = '<span class="file-success">File selected: ' + file.name + '</span>';
+                if (fileNameDisplay) fileNameDisplay.textContent = file.name;
+                fileStatus.innerHTML = '<span class="file-success">File ready for upload: ' + file.name + '</span>';
 
-                if (uploadText) {
-                    uploadText.textContent = 'Click to change document';
-                }
-
-                if (uploadBox) {
-                    uploadBox.style.borderColor = "var(--success-color)";
-                    uploadBox.style.backgroundColor = "rgba(40, 167, 69, 0.1)";
-                }
+                // Hide upload area and show preview section
+                if (uploadAreaContainer) uploadAreaContainer.style.display = 'none';
+                if (reuploadPreviewSection) reuploadPreviewSection.style.display = 'block';
 
                 if (file.type.startsWith("image/")) {
                     const reader = new FileReader();
                     reader.onload = function (e) {
-                        preview.src = e.target.result;
-                        preview.style.display = "block";
+                        if (preview) {
+                            preview.src = e.target.result;
+                        }
+                        if (imagePreviewContainer) imagePreviewContainer.style.display = 'block';
+                        if (pdfPreviewContainer) pdfPreviewContainer.style.display = 'none';
                     };
                     reader.readAsDataURL(file);
-                } else {
-                    preview.style.display = "none";
+                    uploadedPDFFile = null;
+                } else if (file.type === 'application/pdf') {
+                    if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
+                    if (pdfPreviewContainer) pdfPreviewContainer.style.display = 'block';
+                    if (pdfFileName) pdfFileName.textContent = file.name;
+                    uploadedPDFFile = file;
                 }
             } else {
-                preview.style.display = "none";
-                fileNameDisplay.textContent = '';
+                // Show upload area and hide preview section
+                if (uploadAreaContainer) uploadAreaContainer.style.display = 'block';
+                if (reuploadPreviewSection) reuploadPreviewSection.style.display = 'none';
+                if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
+                if (pdfPreviewContainer) pdfPreviewContainer.style.display = 'none';
+                if (fileNameDisplay) fileNameDisplay.textContent = '';
                 fileStatus.innerHTML = '';
-                if (uploadText) {
-                    uploadText.textContent = 'Click to upload new document';
-                }
-                if (uploadBox) {
-                    uploadBox.style.borderColor = "#ddd";
-                    uploadBox.style.backgroundColor = "#fafafa";
-                }
+                uploadedPDFFile = null;
+            }
+        }
+
+        // Zoom reuploaded image
+        function zoomReuploadImage(src) {
+            const zoomModal = document.getElementById("zoomModal");
+            const zoomImg = document.getElementById("zoomedImage");
+            if (zoomModal && zoomImg) {
+                zoomImg.src = src;
+                zoomModal.style.display = "block";
+            }
+        }
+
+        // Preview reuploaded PDF
+        function previewReuploadedPDF() {
+            if (uploadedPDFFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const pdfData = new Uint8Array(e.target.result);
+                    openPDFViewer(pdfData, uploadedPDFFile.name);
+                };
+                reader.readAsArrayBuffer(uploadedPDFFile);
+            }
+        }
+
+        // Open PDF viewer with data
+        async function openPDFViewer(pdfData, filename) {
+            const modal = document.getElementById('pdfViewerModal');
+            const title = document.getElementById('pdfViewerTitle');
+            const canvas = document.getElementById('pdfCanvas');
+            const loading = document.getElementById('pdfLoading');
+            const errorDiv = document.getElementById('pdfError');
+
+            if (!modal) return;
+
+            modal.style.display = 'block';
+            loading.style.display = 'flex';
+            canvas.style.display = 'none';
+            errorDiv.style.display = 'none';
+            title.textContent = filename || 'PDF Viewer';
+
+            currentPage = 1;
+            currentScale = 1.0;
+
+            try {
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                currentPDF = await loadingTask.promise;
+
+                totalPages = currentPDF.numPages;
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('currentPage').textContent = currentPage;
+
+                updateNavigationButtons();
+                await renderPage(currentPage);
+
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                document.getElementById('zoomLevel').textContent = Math.round(currentScale * 100) + '%';
+            } catch (error) {
+                loading.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.querySelector('p').textContent = `Error loading PDF: ${error.message}`;
             }
         }
 

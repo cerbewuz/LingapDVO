@@ -1166,6 +1166,7 @@ namespace LingapDVO.Controllers
                 string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
 
                 ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
+                PopulateViewBagForHospitalAssistance(userId);
                 return View(HospitalAssistanceDto);
             }
 
@@ -1176,6 +1177,7 @@ namespace LingapDVO.Controllers
             if (hasPendingForm)
             {
                 ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                PopulateViewBagForHospitalAssistance(userId);
                 return View(HospitalAssistanceDto);
             }
 
@@ -1193,6 +1195,7 @@ namespace LingapDVO.Controllers
 
             if (!ModelState.IsValid)
             {
+                PopulateViewBagForHospitalAssistance(userId);
                 return View(HospitalAssistanceDto);
             }
 
@@ -1361,15 +1364,18 @@ namespace LingapDVO.Controllers
                     else
                         ModelState.AddModelError("", "A record with one of your inputs already exists.");
 
+                    PopulateViewBagForHospitalAssistance(userId);
                     return View(HospitalAssistanceDto);
                 }
 
                 ModelState.AddModelError("", "A database error occurred while saving your data.");
+                PopulateViewBagForHospitalAssistance(userId);
                 return View(HospitalAssistanceDto);
             }
             catch (Exception)
             {
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                PopulateViewBagForHospitalAssistance(userId);
                 return View(HospitalAssistanceDto);
             }
         }
@@ -1748,13 +1754,14 @@ namespace LingapDVO.Controllers
                     {
                         var userFullName = $"{existing.Firstname} {existing.Lastname}";
 
-                        // User notification
+                        // User notification - Send "Resubmitted" status for precise notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            "HospitalBill",
-                            "Processing",
-                            existing.Id
+                            "HospitalAssistance",
+                            "Resubmitted",
+                            existing.Id,
+                            "Your documents have been resubmitted and are ready for review."
                         );
 
                         // Admin notification
@@ -1934,6 +1941,7 @@ namespace LingapDVO.Controllers
                 string approvedDate = recentApprovedForm?.CreatedAt.ToString("MMMM dd, yyyy") ?? "recently";
 
                 ModelState.AddModelError("", $"You cannot submit a new form because you already have an approved request dated {approvedDate}. Please wait one month from {approvedDate} before submitting another application.");
+                PopulateViewBagForOtherAssistance(userId);
                 return View(OtherAssistanceDto);
             }
 
@@ -1944,6 +1952,7 @@ namespace LingapDVO.Controllers
             if (hasPendingForm)
             {
                 ModelState.AddModelError("", "You already have a form that is currently pending or being processed. Please wait until it's approved before submitting a new one.");
+                PopulateViewBagForOtherAssistance(userId);
                 return View(OtherAssistanceDto);
             }
 
@@ -1961,6 +1970,7 @@ namespace LingapDVO.Controllers
 
             if (!ModelState.IsValid)
             {
+                PopulateViewBagForOtherAssistance(userId);
                 return View(OtherAssistanceDto);
             }
 
@@ -2140,30 +2150,50 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException ex)
             {
-                if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                if (ex.InnerException is SqlException sqlEx)
                 {
-                    string message = sqlEx.Message.ToLower();
+                    // Duplicate key errors
+                    if (sqlEx.Number == 2601 || sqlEx.Number == 2627)
+                    {
+                        string message = sqlEx.Message.ToLower();
 
-                    if (message.Contains("fullname"))
-                        ModelState.AddModelError("Fullname", "This full name is already in use.");
-                    else if (message.Contains("username"))
-                        ModelState.AddModelError("Username", "This username is already taken.");
-                    else if (message.Contains("email"))
-                        ModelState.AddModelError("Email", "This email is already registered.");
-                    else if (message.Contains("phonenumber"))
-                        ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
+                        if (message.Contains("fullname"))
+                            ModelState.AddModelError("Fullname", "This full name is already in use.");
+                        else if (message.Contains("username"))
+                            ModelState.AddModelError("Username", "This username is already taken.");
+                        else if (message.Contains("email"))
+                            ModelState.AddModelError("Email", "This email is already registered.");
+                        else if (message.Contains("phonenumber"))
+                            ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
+                        else
+                            ModelState.AddModelError("", "A record with one of your inputs already exists.");
+                    }
+                    // String or binary data would be truncated
+                    else if (sqlEx.Number == 8152 || sqlEx.Number == 2628)
+                    {
+                        Console.WriteLine($"Data truncation error: {sqlEx.Message}");
+                        ModelState.AddModelError("", "Some of your input data is too long. Please shorten your entries and try again.");
+                    }
                     else
-                        ModelState.AddModelError("", "A record with one of your inputs already exists.");
-
-                    return View(OtherAssistanceDto);
+                    {
+                        Console.WriteLine($"SQL Error {sqlEx.Number}: {sqlEx.Message}");
+                        ModelState.AddModelError("", "A database error occurred while saving your data.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"DbUpdateException: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                    ModelState.AddModelError("", "A database error occurred while saving your data.");
                 }
 
-                ModelState.AddModelError("", "A database error occurred while saving your data.");
+                PopulateViewBagForOtherAssistance(userId);
                 return View(OtherAssistanceDto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Exception in OtherAssistance: {ex.Message} | Inner: {ex.InnerException?.Message}");
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                PopulateViewBagForOtherAssistance(userId);
                 return View(OtherAssistanceDto);
             }
         }
@@ -2640,13 +2670,14 @@ namespace LingapDVO.Controllers
                     {
                         var userFullName = $"{existing.Firstname} {existing.Lastname}";
 
-                        // User notification
+                        // User notification - Send "Resubmitted" status for precise notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            "Other",
-                            "Processing",
-                            existing.Id
+                            "OtherAssistance",
+                            "Resubmitted",
+                            existing.Id,
+                            "Your documents have been resubmitted and are ready for review."
                         );
 
                         // Admin notification
@@ -2656,8 +2687,8 @@ namespace LingapDVO.Controllers
                             existing.Id,
                             userId,
                             userFullName,
-                            "[PRIORITY] Retake Resubmitted - Other Assistance",
-                            $"{userFullName} resubmitted their retake application for Other Assistance. PRIORITY: Ready for immediate review.",
+                            "[PRIORITY] Retake Resubmitted - Medical and Laboratory Assistance",
+                            $"{userFullName} resubmitted their retake application for Medical and Laboratory Assistance. PRIORITY: Ready for immediate review.",
                             $"/OtherAssistanceProcessing/{existing.Id}"
                         );
                     }
@@ -2668,13 +2699,12 @@ namespace LingapDVO.Controllers
                     }
                 }
 
-                // ? 14. Set success flag - FIXED: Use ViewBag instead of TempData
-                ViewBag.Success = true;
+                // ? 14. Set success flag
+                TempData["Success"] = true;
                 TempData["RAF"] = id.ToString();
 
-                // ? 15. Return with success - IMPORTANT: Populate ViewData before returning
-                PopulateViewDataForOtherAssistanceEdit(existing);
-                return View(OtherAssistanceDto);
+                // ? 15. Return with success - redirect to show updated data
+                return RedirectToAction("OtherAssistanceEdit", new { id = id, success = true });
             }
             catch (Exception ex)
             {
@@ -3076,31 +3106,48 @@ namespace LingapDVO.Controllers
             }
             catch (DbUpdateException ex)
             {
-                if (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                if (ex.InnerException is SqlException sqlEx)
                 {
-                    string message = sqlEx.Message.ToLower();
+                    // Duplicate key errors
+                    if (sqlEx.Number == 2601 || sqlEx.Number == 2627)
+                    {
+                        string message = sqlEx.Message.ToLower();
 
-                    if (message.Contains("fullname"))
-                        ModelState.AddModelError("Fullname", "This full name is already in use.");
-                    else if (message.Contains("username"))
-                        ModelState.AddModelError("Username", "This username is already taken.");
-                    else if (message.Contains("email"))
-                        ModelState.AddModelError("Email", "This email is already registered.");
-                    else if (message.Contains("phonenumber"))
-                        ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
+                        if (message.Contains("fullname"))
+                            ModelState.AddModelError("Fullname", "This full name is already in use.");
+                        else if (message.Contains("username"))
+                            ModelState.AddModelError("Username", "This username is already taken.");
+                        else if (message.Contains("email"))
+                            ModelState.AddModelError("Email", "This email is already registered.");
+                        else if (message.Contains("phonenumber"))
+                            ModelState.AddModelError("Phonenumber", "This phone number is already in use.");
+                        else
+                            ModelState.AddModelError("", "A record with one of your inputs already exists.");
+                    }
+                    // String or binary data would be truncated
+                    else if (sqlEx.Number == 8152 || sqlEx.Number == 2628)
+                    {
+                        Console.WriteLine($"Data truncation error: {sqlEx.Message}");
+                        ModelState.AddModelError("", "Some of your input data is too long. Please shorten your entries and try again.");
+                    }
                     else
-                        ModelState.AddModelError("", "A record with one of your inputs already exists.");
-
-                    PopulateViewBagForFuneralAssistance(userId);
-                    return View(FuneralAssistanceDto);
+                    {
+                        Console.WriteLine($"SQL Error {sqlEx.Number}: {sqlEx.Message}");
+                        ModelState.AddModelError("", "A database error occurred while saving your data.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"DbUpdateException: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                    ModelState.AddModelError("", "A database error occurred while saving your data.");
                 }
 
-                ModelState.AddModelError("", "A database error occurred while saving your data.");
                 PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Exception in FuneralAssistance: {ex.Message} | Inner: {ex.InnerException?.Message}");
                 ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 PopulateViewBagForFuneralAssistance(userId);
                 return View(FuneralAssistanceDto);
@@ -3495,13 +3542,14 @@ namespace LingapDVO.Controllers
                     {
                         var userFullName = $"{existing.Firstname} {existing.Lastname}";
 
-                        // User notification
+                        // User notification - Send "Resubmitted" status for precise notification
                         await _notificationService.SendStatusChangeNotificationAsync(
                             userId,
                             userFullName,
-                            "Funeral",
-                            "Processing",
-                            existing.Id
+                            "FuneralAssistance",
+                            "Resubmitted",
+                            existing.Id,
+                            "Your documents have been resubmitted and are ready for review."
                         );
 
                         // Admin notification
@@ -3588,6 +3636,44 @@ namespace LingapDVO.Controllers
 
         // Helper method to populate ViewBag for Funeral Assistance POST validation failures
         private void PopulateViewBagForFuneralAssistance(int userId)
+        {
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
+            ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
+        }
+
+        // Helper method to populate ViewBag for Hospital Assistance POST validation failures
+        private void PopulateViewBagForHospitalAssistance(int userId)
+        {
+            ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
+            ViewBag.Middlename = HttpContext.Session.GetString("Middlename");
+            ViewBag.Lastname = HttpContext.Session.GetString("Lastname");
+            ViewBag.Suffix = HttpContext.Session.GetString("Suffix");
+            ViewBag.BlkLotStreet = HttpContext.Session.GetString("BlkLotStreet");
+            ViewBag.SubVill = HttpContext.Session.GetString("SubVill");
+            ViewBag.Barangay = HttpContext.Session.GetString("Barangay");
+            ViewBag.Gender = HttpContext.Session.GetString("Gender");
+            ViewBag.Dateofbirth = HttpContext.Session.GetString("Dateofbirth");
+            ViewBag.FrontID = HttpContext.Session.GetString("FrontID");
+            ViewBag.BackID = HttpContext.Session.GetString("BackID");
+
+            var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == userId);
+            ViewBag.Phonenumber = verifyAccount?.Phonenumber ?? "";
+        }
+
+        // Helper method to populate ViewBag for Other Assistance POST validation failures
+        private void PopulateViewBagForOtherAssistance(int userId)
         {
             ViewBag.Firstname = HttpContext.Session.GetString("Firstname");
             ViewBag.Middlename = HttpContext.Session.GetString("Middlename");

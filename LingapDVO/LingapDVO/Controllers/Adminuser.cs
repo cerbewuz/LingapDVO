@@ -10,6 +10,7 @@ using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using Microsoft.EntityFrameworkCore;
 
 namespace LingapDVO.Controllers
 {
@@ -199,7 +200,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var HospitalAssistance = context.HospitalAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var HospitalAssistance = context.HospitalAssistance
+                    .Include(h => h.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(h => h.Id == id);
 
                 if (HospitalAssistance == null)
                 {
@@ -217,7 +222,8 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification (In-App, SMS, Email based on preferences)
-                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
+                // User and VerifiedAccount are now already loaded via Include()
+                var verifyAccount = HospitalAssistance.User?.VerifiedAccount;
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -228,8 +234,8 @@ namespace LingapDVO.Controllers
                     HospitalAssistance.Id
                 );
 
-                // Get the user's info from UserAccount
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
+                // User is already loaded via Include()
+                var user = HospitalAssistance.User;
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
@@ -495,7 +501,11 @@ namespace LingapDVO.Controllers
                     return RedirectToAction("Landingpage", "Dashboard");
                 }
 
-                var OtherAssistance = context.OtherAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var OtherAssistance = context.OtherAssistance
+                    .Include(o => o.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(o => o.Id == id);
 
                 if (OtherAssistance == null)
                 {
@@ -512,7 +522,8 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == OtherAssistance.UserId);
+                // User and VerifiedAccount are now already loaded via Include()
+                var verifyAccount = OtherAssistance.User?.VerifiedAccount;
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -523,12 +534,12 @@ namespace LingapDVO.Controllers
                     OtherAssistance.Id
                 );
 
-                // Get user info
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == OtherAssistance.UserId);
+                // User is already loaded via Include()
+                var user = OtherAssistance.User;
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get user's first name from VerifyAccount table
+                    // VerifiedAccount is already loaded via Include()
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -755,7 +766,11 @@ namespace LingapDVO.Controllers
                     return RedirectToAction("Landingpage", "Dashboard");
                 }
 
-                var FuneralAssistance = context.FuneralAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var FuneralAssistance = context.FuneralAssistance
+                    .Include(f => f.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(f => f.Id == id);
 
                 if (FuneralAssistance == null)
                 {
@@ -772,7 +787,8 @@ namespace LingapDVO.Controllers
                 context.SaveChanges();
 
                 // Send multi-channel notification
-                var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == FuneralAssistance.UserId);
+                // User and VerifiedAccount are now already loaded via Include()
+                var verifyAccount = FuneralAssistance.User?.VerifiedAccount;
                 var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                 _ = _notificationService.SendStatusChangeNotificationAsync(
@@ -783,12 +799,12 @@ namespace LingapDVO.Controllers
                     FuneralAssistance.Id
                 );
 
-                // Get user info
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == FuneralAssistance.UserId);
+                // User is already loaded via Include()
+                var user = FuneralAssistance.User;
 
                 if (user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get user's first name from VerifyAccount table
+                    // VerifiedAccount is already loaded via Include()
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -4976,7 +4992,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var HospitalAssistance = context.HospitalAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var HospitalAssistance = context.HospitalAssistance
+                    .Include(h => h.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(h => h.Id == id);
 
                 if (HospitalAssistance == null)
                 {
@@ -5054,7 +5074,8 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == HospitalAssistance.UserId);
+                    // User and VerifiedAccount are already loaded via Include()
+                    var verifyAccount = HospitalAssistance.User?.VerifiedAccount;
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -5520,7 +5541,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var medicallabform = context.OtherAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var medicallabform = context.OtherAssistance
+                    .Include(o => o.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(o => o.Id == id);
 
                 if (medicallabform == null)
                 {
@@ -5597,7 +5622,8 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == medicallabform.UserId);
+                    // User and VerifiedAccount are already loaded via Include()
+                    var verifyAccount = medicallabform.User?.VerifiedAccount;
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -6066,7 +6092,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
-                var funeralAssistance = context.FuneralAssistance.Find(id);
+                // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+                var funeralAssistance = context.FuneralAssistance
+                    .Include(f => f.User)
+                        .ThenInclude(u => u.VerifiedAccount)
+                    .FirstOrDefault(f => f.Id == id);
 
                 if (funeralAssistance == null)
                 {
@@ -6143,7 +6173,8 @@ namespace LingapDVO.Controllers
                     status.Equals("Disapprove", StringComparison.OrdinalIgnoreCase) ||
                     status.Equals("Retake", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
+                    // User and VerifiedAccount are already loaded via Include()
+                    var verifyAccount = funeralAssistance.User?.VerifiedAccount;
                     var applicantName = verifyAccount?.Firstname ?? "Applicant";
 
                     // Send notification (fire and forget)
@@ -6604,11 +6635,15 @@ namespace LingapDVO.Controllers
 </html>";
         }
 
-        // ? For Approved Statuses to Claimed 
-        [HttpPost] 
+        // ? For Approved Statuses to Claimed
+        [HttpPost]
         public IActionResult HospitalAssistanceApproveStatus(int id, HospitalAssistanceDto HospitalAssistanceDto)
         {
-            var HospitalAssistance = context.HospitalAssistance.Find(id);
+            // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+            var HospitalAssistance = context.HospitalAssistance
+                .Include(h => h.User)
+                    .ThenInclude(u => u.VerifiedAccount)
+                .FirstOrDefault(h => h.Id == id);
 
             if (HospitalAssistance == null)
             {
@@ -6627,14 +6662,14 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // ? Get user info
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == HospitalAssistance.UserId);
+                // ? User is already loaded via Include()
+                var user = HospitalAssistance.User;
 
                 // ? Only send email if status is "Claimed"
                 if (HospitalAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // ? Get first name from VerifyAccount
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // ? VerifiedAccount is already loaded via Include()
+                    var verifyAccount = user.VerifiedAccount;
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // ? Get email settings
@@ -6759,7 +6794,11 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public async Task<IActionResult> OtherAssistanceApproveStatus(int id, OtherAssistanceDto OtherAssistanceDto)
         {
-            var otherAssistance = context.OtherAssistance.Find(id);
+            // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+            var otherAssistance = context.OtherAssistance
+                .Include(o => o.User)
+                    .ThenInclude(u => u.VerifiedAccount)
+                .FirstOrDefault(o => o.Id == id);
 
             if (otherAssistance == null)
             {
@@ -6778,14 +6817,14 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // Get user info
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == otherAssistance.UserId);
+                // User is already loaded via Include()
+                var user = otherAssistance.User;
 
                 // Only send email if status is "Claimed"
                 if (OtherAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get first name from VerifyAccount
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // VerifiedAccount is already loaded via Include()
+                    var verifyAccount = user?.VerifiedAccount;
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -6903,8 +6942,9 @@ namespace LingapDVO.Controllers
                 var status = OtherAssistanceDto.Status3?.Trim();
                 if (!string.IsNullOrEmpty(status))
                 {
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == otherAssistance.UserId);
-                    var applicantName = verifyAccount?.Firstname ?? "Applicant";
+                    // User and VerifiedAccount are already loaded via Include()
+                    var verifyAccountForNotif = otherAssistance.User?.VerifiedAccount;
+                    var applicantName = verifyAccountForNotif?.Firstname ?? "Applicant";
 
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         otherAssistance.UserId,
@@ -6930,7 +6970,11 @@ namespace LingapDVO.Controllers
         [HttpPost]
         public async Task<IActionResult> FuneralAssistanceApproveStatus(int id, FuneralAssistanceDto FuneralAssistanceDto)
         {
-            var funeralAssistance = context.FuneralAssistance.Find(id);
+            // Use Include() to fetch related data in a single query (fixes N+1 query problem)
+            var funeralAssistance = context.FuneralAssistance
+                .Include(f => f.User)
+                    .ThenInclude(u => u.VerifiedAccount)
+                .FirstOrDefault(f => f.Id == id);
 
             if (funeralAssistance == null)
             {
@@ -6949,15 +6993,15 @@ namespace LingapDVO.Controllers
 
                 context.SaveChanges();
 
-                // Get user info
-                var user = context.UserAccount.FirstOrDefault(u => u.Id == funeralAssistance.UserId);
+                // User is already loaded via Include()
+                var user = funeralAssistance.User;
 
                 // Only send email if status is "Claimed"
                 if (FuneralAssistanceDto.Status3?.Equals("Claimed", StringComparison.OrdinalIgnoreCase) == true
                     && user != null && !string.IsNullOrEmpty(user.Email))
                 {
-                    // Get first name from VerifyAccount
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == user.Id);
+                    // VerifiedAccount is already loaded via Include()
+                    var verifyAccount = user?.VerifiedAccount;
                     var firstName = verifyAccount?.Firstname ?? user.Username ?? "Applicant";
 
                     // Get email settings
@@ -7073,8 +7117,9 @@ namespace LingapDVO.Controllers
                 var status = FuneralAssistanceDto.Status3?.Trim();
                 if (!string.IsNullOrEmpty(status))
                 {
-                    var verifyAccount = context.VerifiedAccount.FirstOrDefault(v => v.UserId == funeralAssistance.UserId);
-                    var applicantName = verifyAccount?.Firstname ?? "Applicant";
+                    // User and VerifiedAccount are already loaded via Include()
+                    var verifyAccountForNotif = funeralAssistance.User?.VerifiedAccount;
+                    var applicantName = verifyAccountForNotif?.Firstname ?? "Applicant";
 
                     _ = _notificationService.SendStatusChangeNotificationAsync(
                         funeralAssistance.UserId,

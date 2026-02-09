@@ -13,19 +13,19 @@ namespace LingapDVO.Models
         // User Information
         public int? UserId { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(50)]
         public string? Name { get; set; }
 
         [MaxLength(200)]
         public string? Office { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(50)]
         public string? ServiceAvailed { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(12)]
         public string? Contact { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(10)]
         public string? Sex { get; set; }
 
         [MaxLength(100)]
@@ -58,25 +58,25 @@ namespace LingapDVO.Models
         public int? R8_EmployeeCourtesy { get; set; }
 
         // Remarks
-        [MaxLength(1000)]
+        [MaxLength(200)]
         public string? Commendation { get; set; }
 
-        [MaxLength(1000)]
+        [MaxLength(200)]
         public string? Suggestion { get; set; }
 
-        [MaxLength(1000)]
+        [MaxLength(200)]
         public string? Request { get; set; }
 
-        [MaxLength(1000)]
+        [MaxLength(200)]
         public string? Complaint { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(80)]
         public string? Signature { get; set; }
 
         [Required]
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 
-        [MaxLength(100)]
+        [MaxLength(45)]
         public string? IpAddress { get; set; }
     }
 }

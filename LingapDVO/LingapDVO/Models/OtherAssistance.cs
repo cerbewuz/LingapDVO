@@ -203,5 +203,8 @@ namespace LingapDVO.Models
 
         // Archiving: Applications older than 1 month are automatically archived
         public bool IsArchived { get; set; } = false;
+
+        // Navigation property for eager loading
+        public virtual UserAccount? User { get; set; }
     }
 }

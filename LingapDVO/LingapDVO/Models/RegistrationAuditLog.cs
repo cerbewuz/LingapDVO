@@ -12,19 +12,19 @@ namespace LingapDVO.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(45)]
         public string IpAddress { get; set; } = "";
 
-        [MaxLength(500)]
+        [MaxLength(255)]
         public string UserAgent { get; set; } = "";
 
-        [MaxLength(200)]
+        [MaxLength(100)]
         public string? Email { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string? Username { get; set; }
 
-        [MaxLength(200)]
+        [MaxLength(80)]
         public string? FullName { get; set; }
 
         [Required]
@@ -32,20 +32,20 @@ namespace LingapDVO.Models
         public string Action { get; set; } = ""; // "ATTEMPT", "SUCCESS", "BLOCKED", "FAILED"
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Source { get; set; } = ""; // "WEB_FORM", "API", "DIRECT_DB", "UNKNOWN"
 
-        [MaxLength(500)]
+        [MaxLength(150)]
         public string? Reason { get; set; }
 
-        [MaxLength(500)]
+        [MaxLength(100)]
         public string? RegistrationToken { get; set; }
 
         public bool HasValidToken { get; set; } = false;
 
         public bool SuspiciousActivity { get; set; } = false;
 
-        [MaxLength(1000)]
+        [MaxLength(200)]
         public string? SuspiciousReasons { get; set; }
 
         [Required]

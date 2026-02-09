@@ -12,15 +12,15 @@ namespace LingapDVO.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(500)]
+        [MaxLength(100)]
         public string Token { get; set; } = "";
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(45)]
         public string IpAddress { get; set; } = "";
 
         [Required]
-        [MaxLength(500)]
+        [MaxLength(255)]
         public string UserAgent { get; set; } = "";
 
         [Required]

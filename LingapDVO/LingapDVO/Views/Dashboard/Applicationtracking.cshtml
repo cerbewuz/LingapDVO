@@ -334,6 +334,51 @@
             color: #9a3412;
         }
 
+        /* Retake Application Content Styles */
+        .retake-info-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ff9800;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+
+        .retake-info-box .retake-info-title {
+            font-weight: 600;
+            color: #9a3412;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .retake-info-box .retake-info-text {
+            color: #666;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .btn-retake {
+            background-color: #ff9800;
+            border-color: #ff9800;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .btn-retake:hover {
+            background-color: #e68a00;
+            border-color: #e68a00;
+            color: white;
+        }
+
         .empty-state {
             padding: 2rem 1rem;
             text-align: center;
@@ -900,6 +945,31 @@
                 max-width: calc(100% - 20px);
                 padding: 0.75rem;
             }
+
+            /* Retake Application Responsive Styles */
+            .retake-info-box {
+                padding: 10px;
+                margin-top: 10px;
+                border-left-width: 3px;
+            }
+
+            .retake-info-box .retake-info-title {
+                font-size: 0.85rem;
+                margin-bottom: 0.4rem;
+            }
+
+            .retake-info-box .retake-info-text {
+                font-size: 0.8rem;
+            }
+
+            .btn-retake {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+                gap: 6px;
+                margin-top: 12px;
+                width: 100%;
+                justify-content: center;
+            }
         }
 
         /* Mobile Phones (480px and below) */
@@ -1128,6 +1198,42 @@
             .toast-message {
                 font-size: 0.8rem;
             }
+
+            /* Retake Application Responsive Styles for Small Mobile */
+            .retake-info-box {
+                padding: 8px;
+                margin-top: 8px;
+                border-left-width: 3px;
+                border-radius: 4px;
+            }
+
+            .retake-info-box .retake-info-title {
+                font-size: 0.75rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .retake-info-box .retake-info-title i {
+                font-size: 0.7rem;
+            }
+
+            .retake-info-box .retake-info-text {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+
+            .btn-retake {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                gap: 5px;
+                margin-top: 10px;
+                border-radius: 4px;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-retake i {
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -1157,7 +1263,9 @@
                     </div>
                     <div class="text-center" style="min-width: 90px;">
                         <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
-                            @(Model.HospitalAssistance.Count(a => a.Status2 == "Approve") + Model.OtherAssistance.Count(a => a.Status2 == "Approve") + Model.FuneralAssistance.Count(a => a.Status2 == "Approve"))
+                            @(Model.HospitalAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)) +
+                              Model.OtherAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)) +
+                              Model.FuneralAssistance.Count(a => !string.IsNullOrEmpty(a.Status2) && a.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase)))
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Approved</div>
                     </div>
@@ -1171,9 +1279,9 @@
                     </div>
                     <div class="text-center" style="min-width: 90px;">
                         <div style="font-size: 1.75rem; font-weight: 700; line-height: 1;">
-                            @(Model.HospitalAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
-                                                        Model.OtherAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)) +
-                                                        Model.FuneralAssistance.Count(a => a.Status == "Processing" && string.IsNullOrEmpty(a.Status2)))
+                            @(Model.HospitalAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)) +
+                              Model.OtherAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)) +
+                              Model.FuneralAssistance.Count(a => !string.IsNullOrEmpty(a.Status) && a.Status.Equals("Processing", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(a.Status2)))
                         </div>
                         <div style="font-size: 0.8rem; opacity: 0.85; margin-top: 0.25rem;">Processing</div>
                     </div>
@@ -1205,8 +1313,8 @@
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
-                        <option value="approve">Approve</option>
-                        <option value="unapproved">Unapprove</option>
+                        <option value="approve">Approved</option>
+                        <option value="unapproved">Disapproved</option>
                         <option value="retake">Retake</option>
                         <option value="claimed">Claims</option>
                     </select>
@@ -1341,13 +1449,13 @@
             // Sort by most recent first
             allApplications = allApplications.OrderByDescending(a => (DateTime)a.SubmittedDate).ToList();
 
-            // Calculate summary statistics
+            // Calculate summary statistics (case-insensitive comparisons)
             var totalApps = allApplications.Count;
-            var approvedApps = allApplications.Count(a => (string)a.Status == "Approve");
-            var pendingApps = allApplications.Count(a => (string)a.Status == "Pending");
-            var processingApps = allApplications.Count(a => (string)a.Status == "Processing");
-            var unapprovedApps = allApplications.Count(a => (string)a.Status == "Unapproved" || (string)a.Status == "Disapprove");
-            var retakeApps = allApplications.Count(a => (string)a.Status == "Retake");
+            var approvedApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Approve", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Approved", StringComparison.OrdinalIgnoreCase));
+            var pendingApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Pending", StringComparison.OrdinalIgnoreCase));
+            var processingApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Processing", StringComparison.OrdinalIgnoreCase));
+            var unapprovedApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Unapproved", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Disapprove", StringComparison.OrdinalIgnoreCase) || ((string)a.Status ?? "").Equals("Disapproved", StringComparison.OrdinalIgnoreCase));
+            var retakeApps = allApplications.Count(a => ((string)a.Status ?? "").Equals("Retake", StringComparison.OrdinalIgnoreCase));
             var claimedApps = allApplications.Count(a => !string.IsNullOrEmpty((string)a.ClaimStatus));
         }
 
@@ -1363,7 +1471,7 @@
                     <div class="count">@totalApps</div>
                 </div>
                 <div class="summary-card">
-                    <h5>Approve</h5>
+                    <h5>Approved</h5>
                     <div class="count" style="color: var(--success-color);">@approvedApps</div>
                 </div>
                 <div class="summary-card">
@@ -1375,7 +1483,7 @@
                     <div class="count" style="color: var(--primary-color);">@processingApps</div>
                 </div>
                 <div class="summary-card">
-                    <h5>Unapprove</h5>
+                    <h5>Disapproved</h5>
                     <div class="count" style="color: var(--danger-color);">@unapprovedApps</div>
                 </div>
                 <div class="summary-card">
@@ -1417,28 +1525,31 @@
                                 var displayStatus = status;
                                 var statusClass = "status-pending";
 
+                                // Normalize status to lowercase for case-insensitive comparison
+                                var statusLower = status?.ToLower() ?? "";
+
                                 // Determine final status (claimed takes precedence)
                                 if (!string.IsNullOrEmpty(claimStatus))
                                 {
                                     displayStatus = "Claims";
                                     statusClass = "status-claimed";
                                 }
-                                else if (status == "Approve")
+                                else if (statusLower == "approve" || statusLower == "approved")
                                 {
-                                    displayStatus = "Approve";
+                                    displayStatus = "Approved";
                                     statusClass = "status-approved";
                                 }
-                                else if (status == "Processing")
+                                else if (statusLower == "processing")
                                 {
                                     displayStatus = "Processing";
                                     statusClass = "status-processing";
                                 }
-                                else if (status == "Unapproved" || status == "Disapprove")
+                                else if (statusLower == "unapproved" || statusLower == "disapprove" || statusLower == "disapproved")
                                 {
-                                    displayStatus = "Unapprove";
+                                    displayStatus = "Disapproved";
                                     statusClass = "status-unapproved";
                                 }
-                                else if (status == "Retake")
+                                else if (statusLower == "retake")
                                 {
                                     displayStatus = "Retake";
                                     statusClass = "status-retake";
@@ -1553,8 +1664,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
@@ -1670,15 +1781,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
@@ -1724,15 +1831,14 @@
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.RetakeReason))
                                                 {
-                                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                                        <p class="mb-0" style="color: #666;">@doc.RetakeReason</p>
+                                                    <div class="retake-info-box">
+                                                        <p class="retake-info-title"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                                        <p class="retake-info-text">@doc.RetakeReason</p>
                                                     </div>
                                                 }
-                                                <div style="margin-top: 16px;">
+                                                <div>
                                                     <a href="@Url.Action("HospitalAssistanceEdit", "Dashboard", new { id = doc.Id })"
-                                                       class="btn btn-warning"
-                                                       style="background-color: #ff9800; border-color: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+                                                       class="btn btn-retake">
                                                         <i class="fas fa-edit"></i>
                                                         Update & Resubmit Application
                                                     </a>
@@ -1862,8 +1968,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
@@ -1979,15 +2085,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
@@ -2033,15 +2135,14 @@
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.RetakeReason))
                                                 {
-                                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                                        <p class="mb-0" style="color: #666;">@doc.RetakeReason</p>
+                                                    <div class="retake-info-box">
+                                                        <p class="retake-info-title"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                                        <p class="retake-info-text">@doc.RetakeReason</p>
                                                     </div>
                                                 }
-                                                <div style="margin-top: 16px;">
+                                                <div>
                                                     <a href="@Url.Action("OtherAssistanceedit", "Dashboard", new { id = doc.Id })"
-                                                       class="btn btn-warning"
-                                                       style="background-color: #ff9800; border-color: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+                                                       class="btn btn-retake">
                                                         <i class="fas fa-edit"></i>
                                                         Update & Resubmit Application
                                                     </a>
@@ -2171,8 +2272,8 @@
                         var isSubmitted = doc.CreatedAt > DateTime.MinValue;
                         var isProcessing = doc.ProcessAt > DateTime.MinValue && !string.IsNullOrWhiteSpace(doc.Processby);
                         var isReviewed = doc.Result > DateTime.MinValue && doc.Result.Year > 1;
-                        var isApproved = doc.Status2 == "Approve";
-                        var isRetake = doc.Status2 == "Retake";
+                        var isApproved = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Approve", StringComparison.OrdinalIgnoreCase);
+                        var isRetake = !string.IsNullOrEmpty(doc.Status2) && doc.Status2.Equals("Retake", StringComparison.OrdinalIgnoreCase);
                         var isClaimed = doc.ClaimedAt > DateTime.MinValue && doc.ClaimedAt.Year > 1 && !string.IsNullOrWhiteSpace(doc.Status3);
 
                         <div class="tracking-card">
@@ -2288,15 +2389,11 @@
                                                 <i class="fas fa-times-circle"></i>
                                             </div>
                                             <div class="timeline-content">
-                                                <h6>Application @doc.Status2</h6>
+                                                <h6>Application was Disapproved</h6>
                                                 <span class="timeline-date">@doc.Result.ToString("dd MMM yyyy, hh:mm tt")</span>
                                                 <p class="timeline-description text-gray-700 leading-relaxed">
-                                                    Your application was not approved at this time.
+                                                    <strong>Reason of Disapproval:</strong> @(string.IsNullOrWhiteSpace(doc.Comments) ? "No reason provided." : doc.Comments)
                                                 </p>
-                                                @if (!string.IsNullOrWhiteSpace(doc.Comments))
-                                                {
-                                                    <p class="timeline-description mt-2"><strong>Comments:</strong> @doc.Comments</p>
-                                                }
                                             </div>
                                         </div>
 
@@ -2342,15 +2439,14 @@
                                                 </p>
                                                 @if (!string.IsNullOrWhiteSpace(doc.RetakeReason))
                                                 {
-                                                    <div style="background-color: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 12px;">
-                                                        <p class="mb-2" style="font-weight: 600; color: #9a3412;"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
-                                                        <p class="mb-0" style="color: #666;">@doc.RetakeReason</p>
+                                                    <div class="retake-info-box">
+                                                        <p class="retake-info-title"><i class="fas fa-info-circle me-1"></i> What needs to be updated:</p>
+                                                        <p class="retake-info-text">@doc.RetakeReason</p>
                                                     </div>
                                                 }
-                                                <div style="margin-top: 16px;">
+                                                <div>
                                                     <a href="@Url.Action("FuneralAssistanceEdit", "Dashboard", new { id = doc.Id })"
-                                                       class="btn btn-warning"
-                                                       style="background-color: #ff9800; border-color: #ff9800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+                                                       class="btn btn-retake">
                                                         <i class="fas fa-edit"></i>
                                                         Update & Resubmit Application
                                                     </a>
@@ -2732,7 +2828,7 @@
                         <div class="count">${total}</div>
                     </div>
                     <div class="summary-card">
-                        <h5>Approve</h5>
+                        <h5>Approved</h5>
                         <div class="count" style="color: var(--success-color);">${approved}</div>
                     </div>
                     <div class="summary-card">
@@ -2744,7 +2840,7 @@
                         <div class="count" style="color: var(--primary-color);">${processing}</div>
                     </div>
                     <div class="summary-card">
-                        <h5>Unapprove</h5>
+                        <h5>Disapproved</h5>
                         <div class="count" style="color: var(--danger-color);">${unapproved}</div>
                     </div>
                     <div class="summary-card">
