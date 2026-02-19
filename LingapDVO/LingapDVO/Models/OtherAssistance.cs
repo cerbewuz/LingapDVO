@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LingapDVO.Models
 {
@@ -205,6 +206,7 @@ namespace LingapDVO.Models
         public bool IsArchived { get; set; } = false;
 
         // Navigation property for eager loading
+        [JsonIgnore]
         public virtual UserAccount? User { get; set; }
     }
 }

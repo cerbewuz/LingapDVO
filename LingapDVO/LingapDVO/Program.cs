@@ -82,7 +82,12 @@ builder.Services.AddResponseCompression(options =>
 });
 
 // MVC
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        // Handle circular references in models (e.g., UserAccount ↔ VerifiedAccount)
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // ?? Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

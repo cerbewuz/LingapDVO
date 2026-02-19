@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace LingapDVO.Models
 {
@@ -31,6 +32,7 @@ namespace LingapDVO.Models
         public bool PreferInAppNotification { get; set; } = true;
 
         // Navigation property for eager loading
+        [JsonIgnore]
         public virtual VerifiedAccount? VerifiedAccount { get; set; }
     }
 }

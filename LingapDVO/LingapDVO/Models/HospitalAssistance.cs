@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using Twilio.TwiML.Voice;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace LingapDVO.Models
 {
@@ -167,6 +168,7 @@ namespace LingapDVO.Models
         public bool IsArchived { get; set; } = false;
 
         // Navigation property for eager loading
+        [JsonIgnore]
         public virtual UserAccount? User { get; set; }
     }
 }
