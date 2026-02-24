@@ -14,325 +14,317 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --primary-light: #ecf0f1;
-            --primary-dark: #1a252f;
-            --secondary-color: #7f8c8d;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
+            --super-primary: #1a202c;
+            --super-accent: #3182ce;
+            --super-bg: #f7fafc;
+            --super-card-bg: #ffffff;
+            --super-text: #2d3748;
+            --super-text-muted: #718096;
+            --super-border: #e2e8f0;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--super-bg);
+            color: var(--super-text);
             margin: 0;
             padding: 0;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1400px;
-            padding: 1rem;
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
-
         .header {
+            background: var(--super-primary) !important;
+            padding: 1rem 2rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+            color: white;
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(44, 62, 80, 0.2);
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: none;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
         }
 
-        .section-title {
-            color: var(--primary-color);
-            font-weight: 700;
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            position: relative;
-            padding-left: 1rem;
-        }
-
-            .section-title::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 4px;
-                background: var(--primary-color);
-                border-radius: 4px;
+        @@media (max-width: 768px) {
+            .header {
+                padding: 1rem 1rem !important;
             }
-
-        .card-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            .welcome-msg {
+                display: none;
+            }
+            .logo {
+                font-size: 1.2rem;
+            }
         }
 
-        .file-item {
+        .logo {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: white !important;
+            text-decoration: none;
+            margin: 0;
+            letter-spacing: -0.5px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            border-left: 4px solid transparent;
         }
 
-            .file-item:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                border-left-color: var(--primary-color);
-            }
+        .logo img {
+            height: 32px;
+            width: auto;
+        }
 
-        .file-icon {
-            font-size: 1.25rem;
-            color: var(--primary-color);
-            margin-right: 0.75rem;
-            width: 36px;
-            height: 36px;
+        .logo .super-label {
+            font-weight: 400;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 0.25rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            padding-left: 0.75rem;
+        }
+
+        .superadmin-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .welcome-msg {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            padding-right: 1rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .superadmin-actions .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--primary-light);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+            .superadmin-actions .btn-icon:hover {
+                background: var(--super-accent);
+                transform: translateY(-2px);
+                color: white;
+            }
+
+            .superadmin-actions .btn-icon.text-danger:hover {
+                background: #e53e3e;
+            }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--super-card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            border: 1px solid var(--super-border);
+            cursor: default;
+        }
+
+        .stat-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-hospital .stat-icon { background: #ebf8ff; color: #3182ce; }
+        .stat-medical .stat-icon { background: #faf5ff; color: #805ad5; }
+        .stat-funeral .stat-icon { background: #fff5f5; color: #e53e3e; }
+        .stat-pending .stat-icon { background: #fffaf0; color: #dd6b20; }
+
+        .stat-info h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: var(--super-text);
+        }
+
+        .stat-info p {
+            color: var(--super-text-muted);
+            margin: 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Improved Navigation Tabs */
+        .tab-container {
+            margin-bottom: 2rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--super-border);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .nav-pills {
+            gap: 0.5rem;
+        }
+
+            .nav-pills .nav-link {
+                border: none;
+                color: var(--super-text-muted);
+                font-weight: 600;
+                padding: 0.6rem 1.25rem;
+                border-radius: 8px;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+                .nav-pills .nav-link:hover {
+                    background: var(--super-bg);
+                    color: var(--super-text);
+                }
+
+                .nav-pills .nav-link.active {
+                    background: var(--super-accent);
+                    color: white;
+                }
+
+        /* Simplified File Item Design */
+        .card-container {
+            background: transparent;
+            box-shadow: none;
+            padding: 0.5rem;
+            max-height: 23.5rem;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--super-accent) transparent;
+        }
+
+            .card-container::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .card-container::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .card-container::-webkit-scrollbar-thumb {
+                background-color: var(--super-accent);
+                border-radius: 20px;
+                border: transparent;
+            }
+
+        .file-item {
+            background: white;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            border-radius: 12px;
+            border: 1px solid var(--super-border);
+            display: grid;
+            grid-template-columns: auto 1fr auto auto auto;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+            .file-item:hover {
+                border-color: var(--super-accent);
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                transform: translateY(-1px);
+            }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--super-bg);
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--super-accent);
+            font-size: 1rem;
         }
 
         .file-info {
-            flex: 1;
             min-width: 0;
         }
 
         .file-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: var(--dark-gray);
-            word-break: break-word;
+            font-weight: 700;
+            margin: 0;
+            color: var(--super-text);
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .file-details {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--secondary-color);
+            gap: 1rem;
+            margin-top: 0.25rem;
         }
 
         .file-detail {
+            font-size: 0.8rem;
+            color: var(--super-text-muted);
             display: flex;
             align-items: center;
+            gap: 0.4rem;
         }
-
-            .file-detail i {
-                margin-right: 0.3rem;
-            }
 
         .status-badge {
-            padding: 0.3rem 0.6rem;
-            border-radius: 20px;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
             display: inline-flex;
             align-items: center;
-            margin-right: 0.5rem;
+            gap: 0.4rem;
         }
 
-            .status-badge i {
-                font-size: 0.5rem;
-                margin-right: 0.5rem;
-            }
+            .status-badge i { font-size: 0.6rem; }
 
-        .status-pending {
-            background-color: #FFF3CD;
-            color: #856404;
-        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #e0e7ff; color: #3730a3; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-unapproved { background: #fee2e2; color: #991b1b; }
+        .status-claimed { background: #d1ecf1; color: #0c5460; }
+        .status-retake { background: #fff3cd; color: #856404; }
+        .status-removed { background: #f3f4f6; color: #4b5563; }
 
-        .status-processing {
-            background-color: #CCE5FF;
-            color: #004085;
-        }
-
-        .status-approved {
-            background-color: #D4EDDA;
-            color: #155724;
-        }
-
-        .status-unapproved {
-            background-color: #F8D7DA;
-            color: #721C24;
-        }
-
-        .status-removed {
-            background-color: #FF8C00; /* Dark orange */
-            color: black; /* Better contrast with dark background */
-        }
-
-
-        .dropdown-toggle {
-            border: none;
-            background: transparent;
-            color: var(--secondary-color);
+        .ellipsis-btn {
+            color: var(--super-text-muted);
             padding: 0.5rem;
-        }
-
-            .dropdown-toggle:hover {
-                color: var(--primary-color);
-                background: var(--primary-light);
-            }
-
-        .dropdown-menu {
-            border: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            padding: 0.5rem;
-        }
-
-        .dropdown-item {
-            padding: 0.5rem 1rem;
             border-radius: 6px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            transition: all 0.2s ease;
         }
 
-            .dropdown-item i {
-                width: 20px;
-                text-align: center;
-                margin-right: 0.75rem;
-                color: var(--secondary-color);
+            .ellipsis-btn:hover {
+                background: var(--super-bg);
+                color: var(--super-text);
             }
-
-            .dropdown-item:hover {
-                background: var(--primary-light);
-                color: var(--primary-color);
-            }
-
-                .dropdown-item:hover i {
-                    color: var(--primary-color);
-                }
-
-        .empty-state {
-            padding: 2rem 1rem;
-            text-align: center;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-            .empty-state i {
-                font-size: 2.5rem;
-                color: var(--primary-color);
-                margin-bottom: 1rem;
-                opacity: 0.7;
-            }
-
-            .empty-state p {
-                color: var(--secondary-color);
-                font-size: 1rem;
-                margin-bottom: 0;
-            }
-
-        .btn-primary-custom {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            display: inline-block;
-        }
-
-            .btn-primary-custom:hover {
-                background-color: var(--primary-dark);
-                border-color: var(--primary-dark);
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
-            }
-
-        .tab-container {
-            margin-bottom: 1.5rem;
-            overflow-x: auto;
-        }
-
-        .nav-tabs {
-            border-bottom: 2px solid #dee2e6;
-            display: flex;
-            min-width: fit-content;
-        }
-
-            .nav-tabs .nav-link {
-                border: none;
-                color: var(--secondary-color);
-                font-weight: 600;
-                padding: 0.5rem 1rem;
-                margin-right: 0.25rem;
-                border-radius: 8px 8px 0 0;
-                white-space: nowrap;
-            }
-
-                .nav-tabs .nav-link.active {
-                    color: var(--primary-color);
-                    background-color: white;
-                    border-bottom: 3px solid var(--primary-color);
-                }
-
-                .nav-tabs .nav-link:hover:not(.active) {
-                    color: var(--primary-dark);
-                    background-color: var(--primary-light);
-                }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .stats-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-            .stats-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            }
-
-        .stats-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-label {
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stats-icon {
-            font-size: 1.25rem;
-            color: var(--primary-color);
-            margin-bottom: 0.75rem;
-        }
 
         .search-container {
             margin-bottom: 1rem;
@@ -370,239 +362,125 @@
     </style>
 </head>
 <body>
+    <header class="header">
+        <div class="logo">
+            <img src="~/Icon/lingaplogo.png" alt="Lingap Logo">
+            <span>LingapDVO <span class="super-label">Superadmin</span></span>
+        </div>
+        <div class="superadmin-actions">
+            <span class="welcome-msg">Hi, Superadmin</span>
+            <a asp-controller="Superadmin" asp-action="Admincreateaccount" class="btn-icon" title="Create Admin Account">
+                <i class="fas fa-user-plus"></i>
+            </a>
+            <a asp-controller="Superadmin" asp-action="Superadminchangepass" class="btn-icon" title="Change Password">
+                <i class="fas fa-key"></i>
+            </a>
+            <a asp-controller="Login" asp-action="Logout" class="btn-icon text-danger" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </header>
+
     <div class="container">
-        <div class="header">
-            <h2 class="mb-0" style="color: var(--primary-color); font-weight: 700;">Superadmin Dashboard</h2>
-            <div>
-                <span class="me-3">Welcome, Superadmin</span>
-                <a asp-controller ="Login" asp-action="Logout" class="btn btn-outline-secondary">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </a>
-                <a asp-controller="Superadmin" asp-action="Superadminchangepass" class="btn btn-outline-secondary">
-                    <i class="fas fa-lock me-2"></i>Change pass
-                </a>
-                <a asp-controller="Superadmin" asp-action="Admincreateaccount" class="btn btn-outline-secondary">
-                    <i class="fas fa-user-lock me-2"></i>Create Admin Account
-                </a>
+        <!-- Stats Overview -->
+        <div class="stats-container">
+            <div class="stat-card stat-hospital">
+                <div class="stat-icon">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.HospitalAssistance.Count</h3>
+                    <p>Hospital</p>
+                </div>
+            </div>
+            <div class="stat-card stat-medical">
+                <div class="stat-icon">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.OtherAssistance.Count</h3>
+                    <p>Others</p>
+                </div>
+            </div>
+            <div class="stat-card stat-funeral">
+                <div class="stat-icon">
+                    <i class="fas fa-cross"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.FuneralAssistance.Count</h3>
+                    <p>Funeral</p>
+                </div>
+            </div>
+            <div class="stat-card stat-pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>@Model.HospitalAssistance.Count(f => f.Status?.ToLower() == "pending")</h3>
+                    <p>Pending Requests</p>
+                </div>
             </div>
         </div>
 
-        <!-- Stats Overview -->
-        <div class="row mb-4">
-            <!-- Stats Overview - Improved Responsive Version -->
-            <div class="row mb-4 g-3">
-                <!-- Added g-3 for gutter spacing -->
-                <div class="col-6 col-md-3">
-                    <!-- Changed to col-6 for mobile -->
-                    <div class="stats-card h-100">
-                        <!-- Added h-100 for equal height -->
-                        <div class="d-flex align-items-center mb-2">
-                            <!-- Improved icon alignment -->
-                            <div class="stats-icon me-2">
-                                <i class="fas fa-hospital"></i>
-                            </div>
-                            <div>
-                                <div class="stats-value">@Model.HospitalAssistance.Count</div>
-                                <div class="stats-label">Hospital Bills</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card h-100">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon me-2">
-                                <i class="fas fa-microscope"></i>
-                            </div>
-                            <div>
-                                <div class="stats-value">@Model.OtherAssistance.Count</div>
-                                <div class="stats-label">Medical/Lab</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card h-100">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon me-2">
-                                <i class="fas fa-cross"></i>
-                            </div>
-                            <div>
-                                <div class="stats-value">@Model.FuneralAssistance.Count</div>
-                                <div class="stats-label">Funeral</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stats-card h-100">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="stats-icon me-2">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <div class="stats-value">@Model.HospitalAssistance.Count(f => f.Status?.ToLower() == "pending")</div>
-                                <div class="stats-label">Pending Requests</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Search and Filters -->
             <div class="search-container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search by name, ID, or status...">
-                    </div>
-                    <div class="col-md-6">
-                        <div class="filter-container">
-                            <select class="filter-select" id="statusFilter">
-                                <option value="all">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="processing">Processing</option>
-                                <option value="approved">Approved</option>
-                                <option value="unapproved">Rejected</option>
-                                <option value="removed">Removed</option> <!-- Added deleted option -->
-                            </select>
-                            <select class="filter-select" id="typeFilter">
-                                <option value="all">All Types</option>
-                                <option value="hospital">Hospital Bills</option>
-                                <option value="medical">Medical/Lab</option>
-                                <option value="funeral">Funeral</option>
-                                <option value="removed">Removed</option> <!-- Added deleted option if needed -->
-                            </select>
-                            <button class="btn btn-primary-custom" id="applyFilters">
-                                <i class="fas fa-filter me-2"></i>Filter
-                            </button>
-                            <button class="btn btn-outline-secondary" id="resetFilters">
-                                <i class="fas fa-sync-alt me-2"></i>Reset
-                            </button>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control search-input border-start-0 ps-0" id="searchInput" placeholder="Search by name, ID, or status...">
                         </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-filter text-muted"></i>
+                            </span>
+                            <select class="form-select border-start-0 ps-0" id="statusFilter">
+                                <option value="all">All Status</option>
+                                <!-- Dynamic options will be inserted here by JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button class="btn btn-primary w-100" id="applyFilters" style="background-color: var(--super-accent); border: none;">
+                            Apply
+                        </button>
+                        <button class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const searchInput = document.getElementById('searchInput');
-                    const statusFilter = document.getElementById('statusFilter');
-                    const typeFilter = document.getElementById('typeFilter');
-                    const applyFilters = document.getElementById('applyFilters');
-                    const resetFilters = document.getElementById('resetFilters');
-
-                    // Function to filter and search items
-                    function filterItems() {
-                        const searchTerm = searchInput.value.toLowerCase();
-                        const statusValue = statusFilter.value;
-                        const typeValue = typeFilter.value;
-
-                        // Get all file items from all tabs
-                        const allFileItems = document.querySelectorAll('.file-item');
-
-                        allFileItems.forEach(item => {
-                            const fileName = item.querySelector('.file-name')?.textContent.toLowerCase() || '';
-                            const fileId = item.querySelector('.file-detail i.fa-id-card')?.nextSibling?.textContent.trim().toLowerCase() || '';
-                            const fileStatusElement = item.querySelector('.status-badge');
-                            const fileStatus = fileStatusElement ? fileStatusElement.textContent.toLowerCase().trim() : '';
-                            const isHospital = item.closest('#hospital') !== null;
-                            const isMedical = item.closest('#medical') !== null;
-                            const isFuneral = item.closest('#funeral') !== null;
-                            const isRemoved = item.closest('#removed') !== null; // Corrected variable name and typo
-
-                            // Check if item matches search term
-                            const matchesSearch = searchTerm === '' ||
-                                                fileName.includes(searchTerm) ||
-                                                fileId.includes(searchTerm) ||
-                                                fileStatus.includes(searchTerm);
-
-                            // Check if item matches status filter
-                            const matchesStatus = statusValue === 'all' ||
-                                                (statusValue === 'pending' && fileStatus === 'pending') ||
-                                                (statusValue === 'removed' && fileStatus === 'removed') ||
-                                                (statusValue === 'processing' && fileStatus === 'processing') ||
-                                                (statusValue === 'approved' && (fileStatus === 'approved' || fileStatus === 'claimed')) ||
-                                                (statusValue === 'unapproved' && fileStatus === 'unapproved');
-
-                            // Check if item matches type filter
-                            const matchesType = typeValue === 'all' ||
-                                              (typeValue === 'hospital' && isHospital) ||
-                                              (typeValue === 'medical' && isMedical) ||
-                                              (typeValue === 'funeral' && isFuneral) ||
-                                              (typeValue === 'removed' && isRemoved); // Corrected variable name
-
-                            // Show/hide item based on filters
-                            item.style.display = (matchesSearch && matchesStatus && matchesType) ? 'flex' : 'none';
-                        });
-
-                        // Switch to the appropriate tab if type filter is applied
-                        if (typeValue !== 'all') {
-                            const tabMap = {
-                                'hospital': 'hospital-tab',
-                                'medical': 'medical-tab',
-                                'funeral': 'funeral-tab',
-                                'removed': 'removed-tab' // Make sure this matches your tab ID
-                            };
-
-                            if (tabMap[typeValue]) {
-                                const tab = document.getElementById(tabMap[typeValue]);
-                                if (tab) {
-                                    const tabInstance = new bootstrap.Tab(tab);
-                                    tabInstance.show();
-                                }
-                            }
-                        }
-                    }
-
-                    // Event listeners
-                    searchInput.addEventListener('input', filterItems);
-                    applyFilters.addEventListener('click', filterItems);
-
-                    resetFilters.addEventListener('click', function() {
-                        searchInput.value = '';
-                        statusFilter.value = 'all';
-                        typeFilter.value = 'all';
-                        filterItems();
-
-                        // Show the first tab (Hospital Bills) when resetting
-                        const firstTab = document.getElementById('hospital-tab');
-                        if (firstTab) {
-                            const tabInstance = new bootstrap.Tab(firstTab);
-                            tabInstance.show();
-                        }
-                    });
-
-                    // Initialize with filtering
-                    filterItems();
-                });
-            </script>
 
         <!-- Tab Navigation -->
         <div class="tab-container">
-            <ul class="nav nav-tabs" id="assistanceTabs" role="tablist">
+            <ul class="nav nav-pills" id="assistanceTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="hospital-tab" data-bs-toggle="tab" data-bs-target="#hospital" type="button" role="tab" aria-controls="hospital" aria-selected="true">
-                        <i class="fas fa-hospital me-2"></i>Hospital Bills
+                    <button class="nav-link active" id="hospital-tab" data-bs-toggle="pill" data-bs-target="#hospital" type="button" role="tab" data-type="assistance">
+                        <i class="fas fa-hospital"></i>Hospital Bills
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">
-                        <i class="fas fa-microscope me-2"></i>Medical/Lab
+                    <button class="nav-link" id="funeral-tab" data-bs-toggle="pill" data-bs-target="#funeral" type="button" role="tab" data-type="assistance">
+                        <i class="fas fa-cross"></i>Funeral
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="funeral-tab" data-bs-toggle="tab" data-bs-target="#funeral" type="button" role="tab" aria-controls="funeral" aria-selected="false">
-                        <i class="fas fa-cross me-2"></i>Funeral
+                    <button class="nav-link" id="medical-tab" data-bs-toggle="pill" data-bs-target="#medical" type="button" role="tab" data-type="assistance">
+                        <i class="fas fa-microscope"></i>Other Assistance
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">
-                        <i class="fas fa-users me-2"></i>Users
+                    <button class="nav-link" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab" data-type="users">
+                        <i class="fas fa-users"></i>Users
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#adminaccount" type="button" role="tab" aria-controls="users" aria-selected="false">
-                        <i class="fas fa-users me-2"></i>Admin
+                    <button class="nav-link" id="adminaccount-tab" data-bs-toggle="pill" data-bs-target="#adminaccount" type="button" role="tab" data-type="admins">
+                        <i class="fas fa-user-shield"></i>Admin
                     </button>
                 </li>
             </ul>
@@ -610,80 +488,80 @@
 
         <div class="tab-content" id="assistanceTabsContent">
             <!-- Hospital Bills Section -->
-            <div class="tab-pane fade show active" id="hospital" role="tabpanel" aria-labelledby="hospital-tab">
+            <div class="tab-pane fade show active" id="hospital" role="tabpanel">
                 <div class="card-container">
-                    <h3 class="section-title">Hospital Bill Assistance</h3>
-
                     @if (Model.HospitalAssistance.Any())
                     {
                         @foreach (var file in Model.HospitalAssistance)
                         {
                             <div class="file-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="file-icon">
-                                        <i class="fas fa-file-medical-alt"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <div class="file-details">
-                                            <span class="file-detail">
-                                                <i class="fas fa-id-card"></i>@file.Id
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-calendar"></i>@file.CreatedAt.ToString("MMM dd, yyyy")
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-hospital"></i>@file.Processby
-                                            </span>
-                                        </div>
+                                <div class="file-icon">
+                                    <i class="fas fa-file-medical"></i>
+                                </div>
+                                <div class="file-info">
+                                    <p class="file-name">@file.Lastname, @file.Firstname @file.Middlename</p>
+                                    <div class="file-details">
+                                        <span class="file-detail"><i class="fas fa-id-card"></i>@file.Id</span>
+                                        <span class="file-detail"><i class="fas fa-calendar-alt"></i>@file.CreatedAt.ToString("MMM dd, yyyy")</span>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center file-actions">
+                                <div class="file-detail d-none d-md-flex">
+                                    <i class="fas fa-user-edit"></i>By: @file.Processby
+                                </div>
+                                <div class="file-status">
                                     @{
+                                        var displayStatus = file.Status ?? "Pending";
                                         var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
+                                        
+                                        var s2 = file.Status2?.ToLower();
+                                        var s3 = file.Status3?.ToLower();
+                                        
+                                        if (s3 == "claimed") 
                                         {
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            case "approved":
-                                                statusClass += "status-approved";
-                                                break;
-                                            case "unapproved":
-                                                statusClass += "status-unapproved";
-                                                break;
-                                            case "claimed":
-                                                statusClass += "status-approved";
-                                                break;
-                                            case "removed":
-                                                statusClass += "status-removed";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
-
-                                                }
+                                            displayStatus = "Claimed";
+                                            statusClass += "status-claimed";
+                                        }
+                                        else if (s2 == "approve")
+                                        {
+                                            displayStatus = "Approved";
+                                            statusClass += "status-approved";
+                                        }
+                                        else if (s2 == "disapprove" || s2 == "unapproved")
+                                        {
+                                            displayStatus = "Disapproved";
+                                            statusClass += "status-unapproved";
+                                        }
+                                        else if (s2 == "retake")
+                                        {
+                                            displayStatus = "Retaken";
+                                            statusClass += "status-retake";
+                                        }
+                                        else
+                                        {
+                                            switch (displayStatus.ToLower())
+                                            {
+                                                case "pending": statusClass += "status-pending"; break;
+                                                case "processing": statusClass += "status-processing"; break;
+                                                case "removed": statusClass += "status-removed"; break;
+                                                default: statusClass += "status-pending"; break;
+                                            }
+                                        }
                                     }
                                     <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
+                                        <i class="fas fa-circle"></i>@displayStatus
                                     </span>
-                                    <!-- Dropdown -->
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle ellipsis-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="HospitalAssistanceview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </li>                                 
-                                  
-                                        </ul>
-                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn ellipsis-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Superadmin" asp-action="HospitalAssistanceview" asp-route-id="@file.Id">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         }
@@ -699,77 +577,80 @@
             </div>
 
             <!-- Medical and Lab Forms Section -->
-            <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
+            <div class="tab-pane fade" id="medical" role="tabpanel">
                 <div class="card-container">
-                    <h3 class="section-title">Medical and Laboratory Procedure</h3>
-
                     @if (Model.OtherAssistance.Any())
                     {
                         @foreach (var file in Model.OtherAssistance)
                         {
                             <div class="file-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="file-icon">
-                                        <i class="fas fa-microscope"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <div class="file-details">
-                                            <span class="file-detail">
-                                                <i class="fas fa-id-card"></i>@file.Id
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-calendar"></i>@file.CreatedAt.ToString("MMM dd, yyyy")
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-hospital"></i>@file.Processby
-                                            </span>
-                                        </div>
+                                <div class="file-icon">
+                                    <i class="fas fa-microscope"></i>
+                                </div>
+                                <div class="file-info">
+                                    <p class="file-name">@file.Lastname, @file.Firstname @file.Middlename</p>
+                                    <div class="file-details">
+                                        <span class="file-detail"><i class="fas fa-id-card"></i>@file.Id</span>
+                                        <span class="file-detail"><i class="fas fa-calendar-alt"></i>@file.CreatedAt.ToString("MMM dd, yyyy")</span>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center file-actions">
+                                <div class="file-detail d-none d-md-flex">
+                                    <i class="fas fa-user-edit"></i>By: @file.Processby
+                                </div>
+                                <div class="file-status">
                                     @{
+                                        var displayStatus = file.Status ?? "Pending";
                                         var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
+                                        
+                                        var s2 = file.Status2?.ToLower();
+                                        var s3 = file.Status3?.ToLower();
+                                        
+                                        if (s3 == "claimed") 
                                         {
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            case "approved":
-                                                statusClass += "status-approved";
-                                                break;
-                                            case "unapproved":
-                                                statusClass += "status-unapproved";
-                                                break;
-                                            case "claimed":
-                                                statusClass += "status-approved";
-                                                break;
-                                           case "removed":
-                                                 statusClass += "status-removed";
-                                                 break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
+                                            displayStatus = "Claimed";
+                                            statusClass += "status-claimed";
+                                        }
+                                        else if (s2 == "approve")
+                                        {
+                                            displayStatus = "Approved";
+                                            statusClass += "status-approved";
+                                        }
+                                        else if (s2 == "disapprove" || s2 == "unapproved")
+                                        {
+                                            displayStatus = "Disapproved";
+                                            statusClass += "status-unapproved";
+                                        }
+                                        else if (s2 == "retake")
+                                        {
+                                            displayStatus = "Retaken";
+                                            statusClass += "status-retake";
+                                        }
+                                        else
+                                        {
+                                            switch (displayStatus.ToLower())
+                                            {
+                                                case "pending": statusClass += "status-pending"; break;
+                                                case "processing": statusClass += "status-processing"; break;
+                                                case "removed": statusClass += "status-removed"; break;
+                                                default: statusClass += "status-pending"; break;
+                                            }
                                         }
                                     }
                                     <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
+                                        <i class="fas fa-circle"></i>@displayStatus
                                     </span>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="OtherAssistanceview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i> View
-                                                </a>
-                                            </li>           
-                                        </ul>
-                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn ellipsis-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Superadmin" asp-action="OtherAssistanceview" asp-route-id="@file.Id">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         }
@@ -785,80 +666,80 @@
             </div>
 
             <!-- Funeralform Section -->
-            <div class="tab-pane fade" id="funeral" role="tabpanel" aria-labelledby="funeral-tab">
+            <div class="tab-pane fade" id="funeral" role="tabpanel">
                 <div class="card-container">
-                    <h3 class="section-title">Funeral and Burial Assistance</h3>
-
                     @if (Model.FuneralAssistance.Any())
                     {
                         @foreach (var file in Model.FuneralAssistance)
                         {
                             <div class="file-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="file-icon">
-                                        <i class="fas fa-cross"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@file.Lastname @file.Firstname @file.Middlename</p>
-                                        <div class="file-details">
-                                            <span class="file-detail">
-                                                <i class="fas fa-id-card"></i>@file.Id
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-calendar"></i>@file.CreatedAt.ToString("MMM dd, yyyy")
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-map-marker-alt"></i>@file.Processby
-                                            </span>
-                                        </div>
+                                <div class="file-icon">
+                                    <i class="fas fa-cross"></i>
+                                </div>
+                                <div class="file-info">
+                                    <p class="file-name">@file.Lastname, @file.Firstname @file.Middlename</p>
+                                    <div class="file-details">
+                                        <span class="file-detail"><i class="fas fa-id-card"></i>@file.Id</span>
+                                        <span class="file-detail"><i class="fas fa-calendar-alt"></i>@file.CreatedAt.ToString("MMM dd, yyyy")</span>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center file-actions">
+                                <div class="file-detail d-none d-md-flex">
+                                    <i class="fas fa-user-edit"></i>By: @file.Processby
+                                </div>
+                                <div class="file-status">
                                     @{
+                                        var displayStatus = file.Status ?? "Pending";
                                         var statusClass = "status-badge ";
-                                        switch (file.Status?.ToLower())
+                                        
+                                        var s2 = file.Status2?.ToLower();
+                                        var s3 = file.Status3?.ToLower();
+                                        
+                                        if (s3 == "claimed") 
                                         {
-                                         
-                                            case "pending":
-                                                statusClass += "status-pending";
-                                                break;
-                                            case "processing":
-                                                statusClass += "status-processing";
-                                                break;
-                                            case "approved":
-                                                statusClass += "status-approved";
-                                                break;
-                                            case "unapproved":
-                                                statusClass += "status-unapproved";
-                                                break;
-                                            case "claimed":
-                                                statusClass += "status-approved";
-                                                break;
-
-                                            case "removed":
-                                                statusClass += "status-removed";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
+                                            displayStatus = "Claimed";
+                                            statusClass += "status-claimed";
+                                        }
+                                        else if (s2 == "approve")
+                                        {
+                                            displayStatus = "Approved";
+                                            statusClass += "status-approved";
+                                        }
+                                        else if (s2 == "disapprove" || s2 == "unapproved")
+                                        {
+                                            displayStatus = "Disapproved";
+                                            statusClass += "status-unapproved";
+                                        }
+                                        else if (s2 == "retake")
+                                        {
+                                            displayStatus = "Retaken";
+                                            statusClass += "status-retake";
+                                        }
+                                        else
+                                        {
+                                            switch (displayStatus.ToLower())
+                                            {
+                                                case "pending": statusClass += "status-pending"; break;
+                                                case "processing": statusClass += "status-processing"; break;
+                                                case "removed": statusClass += "status-removed"; break;
+                                                default: statusClass += "status-pending"; break;
+                                            }
                                         }
                                     }
                                     <span class="@statusClass">
-                                        <i class="fas fa-circle"></i>@file.Status
+                                        <i class="fas fa-circle"></i>@displayStatus
                                     </span>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="FuneralAssistanceview" asp-route-id="@file.Id">
-                                                    <i class="fas fa-eye"></i>View
-                                                </a>
-                                            </li>  
-
-                                        </ul>
-                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn ellipsis-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Superadmin" asp-action="FuneralAssistanceview" asp-route-id="@file.Id">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         }
@@ -872,134 +753,109 @@
                     }
                 </div>
             </div>
-                <!-- Users Section -->
-                <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
-                    <div class="card-container">
-                        <h3 class="section-title">User Management</h3>
 
-                        @if (Model.UserAccount.Any())
-                        {
-                            @foreach (var user in Model.UserAccount)
-                            {
-                                <div class="file-item">
-                                    <div class="d-flex align-items-center">
-                                        <div class="file-icon">
-                                            <i class="fas fa-user-circle"></i>
-                                        </div>
-                                        <div class="file-info">
-                                            <p class="file-name">@user.Username</p>
-                                            <div class="file-details">
-                                                <span class="file-detail">
-                                                    <i class="fas fa-id-card"></i>@user.Id
-                                                </span>
-                                                <span class="file-detail">
-                                                    <i class="fas fa-phone"></i>@user.Email
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center file-actions">
-                                        @{
-                                            var statusClass = "status-badge ";
-                                            switch (user.Status?.ToLower())
-                                            {
-                                                case "active":
-                                                    statusClass += "status-approved";
-                                                    break;
-                                                case "removed":
-                                                    statusClass += "status-removed";
-                                                    break;
-                                                default:
-                                                    statusClass += "status-pending";
-                                                    break;
-                                            }
-                                        }
-                                        <span class="@statusClass">
-                                            <i class="fas fa-circle"></i>@user.Status
-                                        </span>
-                                        <div class="dropdown">
-                                            <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-h"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">      
-                                                <li>
-                                                    <a class="dropdown-item" asp-controller="Superadmin" asp-action="RemoveUser" asp-route-id="@user.Id">
-                                                        <i class="fas fa-trash-alt"></i>removed
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="empty-state">
-                                <i class="fas fa-user-slash"></i>
-                                <p>No users found.</p>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Account Section -->
-            <div class="tab-pane fade" id="adminaccount" role="tabpanel" aria-labelledby="adminaccount-tab">
+            <!-- Users Section -->
+            <div class="tab-pane fade" id="users" role="tabpanel">
                 <div class="card-container">
-                    <h3 class="section-title">Admin Management</h3>
-                    @if (Model.Adminaccount.Any())
+                    @if (Model.UserAccount.Any())
                     {
-                        @foreach (var user in Model.Adminaccount)
+                        @foreach (var user in Model.UserAccount)
                         {
                             <div class="file-item">
-                                <div class="d-flex align-items-center">
-                                    <div class="file-icon">
-                                        <i class="fas fa-user-circle"></i>
-                                    </div>
-                                    <div class="file-info">
-                                        <p class="file-name">@user.Fullname</p>
-                                        <div class="file-details">
-                                            <span class="file-detail">
-                                                <i class="fas fa-id-card"></i>@user.Id
-                                            </span>
-                                            <span class="file-detail">
-                                                <i class="fas fa-envelope"></i>@user.Username
-                                            </span>
-                                        </div>
+                                <div class="file-icon">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="file-info">
+                                    <p class="file-name">@user.Username</p>
+                                    <div class="file-details">
+                                        <span class="file-detail"><i class="fas fa-id-card"></i>@user.Id</span>
+                                        <span class="file-detail"><i class="fas fa-envelope"></i>@user.Email</span>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center file-actions">
+                                <div></div> <!-- Spacer -->
+                                <div class="file-status">
                                     @{
                                         var statusClass = "status-badge ";
                                         switch (user.Status?.ToLower())
                                         {
-                                            case "active":
-                                                statusClass += "status-approved";
-                                                break;
-                                            case "removed":
-                                                statusClass += "status-removed";
-                                                break;
-                                            default:
-                                                statusClass += "status-pending";
-                                                break;
+                                            case "active": statusClass += "status-approved"; break;
+                                            case "removed": statusClass += "status-removed"; break;
+                                            default: statusClass += "status-pending"; break;
                                         }
                                     }
                                     <span class="@statusClass">
                                         <i class="fas fa-circle"></i>@user.Status
                                     </span>
-                                    <div class="dropdown">
-                                        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" asp-controller="Superadmin" asp-action="RemoveAdminacc" asp-route-id="@user.Id">
-                                                    <i class="fas fa-trash-alt"></i>Remove
-                                                </a>
-                                            </li>
-                                        </ul>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn ellipsis-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Superadmin" asp-action="RemoveUser" asp-route-id="@user.Id">
+                                                <i class="fas fa-trash-alt"></i> Remove
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-user-slash"></i>
+                            <p>No users found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Admin Account Section -->
+            <div class="tab-pane fade" id="adminaccount" role="tabpanel">
+                <div class="card-container">
+                    @if (Model.Adminaccount.Any())
+                    {
+                        @foreach (var user in Model.Adminaccount)
+                        {
+                            <div class="file-item">
+                                <div class="file-icon">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div class="file-info">
+                                    <p class="file-name">@user.Fullname</p>
+                                    <div class="file-details">
+                                        <span class="file-detail"><i class="fas fa-id-card"></i>@user.Id</span>
+                                        <span class="file-detail"><i class="fas fa-user"></i>@user.Username</span>
                                     </div>
+                                </div>
+                                <div></div> <!-- Spacer -->
+                                <div class="file-status">
+                                    @{
+                                        var statusClass = "status-badge ";
+                                        switch (user.Status?.ToLower())
+                                        {
+                                            case "active": statusClass += "status-approved"; break;
+                                            case "removed": statusClass += "status-removed"; break;
+                                            default: statusClass += "status-pending"; break;
+                                        }
+                                    }
+                                    <span class="@statusClass">
+                                        <i class="fas fa-circle"></i>@user.Status
+                                    </span>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn ellipsis-btn" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Superadmin" asp-action="RemoveAdminacc" asp-route-id="@user.Id">
+                                                <i class="fas fa-trash-alt"></i> Remove
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         }
@@ -1051,7 +907,9 @@
                                     <option value="pending">Pending</option>
                                     <option value="processing">Processing</option>
                                     <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
+                                    <option value="disapproved">Disapproved</option>
+                                    <option value="claimed">Claimed</option>
+                                    <option value="retake">Retaken</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -1073,11 +931,110 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the modals
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const applyFilters = document.getElementById('applyFilters');
+            const resetFilters = document.getElementById('resetFilters');
+            const tabs = document.querySelectorAll('#assistanceTabs button');
+
+            const statusOptions = {
+                'assistance': [
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'processing', label: 'Processing' },
+                    { value: 'disapproved', label: 'Disapproved' },
+                    { value: 'approved', label: 'Approved' },
+                    { value: 'claimed', label: 'Claimed' },
+                    { value: 'retake', label: 'Retaken' }
+                ],
+                'users': [
+                    { value: 'active', label: 'Active' },
+                    { value: 'removed', label: 'Removed' }
+                ],
+                'admins': [
+                    { value: 'active', label: 'Active' },
+                    { value: 'removed', label: 'Removed' }
+                ]
+            };
+
+            function updateStatusDropdown(tabType) {
+                const options = statusOptions[tabType] || [];
+                statusFilter.innerHTML = '<option value="all">All Status</option>';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.label;
+                    statusFilter.appendChild(option);
+                });
+            }
+
+            // Function to filter and search items
+            function filterItems() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const statusValue = statusFilter.value.toLowerCase();
+                const activeTabId = document.querySelector('#assistanceTabs button.active').getAttribute('data-bs-target');
+                const activePane = document.querySelector(activeTabId);
+                
+                if (!activePane) return;
+
+                const items = activePane.querySelectorAll('.file-item');
+
+                items.forEach(item => {
+                    const name = item.querySelector('.file-name')?.textContent.toLowerCase() || '';
+                    const id = item.querySelector('.file-detail i.fa-id-card')?.parentElement?.textContent.toLowerCase() || '';
+                    const statusElement = item.querySelector('.status-badge');
+                    const statusText = statusElement ? statusElement.textContent.toLowerCase().trim() : '';
+
+                    const matchesSearch = searchTerm === '' ||
+                                        name.includes(searchTerm) ||
+                                        id.includes(searchTerm) ||
+                                        statusText.includes(searchTerm);
+
+                    let matchesStatus = statusValue === 'all';
+                    if (!matchesStatus) {
+                        if (statusValue === 'approved') {
+                            matchesStatus = statusText === 'approved' || statusText === 'claimed';
+                        } else if (statusValue === 'disapproved') {
+                            matchesStatus = statusText === 'disapproved' || statusText === 'unapproved' || statusText === 'rejected';
+                        } else if (statusValue === 'retake') {
+                             matchesStatus = statusText === 'retake' || statusText === 'retaken';
+                        } else {
+                            matchesStatus = statusText === statusValue;
+                        }
+                    }
+
+                    item.style.display = (matchesSearch && matchesStatus) ? 'grid' : 'none';
+                });
+            }
+
+            // Tab change listener
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (e) {
+                    const tabType = e.target.getAttribute('data-type');
+                    updateStatusDropdown(tabType);
+                    filterItems();
+                });
+            });
+
+            // Event listeners
+            searchInput.addEventListener('input', filterItems);
+            statusFilter.addEventListener('change', filterItems);
+            applyFilters.addEventListener('click', filterItems);
+
+            resetFilters.addEventListener('click', function() {
+                searchInput.value = '';
+                statusFilter.value = 'all';
+                filterItems();
+            });
+
+            // Initialize
+            const initialTabType = document.querySelector('#assistanceTabs button.active').getAttribute('data-type');
+            updateStatusDropdown(initialTabType);
+            filterItems();
+
+            // Original modal logic
             var commentsModal = new bootstrap.Modal(document.getElementById('commentsModal'));
             var statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
 
-            // Handle click events for all comment buttons
             document.querySelectorAll('.view-comments-btn').forEach(function(button) {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1087,7 +1044,6 @@
                 });
             });
 
-            // Handle status modal opening
             document.querySelectorAll('[data-bs-target="#statusModal"]').forEach(function(button) {
                 button.addEventListener('click', function() {
                     document.getElementById('requestId').value = this.getAttribute('data-id');
@@ -1095,22 +1051,10 @@
                 });
             });
 
-            // Handle form submission
             document.getElementById('statusForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                // Here you would typically make an AJAX call to update the status
-                // For now, we'll just close the modal and show an alert
                 statusModal.hide();
                 alert('Status updated successfully!');
-                // In a real application, you would refresh the data or update the UI accordingly
-            });
-
-            // Initialize tabs
-            var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
-            tabEls.forEach(function(tabEl) {
-                tabEl.addEventListener('shown.bs.tab', function (event) {
-                    // You can add additional logic here when a tab is shown
-                });
             });
         });
     </script>

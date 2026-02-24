@@ -148,6 +148,9 @@
         if (currentPath.includes('/adminuser/')) {
             return '/Adminuser';
         }
+        if (currentPath.includes('/superadmin')) {
+            return '/Superadmin';
+        }
         return '/Dashboard';  // Default to Dashboard for user side
     }
 

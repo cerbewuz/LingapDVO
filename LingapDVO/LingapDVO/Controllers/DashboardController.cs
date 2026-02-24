@@ -5562,6 +5562,11 @@ namespace LingapDVO.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(imagePath))
+                {
+                    return Json(new { success = false, message = "Image path is required" });
+                }
+
                 // Get current user info
                 var userIdString = HttpContext.Session.GetString("UserId");
                 var adminFullname = HttpContext.Session.GetString("AdminFullname");
