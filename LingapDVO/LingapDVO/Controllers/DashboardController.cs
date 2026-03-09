@@ -12,10 +12,11 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
-   
+    [EnableRateLimiting("GlobalLimit")]
     public class Dashboard : Controller
     {
         public readonly ApplicationDbContext context;

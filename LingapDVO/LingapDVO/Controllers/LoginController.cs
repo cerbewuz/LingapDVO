@@ -15,9 +15,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
+    [EnableRateLimiting("HeavyApi")]
     public class LoginController : Controller
     {
         public readonly ApplicationDbContext context;

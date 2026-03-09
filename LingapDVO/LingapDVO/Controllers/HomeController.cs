@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using LingapDVO.Models;
 using LingapDVO.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers;
 
+[EnableRateLimiting("GlobalLimit")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

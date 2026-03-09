@@ -11,9 +11,11 @@ using System.Security.Cryptography;
 using System.Text;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
+    [EnableRateLimiting("GlobalLimit")]
     public class Adminuser : Controller
     {
 

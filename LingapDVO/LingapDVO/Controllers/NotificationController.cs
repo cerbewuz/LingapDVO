@@ -3,7 +3,9 @@ using LingapDVO.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Microsoft.AspNetCore.RateLimiting;
 
+[EnableRateLimiting("GlobalLimit")]
 public class NotificationsController : Controller
 {
     public readonly ApplicationDbContext context;

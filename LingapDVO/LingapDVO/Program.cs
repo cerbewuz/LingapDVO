@@ -2,6 +2,8 @@ using LingapDVO.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +49,47 @@ builder.Services.AddAuthentication(options =>
             }
             context.Response.Redirect(redirectUri);
             return Task.CompletedTask;
+        }
+    };
+});
+
+// ?? Rate Limiting Configuration
+builder.Services.AddRateLimiter(options =>
+{
+    // Global Fixed Window Policy: 100 requests per 1 minute per IP
+    options.AddFixedWindowLimiter(policyName: "GlobalLimit", options =>
+    {
+        options.PermitLimit = 100;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 20;
+    });
+
+    // Heavy API Token Bucket Policy: For Login and ID Analyzer
+    // 10 tokens total, 5 tokens added every 1 minute
+    options.AddTokenBucketLimiter(policyName: "HeavyApi", options =>
+    {
+        options.TokenLimit = 10;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+        options.ReplenishmentPeriod = TimeSpan.FromMinutes(1);
+        options.TokensPerPeriod = 5;
+        options.AutoReplenishment = true;
+    });
+
+    // Custom response for rate limited requests
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            await context.HttpContext.Response.WriteAsync(
+                $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s).", token);
+        }
+        else
+        {
+            await context.HttpContext.Response.WriteAsync(
+                "Too many requests. Please try again later.", token);
         }
     };
 });
@@ -155,6 +198,9 @@ if (!app.Environment.IsDevelopment())
 
 // ⚡ PERFORMANCE: Enable response compression middleware
 app.UseResponseCompression();
+
+// 🔒 SECURITY: Add rate limiting
+app.UseRateLimiter();
 
 // 🔒 SECURITY: Add security headers
 app.Use(async (context, next) =>

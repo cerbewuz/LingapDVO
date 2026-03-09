@@ -1580,7 +1580,59 @@ namespace LingapDVO.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
                     b.ToTable("VerifiedAccount");
+                });
+
+            modelBuilder.Entity("LingapDVO.Models.FuneralAssistance", b =>
+                {
+                    b.HasOne("LingapDVO.Models.UserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LingapDVO.Models.HospitalAssistance", b =>
+                {
+                    b.HasOne("LingapDVO.Models.UserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LingapDVO.Models.OtherAssistance", b =>
+                {
+                    b.HasOne("LingapDVO.Models.UserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LingapDVO.Models.VerifiedAccount", b =>
+                {
+                    b.HasOne("LingapDVO.Models.UserAccount", "User")
+                        .WithOne("VerifiedAccount")
+                        .HasForeignKey("LingapDVO.Models.VerifiedAccount", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LingapDVO.Models.UserAccount", b =>
+                {
+                    b.Navigation("VerifiedAccount");
                 });
 #pragma warning restore 612, 618
         }

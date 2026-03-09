@@ -8,9 +8,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
+    [EnableRateLimiting("GlobalLimit")]
     public class SuperadminController : Controller
     {
         public readonly ApplicationDbContext context;

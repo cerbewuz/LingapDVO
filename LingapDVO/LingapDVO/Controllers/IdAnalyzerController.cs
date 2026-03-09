@@ -4,25 +4,16 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
     /// <summary>
     /// API Controller for ID Analyzer v2 operations
-    /// Base URL: https://api2.idanalyzer.com
-    ///
-    /// PRIVACY NOTE: Selfie/face images are NOT stored in the system.
-    /// Only ID images (front/back) are saved with AES-256 encryption.
-    /// Selfies are only used for real-time face matching via ID Analyzer API.
-    ///
-    /// Endpoints:
-    /// - POST /api/IdAnalyzer/saveSelfie - Validate selfie (NOT saved to disk)
-    /// - POST /api/IdAnalyzer/scan - Standard ID Scan (saves encrypted ID images only)
-    /// - POST /api/IdAnalyzer/face - Face Verification
-    /// - GET /api/IdAnalyzer/health - Health Check
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("HeavyApi")]
     public class IdAnalyzerController : ControllerBase
     {
         private readonly IVerificationService _verificationService;

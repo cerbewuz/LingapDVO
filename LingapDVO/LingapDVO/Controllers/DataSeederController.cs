@@ -1,5 +1,6 @@
 using LingapDVO.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LingapDVO.Controllers
 {
@@ -8,6 +9,7 @@ namespace LingapDVO.Controllers
     /// Controller for running the data seeder
     /// IMPORTANT: This should only be run in development/testing environments
     /// </summary>
+    [EnableRateLimiting("GlobalLimit")]
     public class DataSeederController : Controller
     {
         private readonly ApplicationDbContext _context;
