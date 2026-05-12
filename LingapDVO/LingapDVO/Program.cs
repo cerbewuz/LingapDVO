@@ -1,4 +1,5 @@
 using LingapDVO.Services;
+using LingapDVO.Filters;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -53,46 +54,90 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// ?? Rate Limiting Configuration
+// 🔒 SECURITY: Rate Limiting Configuration
 builder.Services.AddRateLimiter(options =>
 {
-    // Global Fixed Window Policy: 100 requests per 1 minute per IP
-    options.AddFixedWindowLimiter(policyName: "GlobalLimit", options =>
-    {
-        options.PermitLimit = 100;
-        options.Window = TimeSpan.FromMinutes(1);
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 20;
-    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Heavy API Token Bucket Policy: For Login and ID Analyzer
-    // 10 tokens total, 5 tokens added every 1 minute
-    options.AddTokenBucketLimiter(policyName: "HeavyApi", options =>
-    {
-        options.TokenLimit = 10;
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
-        options.ReplenishmentPeriod = TimeSpan.FromMinutes(1);
-        options.TokensPerPeriod = 5;
-        options.AutoReplenishment = true;
-    });
+    // 1. Global Per-IP Limiter (Prevents general DDoS/Abuse)
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // 2. Strict Policy (For Login, OTP, Registration) - 5 requests per minute per IP
+    options.AddPolicy("StrictPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // 3. Form Submission Policy (For Medical/Funeral Assistance) - 10 requests per minute per IP
+    options.AddPolicy("FormSubmissionPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // Backward compatibility for HeavyApi policy
+    options.AddPolicy("HeavyApi", httpContext =>
+        RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 10,
+                ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                TokensPerPeriod = 5,
+                AutoReplenishment = true,
+                QueueLimit = 0
+            }));
 
     // Custom response for rate limited requests
     options.OnRejected = async (context, token) =>
     {
-        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        if (context.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest" || 
+            context.HttpContext.Request.ContentType?.Contains("application/json") == true)
         {
-            await context.HttpContext.Response.WriteAsync(
-                $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s).", token);
+            context.HttpContext.Response.ContentType = "application/json";
+            await context.HttpContext.Response.WriteAsJsonAsync(new { 
+                success = false, 
+                errorType = "ratelimit",
+                title = "Too Many Requests",
+                message = "You have exceeded the request limit. Please slow down and try again in a minute." 
+            }, token);
         }
         else
         {
-            await context.HttpContext.Response.WriteAsync(
-                "Too many requests. Please try again later.", token);
+            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            {
+                await context.HttpContext.Response.WriteAsync(
+                    $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s).", token);
+            }
+            else
+            {
+                await context.HttpContext.Response.WriteAsync(
+                    "Too many requests. Please try again later.", token);
+            }
         }
     };
 });
+
 
 // Form Submission Security Service
 builder.Services.AddScoped<FormSubmissionSecurityService>();
@@ -125,7 +170,11 @@ builder.Services.AddResponseCompression(options =>
 });
 
 // MVC
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options =>
+{
+    // 🔒 SECURITY: Global Sanitize Filter
+    options.Filters.Add<SanitizeFilter>();
+})
     .AddJsonOptions(options =>
     {
         // Handle circular references in models (e.g., UserAccount ↔ VerifiedAccount)

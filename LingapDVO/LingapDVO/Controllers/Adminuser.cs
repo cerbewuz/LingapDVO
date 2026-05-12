@@ -1422,7 +1422,7 @@ namespace LingapDVO.Controllers
         }
 
         // ADD THIS HELPER METHOD INSIDE YOUR CONTROLLER CLASS
-        private string DecryptFieldText(string encryptedText)
+        private string DecryptFieldText(string? encryptedText)
         {
             try
             {
@@ -8282,7 +8282,7 @@ namespace LingapDVO.Controllers
         }
 
         // Helper method to check if a string is valid Base64
-        private bool IsBase64String(string value)
+        private bool IsBase64String(string? value)
         {
             if (string.IsNullOrEmpty(value))
                 return false;
@@ -8394,7 +8394,7 @@ namespace LingapDVO.Controllers
         // ENCRYPT FIELD (FOR RE-ENCRYPTION)
         // ========================================================
         [HttpPost]
-        public IActionResult EncryptField(string fieldValue, string formType, int formId)
+        public IActionResult EncryptField(string? fieldValue, string formType, int formId)
         {
             try
             {
@@ -8415,6 +8415,11 @@ namespace LingapDVO.Controllers
                 Console.WriteLine($"Field value length: {fieldValue?.Length ?? 0}");
 
                 // Admins can encrypt all records
+                if (string.IsNullOrEmpty(fieldValue))
+                {
+                    return Json(new { success = false, message = "Field value is required" });
+                }
+
                 // Encrypt the field value
                 string encryptedValue = _aesEncryptionService.Encrypt(fieldValue);
                 Console.WriteLine($"✓ Field encrypted successfully");

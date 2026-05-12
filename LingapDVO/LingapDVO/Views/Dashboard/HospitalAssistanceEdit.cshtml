@@ -739,7 +739,7 @@
     <!-- Hidden field to track successful submission -->
     <input type="hidden" id="formSubmitted" name="FormSubmitted" value="false">
 
-    @if (ViewData["IsRetakeMode"] != null && (bool)ViewData["IsRetakeMode"])
+    @if (ViewData["IsRetakeMode"] is bool isRetake && isRetake)
     {
         <div class="alert alert-warning" role="alert">
             <i class="fas fa-info-circle"></i> <strong>Retake Mode:</strong> Please review and update your information and attachments as needed.
@@ -1062,7 +1062,7 @@
                     </div>
                     <div class="current-document-body">
                         <p class="current-document-name"><strong>@ViewData["DoctorPrescription"]</strong></p>
-                        @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                        @if (ViewData["IsDoctorPrescriptionPdf"] is bool isPdfDoc && isPdfDoc)
                         {
                             <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
                                 <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>

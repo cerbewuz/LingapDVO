@@ -774,7 +774,7 @@
     <!-- Hidden field to track successful submission -->
     <input type="hidden" id="formSubmitted" name="FormSubmitted" value="false">
 
-    @if (ViewData["IsRetakeMode"] != null && (bool)ViewData["IsRetakeMode"])
+    @if (ViewData["IsRetakeMode"] is bool isRetake && isRetake)
     {
         <div class="alert alert-warning" role="alert">
             <i class="fas fa-info-circle"></i> <strong>Retake Mode:</strong> Please review and update your information and attachments as needed.
@@ -1187,7 +1187,7 @@
                         {
                             <div class="document-item mb-3">
                                 <p class="current-document-name"><strong>Doctor's Prescription:</strong> @ViewData["DoctorPrescription"]</p>
-                                @if (ViewData["IsDoctorPrescriptionPdf"] != null && (bool)ViewData["IsDoctorPrescriptionPdf"])
+                                @if (ViewData["IsDoctorPrescriptionPdf"] is bool isPdfDoc && isPdfDoc)
                                 {
                                     <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DoctorPrescription"]', 'doctorprescription', 'Doctor Prescription')">
                                         <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
@@ -1211,7 +1211,7 @@
                         {
                             <div class="document-item mb-3">
                                 <p class="current-document-name"><strong>Medical Certificate:</strong> @ViewData["MedicalCertificate"]</p>
-                                @if (ViewData["IsMedicalCertificatePdf"] != null && (bool)ViewData["IsMedicalCertificatePdf"])
+                                @if (ViewData["IsMedicalCertificatePdf"] is bool isPdfMed && isPdfMed)
                                 {
                                     <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["MedicalCertificate"]', 'medicalcertificate', 'Medical Certificate')">
                                         <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>
@@ -1235,7 +1235,7 @@
                         {
                             <div class="document-item">
                                 <p class="current-document-name"><strong>Death Certificate:</strong> @ViewData["DeathCertificate"]</p>
-                                @if (ViewData["IsDeathCertificatePdf"] != null && (bool)ViewData["IsDeathCertificatePdf"])
+                                @if (ViewData["IsDeathCertificatePdf"] is bool isPdfDeath && isPdfDeath)
                                 {
                                     <div class="pdf-preview" onclick="viewPDFInModal('@ViewData["DeathCertificate"]', 'deathcertificate', 'Death Certificate')">
                                         <div class="pdf-icon"><i class="fas fa-file-pdf"></i></div>

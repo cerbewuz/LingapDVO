@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace LingapDVO.Models
 {
@@ -6,13 +6,19 @@ namespace LingapDVO.Models
     {
 
         [Required]
+        [StringLength(100, ErrorMessage = "Lastname cannot exceed 100 characters")]
+        [RegularExpression(@"^[a-zA-Z\s\-\.]+$", ErrorMessage = "Lastname contains invalid characters")]
         public string Lastname { get; set; } = "";
 
         [Required]
+        [StringLength(100, ErrorMessage = "Firstname cannot exceed 100 characters")]
+        [RegularExpression(@"^[a-zA-Z\s\-\.]+$", ErrorMessage = "Firstname contains invalid characters")]
         public string Firstname { get; set; } = "";
 
 
         [Required]
+        [StringLength(100, ErrorMessage = "Middlename cannot exceed 100 characters")]
+        [RegularExpression(@"^[a-zA-Z\s\-\.]+$", ErrorMessage = "Middlename contains invalid characters")]
         public string Middlename { get; set; } = "";
 
 
@@ -20,12 +26,15 @@ namespace LingapDVO.Models
         public string Suffix { get; set; } = "";
 
         [Required]
+        [StringLength(255, ErrorMessage = "Address cannot exceed 255 characters")]
         public string BlkLotStreet { get; set; } = "";
 
         [Required]
+        [StringLength(100, ErrorMessage = "Subdivision/Village cannot exceed 100 characters")]
         public string SubVill { get; set; } = "";
 
         [Required]
+        [StringLength(100, ErrorMessage = "Barangay cannot exceed 100 characters")]
         public string Brgy { get; set; } = "";
 
         [Required]
